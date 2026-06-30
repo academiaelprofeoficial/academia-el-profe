@@ -150,6 +150,8 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
   const isFreeCourse = courseType === 'free';
   const hasFullAccess = isOwner || purchasedCourseIds.includes('__ALL_COURSES__') || purchasedCourseIds.includes(slug);
 
+  const topics = course?.topics || [];
+
   // Build topic groups directly from nested structure — no fuzzy matching needed
   const topicGroups = useMemo(() => {
     return topics.map((topic) => ({
