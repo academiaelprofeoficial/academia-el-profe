@@ -137,7 +137,43 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
   const [newComment, setNewComment] = useState('');
   const [sendingComment, setSendingComment] = useState(false);
   const [loadingComments, setLoadingComments] = useState(false);
+  const [loadingPay, setLoadingPay] = useState<Record<string, boolean>>({});
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Payment handlers — POST como en /cursos (no GET que da 405)
+  const handleMP = useCallback(async () => {
+    const key = `${slug}-mp`;
+    if (loadingPay[key]) return;
+    setLoadingPay((prev) => ({ ...prev, [key]: true }));
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cursoId: slug, titulo: title, precio: pricePEN, userId: user?.uid || undefined }),
+      });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+    } catch {} finally {
+      setLoadingPay((prev) => ({ ...prev, [key]: false }));
+    }
+  }, [slug, title, pricePEN, user, loadingPay]);
+
+  const handlePayPal = useCallback(async () => {
+    const key = `${slug}-pp`;
+    if (loadingPay[key]) return;
+    setLoadingPay((prev) => ({ ...prev, [key]: true }));
+    try {
+      const res = await fetch('/api/checkout/paypal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cursoId: slug, titulo: title, precioUSD: priceUSD, userId: user?.uid || undefined }),
+      });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+    } catch {} finally {
+      setLoadingPay((prev) => ({ ...prev, [key]: false }));
+    }
+  }, [slug, title, priceUSD, user, loadingPay]);
 
   // Course data from CMS
   const title = course?.title || 'Curso';
@@ -464,22 +500,32 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
                 <span className="text-sm text-white/80 font-medium">{formatoUSD(priceUSD)}</span>
               </div>
 
-              {/* Botones de pago directo — MP y PayPal */}
+              {/* Botones de pago directo — MP y PayPal con POST */}
               <div className="flex flex-col gap-1.5 mt-3">
-                <a
-                  href={`/api/checkout?courseId=${slug}`}
-                  className="w-full h-10 text-xs font-bold tracking-wide text-white gap-1.5 rounded-lg flex items-center justify-center transition-all bg-brand-primary-hover hover:bg-brand-primary"
+                <button
+                  onClick={handleMP}
+                  disabled={loadingPay[`${slug}-mp`] || loadingPay[`${slug}-pp`]}
+                  className="w-full h-10 text-xs font-bold tracking-wide text-white gap-1.5 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-brand-primary-hover hover:bg-brand-primary"
                 >
-                  <ShoppingCart className="h-4 w-4 shrink-0" />
+                  {loadingPay[`${slug}-mp`] ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <ShoppingCart className="h-4 w-4 shrink-0" />
+                  )}
                   PEN {formatoSoles(pricePEN)} — Mercado Pago
-                </a>
-                <a
-                  href={`/api/checkout/paypal?courseId=${slug}`}
-                  className="w-full h-10 text-xs font-bold tracking-wide gap-1.5 rounded-lg flex items-center justify-center transition-all bg-[#ffc439] hover:bg-[#f2ba36] text-[#003087]"
+                </button>
+                <button
+                  onClick={handlePayPal}
+                  disabled={loadingPay[`${slug}-mp`] || loadingPay[`${slug}-pp`]}
+                  className="w-full h-10 text-xs font-bold tracking-wide gap-1.5 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-[#ffc439] hover:bg-[#f2ba36] text-[#003087]"
                 >
-                  <img src="/images/paypal-logo.png" alt="PP" className="h-4 w-4 object-contain shrink-0" />
+                  {loadingPay[`${slug}-pp`] ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <img src="/images/paypal-logo.png" alt="PP" className="h-4 w-4 object-contain shrink-0" />
+                  )}
                   USD {formatoUSD(priceUSD)} — PayPal
-                </a>
+                </button>
                 <Link
                   href={`/cursos/${slug}/temario`}
                   className="w-full h-9 text-xs font-bold tracking-wide gap-1.5 rounded-lg flex items-center justify-center border border-white/40 text-white hover:bg-white/10 transition-colors"
