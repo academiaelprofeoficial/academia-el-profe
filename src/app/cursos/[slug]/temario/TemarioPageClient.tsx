@@ -25,6 +25,11 @@ import {
   BadgeCheck,
   GraduationCap,
   MonitorPlay,
+  MessageSquare,
+  Send,
+  Heart,
+  Loader2,
+  UserCircle,
 } from 'lucide-react';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
 import type { SanityCourse, SanityClassVideo, SanityTopic, PortableTextBlock } from '@/lib/sanity.client';
@@ -130,6 +135,10 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
   const [showPurchase, setShowPurchase] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<SelectedVideo | null>(null);
   const [activeTopicTitle, setActiveTopicTitle] = useState<string | null>(null);
+  const [comments, setComments] = useState<any[]>([]);
+  const [newComment, setNewComment] = useState('');
+  const [sendingComment, setSendingComment] = useState(false);
+  const [loadingComments, setLoadingComments] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Course data from CMS
@@ -209,6 +218,63 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
       videoRef.current.play().catch(() => {});
     }
   }, [selectedVideo]);
+
+  // Fetch comments when a video is selected
+  useEffect(() => {
+    if (!selectedVideo || !slug) return;
+    const lessonId = selectedVideo.url;
+    setLoadingComments(true);
+    fetch(`/api/comments?courseId=${slug}&lessonId=${encodeURIComponent(lessonId)}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setComments(data);
+        else setComments([]);
+      })
+      .catch(() => setComments([]))
+      .finally(() => setLoadingComments(false));
+  }, [selectedVideo, slug]);
+
+  // Submit a comment
+  const handleSubmitComment = useCallback(async () => {
+    if (!newComment.trim() || !selectedVideo || !slug || !user) return;
+    setSendingComment(true);
+    try {
+      const res = await fetch('/api/comments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          courseId: slug,
+          lessonId: selectedVideo.url,
+          content: newComment.trim(),
+          userId: user.uid,
+          userName: user.displayName || user.email?.split('@')[0] || 'Usuario',
+          userPhoto: user.photoURL || null,
+        }),
+      });
+      if (res.ok) {
+        const newCmt = await res.json();
+        setComments((prev) => [newCmt, ...prev]);
+        setNewComment('');
+      }
+    } catch {}
+    setSendingComment(false);
+  }, [newComment, selectedVideo, slug, user]);
+
+  // Format date
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    const now = new Date();
+    const diff = now.getTime() - d.getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'Ahora';
+    if (mins < 60) return `Hace ${mins}m`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `Hace ${hrs}h`;
+    const days = Math.floor(hrs / 24);
+    if (days < 7) return `Hace ${days}d`;
+    return d.toLocaleDateString('es-PE', { day: 'numeric', month: 'short' });
+  };
+
 
   // Toggle topic expansion + auto-select first video
   const toggleTopic = useCallback((topicTitle: string) => {
@@ -418,14 +484,14 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
         </div>
       )}
 
-      {/* ===== PROMO VIDEO ===== */}
+      {/* ===== PROMO VIDEO — full bleed en mobile ===== */}
       {(course?.videoUrl || course?.courseVideo?.asset?.url) && (
-        <div className="rounded-xl border border-border/40 bg-card p-4">
-          <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
+        <div className="-mx-4 sm:mx-0 rounded-none sm:rounded-xl border-0 sm:border border-border/40 bg-transparent sm:bg-card sm:p-4">
+          <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2 px-4 sm:px-0">
             <PlayCircle className="h-5 w-5 text-brand-primary" />
             Video de Presentacion
           </h2>
-          <div className="rounded-lg overflow-hidden bg-black aspect-video">
+          <div className="bg-black aspect-video sm:rounded-lg overflow-hidden">
             <video
               src={course.videoUrl || course.courseVideo?.asset?.url}
               controls
@@ -668,6 +734,65 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
                                 </div>
                               </div>
                             )}
+                            {/* MOBILE COMMENTS */}
+                            <div className="border-t border-border/10 pt-3 mt-2 px-1">
+                              <h5 className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5">
+                                <MessageSquare className="h-3.5 w-3.5 text-brand-primary" />
+                                Comentarios {comments.length > 0 && <span className="text-[10px] font-normal text-muted-foreground">({comments.length})</span>}
+                              </h5>
+                              {user ? (
+                                <div className="flex gap-2 mb-3">
+                                  <div className="h-7 w-7 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0 text-[10px] font-bold text-brand-primary">
+                                    {user.displayName?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || 'U'}
+                                  </div>
+                                  <div className="flex-1 flex gap-1.5">
+                                    <textarea
+                                      value={newComment}
+                                      onChange={(e) => setNewComment(e.target.value)}
+                                      placeholder="Comentar..."
+                                      rows={1}
+                                      maxLength={1000}
+                                      className="flex-1 text-[11px] rounded-lg border border-border/40 bg-muted/30 px-2.5 py-1.5 resize-none focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+                                    />
+                                    <button
+                                      onClick={handleSubmitComment}
+                                      disabled={!newComment.trim() || sendingComment}
+                                      className="px-2.5 rounded-lg bg-brand-primary text-white disabled:opacity-50"
+                                    >
+                                      {sendingComment ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <p className="text-[10px] text-muted-foreground text-center mb-3">
+                                  <Link href="/iniciar-sesion" className="text-brand-primary hover:underline">Inicia sesión</Link> para comentar
+                                </p>
+                              )}
+                              {loadingComments ? (
+                                <div className="flex justify-center py-3">
+                                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                </div>
+                              ) : comments.length === 0 ? (
+                                <p className="text-[10px] text-muted-foreground text-center py-3">Se el primero en comentar</p>
+                              ) : (
+                                <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                                  {comments.slice(0, 5).map((cmt: any) => (
+                                    <div key={cmt.id} className="flex gap-2 p-2 rounded-lg bg-muted/10">
+                                      <div className="h-6 w-6 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0 text-[9px] font-bold text-brand-primary">
+                                        {cmt.user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-1.5 mb-0.5">
+                                          <span className="text-[10px] font-semibold text-foreground">{cmt.user?.name || 'Usuario'}</span>
+                                          <span className="text-[9px] text-muted-foreground">{formatDate(cmt.createdAt)}</span>
+                                        </div>
+                                        <p className="text-[11px] text-muted-foreground leading-relaxed break-words">{cmt.content}</p>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           </div>
                         )}
 
@@ -806,6 +931,80 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
                       </div>
                     </div>
                   )}
+
+                  {/* ===== COMENTARIOS ===== */}
+                  <div className="border-t border-border/20 pt-4">
+                    <h4 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4 text-brand-primary" />
+                      Comentarios {comments.length > 0 && <span className="text-xs font-normal text-muted-foreground">({comments.length})</span>}
+                    </h4>
+
+                    {/* Formulario de comentario */}
+                    {user ? (
+                      <div className="flex gap-2 mb-4">
+                        <div className="h-8 w-8 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0 text-xs font-bold text-brand-primary">
+                          {user.displayName?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || 'U'}
+                        </div>
+                        <div className="flex-1 flex gap-2">
+                          <textarea
+                            value={newComment}
+                            onChange={(e) => setNewComment(e.target.value)}
+                            placeholder="Escribe un comentario..."
+                            rows={2}
+                            maxLength={1000}
+                            className="flex-1 text-xs rounded-lg border border-border/40 bg-muted/30 px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-brand-primary/30 focus:border-brand-primary/50"
+                          />
+                          <button
+                            onClick={handleSubmitComment}
+                            disabled={!newComment.trim() || sendingComment}
+                            className="h-full px-3 py-2 rounded-lg bg-brand-primary text-white text-xs font-bold flex items-center gap-1 disabled:opacity-50 hover:bg-brand-primary-hover transition-colors"
+                          >
+                            {sendingComment ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Send className="h-3.5 w-3.5" />
+                            )}
+                            <span className="hidden sm:inline">Publicar</span>
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-3 mb-4 rounded-lg bg-muted/20 border border-dashed border-border/40">
+                        <p className="text-xs text-muted-foreground">
+                          <Link href="/iniciar-sesion" className="text-brand-primary hover:underline font-medium">Inicia sesión</Link> para dejar un comentario
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Lista de comentarios */}
+                    {loadingComments ? (
+                      <div className="flex justify-center py-6">
+                        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                      </div>
+                    ) : comments.length === 0 ? (
+                      <div className="text-center py-6 rounded-lg bg-muted/10 border border-dashed border-border/30">
+                        <MessageSquare className="h-6 w-6 mx-auto mb-2 text-muted-foreground/30" />
+                        <p className="text-xs text-muted-foreground">Se el primero en comentar esta clase</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+                        {comments.map((cmt: any) => (
+                          <div key={cmt.id} className="flex gap-2.5 p-2.5 rounded-lg bg-muted/10 hover:bg-muted/20 transition-colors">
+                            <div className="h-7 w-7 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0 text-[10px] font-bold text-brand-primary">
+                              {cmt.user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <span className="text-xs font-semibold text-foreground">{cmt.user?.name || 'Usuario'}</span>
+                                <span className="text-[10px] text-muted-foreground">{formatDate(cmt.createdAt)}</span>
+                              </div>
+                              <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap break-words">{cmt.content}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               ) : (
                 /* Placeholder when no video selected */

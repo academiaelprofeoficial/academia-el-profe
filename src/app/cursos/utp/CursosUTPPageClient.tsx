@@ -223,7 +223,7 @@ function CursosUTPContent({ sanityCourses }: { readonly sanityCourses: SanityCou
   );
 
   return (
-    <>
+    <div className="space-y-5">
       {/* Header */}
       <motion.div
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
@@ -289,7 +289,7 @@ function CursosUTPContent({ sanityCourses }: { readonly sanityCourses: SanityCou
           ))}
         </div>
       )}
-    </>
+    </div>
   );
 }
 

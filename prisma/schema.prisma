@@ -28,6 +28,7 @@ model User {
   progress      CourseProgress[]
   wishlist      Wishlist[]
   courseAccesses CourseAccess[]
+  comments      Comment[]
 }
 
 // --- Compras / Transacciones ---
@@ -116,4 +117,22 @@ model SupportTicket {
 
   @@index([estado])
   @@index([email])
+}
+
+// --- Comentarios en Clases ---
+
+model Comment {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId   String   // slug del curso
+  lessonId   String   // video order o identificador de la lección
+  content    String
+  likes      Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([courseId, lessonId])
+  @@index([userId])
+  @@index([createdAt])
 }
