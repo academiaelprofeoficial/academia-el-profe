@@ -132,7 +132,6 @@ const CATEGORY_LABELS: Record<string, string> = {
 export function TemarioPageClient({ course }: TemarioPageClientProps) {
   const { user, purchasedCourseIds, isOwner } = useAuth();
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set());
-  const [showPurchase, setShowPurchase] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<SelectedVideo | null>(null);
   const [activeTopicTitle, setActiveTopicTitle] = useState<string | null>(null);
   const [comments, setComments] = useState<any[]>([]);
@@ -457,18 +456,39 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
             </div>
           </div>
 
-          {/* Price card */}
+          {/* Price card — estilo directo como en /cursos */}
           {!isFreeCourse && (
             <div className="bg-white/15 backdrop-blur-sm rounded-xl p-5 text-center min-w-[200px]">
               <p className="text-xs text-white/70 mb-1">Precio del curso</p>
-              <p className="text-3xl font-bold mb-0.5">{formatoSoles(pricePEN)}</p>
-              <p className="text-sm text-white/80 mb-4">{formatoUSD(priceUSD)}</p>
-              <button
-                onClick={() => setShowPurchase(true)}
-                className="w-full bg-white text-foreground font-bold text-sm py-2.5 rounded-lg hover:bg-white/90 transition-colors"
-              >
-                Comprar Ahora
-              </button>
+              <div className="flex items-baseline justify-center gap-2 mb-1">
+                <span className="text-3xl font-bold text-white">{formatoSoles(pricePEN)}</span>
+                <span className="text-sm text-white/80 font-medium">{formatoUSD(priceUSD)}</span>
+              </div>
+
+              {/* Botones de pago directo — MP y PayPal */}
+              <div className="flex flex-col gap-1.5 mt-3">
+                <a
+                  href={`/api/checkout?courseId=${slug}`}
+                  className="w-full h-10 text-xs font-bold tracking-wide text-white gap-1.5 rounded-lg flex items-center justify-center transition-all bg-brand-primary-hover hover:bg-brand-primary"
+                >
+                  <ShoppingCart className="h-4 w-4 shrink-0" />
+                  PEN {formatoSoles(pricePEN)} — Mercado Pago
+                </a>
+                <a
+                  href={`/api/checkout/paypal?courseId=${slug}`}
+                  className="w-full h-10 text-xs font-bold tracking-wide gap-1.5 rounded-lg flex items-center justify-center transition-all bg-[#ffc439] hover:bg-[#f2ba36] text-[#003087]"
+                >
+                  <img src="/images/paypal-logo.png" alt="PP" className="h-4 w-4 object-contain shrink-0" />
+                  USD {formatoUSD(priceUSD)} — PayPal
+                </a>
+                <Link
+                  href={`/cursos/${slug}/temario`}
+                  className="w-full h-9 text-xs font-bold tracking-wide gap-1.5 rounded-lg flex items-center justify-center border border-white/40 text-white hover:bg-white/10 transition-colors"
+                >
+                  <ListChecks className="h-3.5 w-3.5" />
+                  VER TEMARIO
+                </Link>
+              </div>
             </div>
           )}
         </div>
@@ -1020,56 +1040,6 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
           </div>
         )}
       </div>
-
-      {/* ===== PURCHASE OVERLAY ===== */}
-      {showPurchase && !isFreeCourse && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowPurchase(false)}>
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-md w-full shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-foreground mb-2">Compra este Curso</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Desbloquea acceso completo a todos los videos, materiales y descargas de {title}.
-            </p>
-            <div className="flex items-baseline gap-2 mb-4">
-              <span className="text-3xl font-bold text-foreground">{formatoSoles(pricePEN)}</span>
-              <span className="text-sm text-muted-foreground">{formatoUSD(priceUSD)}</span>
-            </div>
-            <div className="space-y-2 mb-5">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle2 className="h-4 w-4 text-brand-primary shrink-0" />
-                Acceso de por vida
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle2 className="h-4 w-4 text-brand-primary shrink-0" />
-                Todos los videos y materiales
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle2 className="h-4 w-4 text-brand-primary shrink-0" />
-                Certificado de finalizacion
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Link
-                href={`/api/checkout?courseId=${slug}&provider=mercadopago`}
-                className="flex-1 bg-[#009ee3] hover:bg-[#007ab8] text-white font-bold text-sm py-3 rounded-xl text-center transition-colors"
-              >
-                Pagar con MercadoPago
-              </Link>
-              <Link
-                href={`/api/checkout/paypal?courseId=${slug}`}
-                className="flex-1 bg-[#ffc439] hover:bg-[#f0b020] text-[#003087] font-bold text-sm py-3 rounded-xl text-center transition-colors"
-              >
-                Pagar con PayPal
-              </Link>
-            </div>
-            <button
-              onClick={() => setShowPurchase(false)}
-              className="w-full mt-3 text-sm text-muted-foreground hover:text-foreground py-2"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* ===== CERTIFICATE SECTION ===== */}
       <div className="rounded-xl border border-border/40 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 p-6">
