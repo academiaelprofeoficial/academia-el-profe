@@ -140,6 +140,24 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
   const [loadingPay, setLoadingPay] = useState<Record<string, boolean>>({});
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  // Course data from CMS (must be BEFORE callbacks that use them)
+  const title = course?.title || 'Curso';
+  const description = course?.description as PortableTextBlock[] | undefined;
+  const slug = course?.slug || '';
+  const category = course?.category || '';
+  const categoryColor = CATEGORY_COLORS[category] || 'bg-emerald-600';
+  const categoryLabel = CATEGORY_LABELS[category] || category;
+  const professor = course?.professor || '';
+  const pricePEN = course?.pricePEN || 0;
+  const priceUSD = course?.priceUSD || 0;
+  const totalClasses = course?.totalClasses || 0;
+  const totalHours = course?.totalHours || '0';
+  const level = course?.level || '';
+  const courseType = course?.courseType || 'paid';
+  const coverImg = course?.coverImage ? getImageUrl(course.coverImage, 800, 500) : null;
+  const isFreeCourse = courseType === 'free';
+  const hasFullAccess = isOwner || purchasedCourseIds.includes('__ALL_COURSES__') || purchasedCourseIds.includes(slug);
+
   // Payment handlers — POST como en /cursos (no GET que da 405)
   const handleMP = useCallback(async () => {
     const key = `${slug}-mp`;
@@ -174,24 +192,6 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
       setLoadingPay((prev) => ({ ...prev, [key]: false }));
     }
   }, [slug, title, priceUSD, user, loadingPay]);
-
-  // Course data from CMS
-  const title = course?.title || 'Curso';
-  const description = course?.description as PortableTextBlock[] | undefined;
-  const slug = course?.slug || '';
-  const category = course?.category || '';
-  const categoryColor = CATEGORY_COLORS[category] || 'bg-emerald-600';
-  const categoryLabel = CATEGORY_LABELS[category] || category;
-  const professor = course?.professor || '';
-  const pricePEN = course?.pricePEN || 0;
-  const priceUSD = course?.priceUSD || 0;
-  const totalClasses = course?.totalClasses || 0;
-  const totalHours = course?.totalHours || '0';
-  const level = course?.level || '';
-  const courseType = course?.courseType || 'paid';
-  const coverImg = course?.coverImage ? getImageUrl(course.coverImage, 800, 500) : null;
-  const isFreeCourse = courseType === 'free';
-  const hasFullAccess = isOwner || purchasedCourseIds.includes('__ALL_COURSES__') || purchasedCourseIds.includes(slug);
 
   const topics = course?.topics || [];
 
