@@ -493,6 +493,10 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
                 const isExpanded = expandedTopics.has(group.title) || topicGroups.length === 1;
                 const isActive = activeTopicTitle === group.title;
                 const hasContent = group.videos.length > 0 || group.materials.length > 0;
+                const groupHasSelectedVideo = !!selectedVideo && group.videos.some((v) => {
+                  const url = v.videoUrl || v.video?.asset?.url;
+                  return url === selectedVideo.url;
+                });
 
                 return (
                   <div
@@ -601,7 +605,7 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
                         })}
 
                         {/* 📱 MOBILE: Inline video player + materials inside module */}
-                        {isSelected && (
+                        {groupHasSelectedVideo && (
                           <div className="lg:hidden border-t border-border/10 my-1 pt-2 px-1">
                             {/* Video Player */}
                             <div className="rounded-xl border border-border/40 bg-card overflow-hidden mb-3">
