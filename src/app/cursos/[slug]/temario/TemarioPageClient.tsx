@@ -234,6 +234,13 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
               title: firstVideo.title,
               poster: coverImg || undefined,
             });
+            // Scroll into view on mobile
+            if (window.innerWidth < 1024) {
+              setTimeout(() => {
+                const el = document.getElementById(`topic-${topicTitle?.replace(/\s+/g, '-')}`);
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }, 150);
+            }
           }
         }
       }
@@ -250,6 +257,11 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
       title: video.title,
       poster: coverImg || undefined,
     });
+    // Scroll topic into view on mobile
+    const topicEl = document.getElementById(`topic-${video.title?.replace(/\s+/g, '-')}`);
+    if (topicEl && window.innerWidth < 1024) {
+      setTimeout(() => topicEl.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+    }
   }, [coverImg]);
 
   // Expand all / collapse all
@@ -485,6 +497,7 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
                 return (
                   <div
                     key={group.title}
+                    id={`topic-${group.title?.replace(/\s+/g, '-')}`}
                     className={`rounded-xl border overflow-hidden transition-colors ${
                       isActive
                         ? 'border-brand-primary/50 bg-brand-primary-bg-light dark:border-brand-primary/30 dark:bg-brand-primary-bg'
@@ -587,6 +600,73 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
                           );
                         })}
 
+                        {/* 📱 MOBILE: Inline video player + materials inside module */}
+                        {isSelected && (
+                          <div className="lg:hidden border-t border-border/10 my-1 pt-2 px-1">
+                            {/* Video Player */}
+                            <div className="rounded-xl border border-border/40 bg-card overflow-hidden mb-3">
+                              <div className="bg-black aspect-video">
+                                <video
+                                  key={`mobile-${selectedVideo.url}`}
+                                  src={selectedVideo.url}
+                                  controls
+                                  autoPlay
+                                  className="w-full h-full"
+                                  poster={selectedVideo.poster}
+                                  playsInline
+                                />
+                              </div>
+                              <div className="px-4 py-3">
+                                <h3 className="text-sm font-bold text-foreground">{selectedVideo.title}</h3>
+                              </div>
+                            </div>
+                            {/* Materials inline on mobile */}
+                            {activeGroup && activeGroup.materials.length > 0 && (
+                              <div className="rounded-xl border border-border/40 bg-card p-4">
+                                <h4 className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5">
+                                  <FileText className="h-3.5 w-3.5 text-orange-500" />
+                                  Materiales del Modulo
+                                </h4>
+                                <div className="space-y-1.5">
+                                  {activeGroup.materials.map((material) => {
+                                    const fileUrl = material.file?.asset?.url;
+                                    const mimeType = material.file?.asset?.mimeType;
+                                    const fileIcon = getFileIcon(mimeType);
+                                    const fileColor = getFileColor(mimeType);
+                                    const fileDarkColor = getFileDarkColor(mimeType);
+                                    const accessible = canAccessMaterial(material);
+                                    return (
+                                      <div key={`mobile-mat-${material.title}`}>
+                                        {accessible && fileUrl ? (
+                                          <a
+                                            href={fileUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-border/30 hover:bg-muted/30 transition-colors group"
+                                          >
+                                            <div className={`flex items-center justify-center h-8 w-8 rounded-lg text-[10px] font-bold shrink-0 ${fileColor} dark:${fileDarkColor}`}>
+                                              {fileIcon}
+                                            </div>
+                                            <span className="text-xs font-medium text-foreground truncate flex-1">{material.title}</span>
+                                            <Download className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                          </a>
+                                        ) : (
+                                          <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-border/20 opacity-60">
+                                            <div className="flex items-center justify-center h-8 w-8 rounded-lg text-[10px] font-bold shrink-0 bg-slate-100 dark:bg-slate-800 text-slate-400">
+                                              <Lock className="h-3.5 w-3.5" />
+                                            </div>
+                                            <span className="text-xs font-medium text-muted-foreground truncate flex-1">{material.title}</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
                         {/* Materials */}
                         {group.materials.length > 0 && group.videos.length > 0 && (
                           <div className="border-t border-border/10 my-1" />
@@ -642,8 +722,8 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
               })}
             </div>
 
-            {/* RIGHT: Video Player + PDFs (3 cols) */}
-            <div className="lg:col-span-3">
+            {/* RIGHT: Video Player + PDFs (3 cols) — hidden on mobile, video is inline */}
+            <div className="hidden lg:block lg:col-span-3">
               {selectedVideo ? (
                 <div className="space-y-4">
                   {/* Video Player */}
