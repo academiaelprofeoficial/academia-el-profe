@@ -32,7 +32,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
 import { LandingHeader } from '@/components/layout/LandingHeader';
 import { Footer } from '@/components/layout/Footer';
 import { AnimatedSection } from '@/components/AnimatedSection';
@@ -214,92 +213,44 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
                 <AnimatedSection key={curso.id} delay={idx * 0.08} direction="up">
                 <motion.div
                   id={`curso-${curso.id}`}
-                  className={cn(
-                    'premium-card-shimmer group rounded-2xl border border-slate-100 dark:border-slate-800 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-950 shadow-sm hover:shadow-lg transition-all'
-                  )}
-                  style={{
-                    boxShadow: undefined,
-                  // Glow effect se aplica vía CSS
-                  '--glow-color': curso.colorKey === 'emerald' ? '#10B981' : curso.colorKey === 'blue' ? '#3B82F6' : curso.colorKey === 'orange' ? '#F97316' : curso.colorKey === 'purple' ? '#8B5CF6' : curso.colorKey === 'teal' ? '#14B8A6' : curso.colorKey === 'red' ? '#EF4444' : '#0EA5E9',
-                  '--inner-glow': curso.colorKey === 'emerald' ? 'rgba(16,185,129,0.06)' : curso.colorKey === 'blue' ? 'rgba(59,130,246,0.06)' : curso.colorKey === 'orange' ? 'rgba(249,115,22,0.06)' : curso.colorKey === 'purple' ? 'rgba(139,92,246,0.06)' : curso.colorKey === 'teal' ? 'rgba(20,184,166,0.06)' : curso.colorKey === 'red' ? 'rgba(239,68,68,0.06)' : 'rgba(14,165,233,0.06)',
-                  } as React.CSSProperties}
-                  whileHover={{ scale: 1.015 }}
+                  className="flex flex-col rounded-xl overflow-hidden shadow-md border border-slate-100 dark:border-[var(--surface-border)] hover:shadow-xl transition-shadow premium-card-shimmer card-glow"
+                  whileHover={{ y: -4 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                 >
-                  {/* ===== DISEÑO PC/TABLET (visible md+) ===== */}
-                  <div className="hidden md:block relative">
-                    {/* Top accent line */}
-                    <div className={cn('h-[3px] w-full rounded-t-2xl', colors.bg)} />
-                    {/* Decorative corner accent (top-left) */}
-                    <div className={cn('absolute top-3 left-3 h-8 w-[3px] rounded-full opacity-60', colors.bg)} />
-                    {/* PREMIUM watermark */}
-                    <span className="absolute top-2.5 right-3 text-[10px] font-black tracking-[0.25em] text-slate-200 dark:text-slate-800 select-none pointer-events-none uppercase">Premium</span>
-                    {/* Gradient overlay on hover */}
-                    <div className="absolute inset-0 rounded-b-2xl bg-gradient-to-b from-brand-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-t-2xl" style={{ marginTop: '3px' }} />
-                    {/* Inner glow on hover */}
-                    <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{ boxShadow: `inset 0 0 30px var(--inner-glow)` }} />
-                    <div className="relative p-5">
-                    {/* Fila superior: badge fórmula + título */}
-                    <div className="flex items-start gap-3 mb-4">
-                      <div
-                        className={cn(
-                          'h-14 w-14 rounded-xl flex items-center justify-center shrink-0 text-white text-sm font-bold shadow-lg',
-                          colors.bg
-                        )}
-                      >
-                        {curso.formula ? (
-                          <span className="font-mono text-xs">{curso.formula}</span>
-                        ) : (
-                          <FormulaIcon className="h-7 w-7" />
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="text-sm font-bold text-brand-heading leading-tight">
-                          {curso.title}
-                        </h3>
-                      </div>
+                  {/* HEADER: colored background with formula + title + description */}
+                  <div className={`${colors.bg} px-4 py-5 flex flex-col gap-2 min-h-[120px] relative`}>
+                    <span className="absolute top-2 right-3 text-[10px] font-black tracking-[0.25em] text-white/20 select-none pointer-events-none uppercase">Premium</span>
+                    <span className="text-2xl font-light text-white/90 leading-none">
+                      {curso.formula || <FormulaIcon className="h-7 w-7 text-white/90" />}
+                    </span>
+                    <h3 className="text-sm font-bold text-white leading-snug">{curso.title}</h3>
+                    <p className="text-[11px] text-white/70 leading-snug mt-auto">{curso.description || 'Curso completo con clases grabadas y material descargable.'}</p>
+                  </div>
+
+                  {/* BODY: features list */}
+                  <div className="bg-white dark:bg-[var(--surface-2)] px-4 py-3 flex flex-col gap-2 border-b border-slate-100 dark:border-[var(--surface-border)]">
+                    <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs">
+                      <CheckCircle2 className={cn('h-3.5 w-3.5 shrink-0', colors.text)} />
+                      <span>{curso.modules} temas</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs">
+                      <FileText className="h-3.5 w-3.5 shrink-0 text-blue-500" />
+                      <span>Material en PDF</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs">
+                      <Lock className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                      <span>Acceso permanente</span>
+                    </div>
+                  </div>
+
+                  {/* FOOTER: price + payment buttons + temario */}
+                  <div className="bg-white dark:bg-[var(--surface-2)] px-4 py-4 flex flex-col gap-3">
+                    <div className="flex items-baseline gap-3">
+                      <span className="text-xl font-bold text-orange-500">{formatoSoles(curso.price)}</span>
+                      <span className="text-xs text-slate-400 font-medium">{formatoUSD(curso.priceUSD)}</span>
                     </div>
 
-                    {/* Detalles */}
-                    <div className="space-y-2 mb-4 pl-1">
-                      <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                        <CheckCircle2 className={cn('h-3.5 w-3.5', colors.text)} />
-                        <span>{curso.modules} Temas</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                        <FileText className="h-3.5 w-3.5 text-blue-500" />
-                        <span>PDF incluido</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                        <Lock className="h-3.5 w-3.5 text-slate-400" />
-                        <span>Acceso permanente</span>
-                      </div>
-                    </div>
-
-                    {/* Precios + botones duales */}
-                    <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800 mb-3">
-                      <div className="flex items-baseline gap-2">
-                        <span className={cn('text-xl font-extrabold', colors.text)}>
-                          {formatoSoles(curso.price)}
-                        </span>
-                        <span className="text-xs text-slate-400 font-medium">
-                          {formatoUSD(curso.priceUSD)}
-                        </span>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 text-xs font-bold gap-1.5 rounded-lg"
-                        onClick={() => handleVerTemario(curso)}
-                      >
-                        <ListChecks className="h-3.5 w-3.5" />
-                        TEMARIO
-                      </Button>
-                    </div>
-
-                    {/* Grid dual de pago */}
                     <div className="grid grid-cols-2 gap-2 w-full">
-                      {/* Mercado Pago */}
                       <button
                         disabled={isLoadingMP || isLoadingPP}
                         onClick={() => handleMercadoPagoDirect(curso)}
@@ -318,8 +269,6 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
                           {isLoadingMP ? 'Procesando...' : `PEN ${formatoSoles(curso.price)}`}
                         </span>
                       </button>
-
-                      {/* PayPal */}
                       <button
                         disabled={isLoadingMP || isLoadingPP}
                         onClick={() => handlePayPalDirect(curso)}
@@ -335,88 +284,17 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
                         </span>
                       </button>
                     </div>
-                    </div>
-                  </div>
 
-                  {/* ===== DISEÑO MÓVIL (visible solo < md) ===== */}
-                  <div className="md:hidden flex items-center gap-3 p-3">
-                    {/* Badge fórmula */}
-                    <div
-                      className={cn(
-                        'h-11 w-11 rounded-lg flex items-center justify-center shrink-0 text-white text-xs font-bold',
-                        colors.bg
-                      )}
-                    >
-                      {curso.formula ? (
-                        <span className="font-mono text-[10px]">{curso.formula}</span>
-                      ) : (
-                        <FormulaIcon className="h-5 w-5" />
-                      )}
-                    </div>
-
-                    {/* Centro: título + detalles */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-xs font-bold text-brand-heading leading-tight mb-0.5">
-                        {curso.title}
-                      </h3>
-                      <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                        {curso.modules} Temas · PDF incluido · Acceso permanente
-                      </p>
-                    </div>
-
-                    {/* Derecha: precio */}
-                    <div className="flex flex-col items-end gap-1 shrink-0">
-                      <div className="flex items-baseline gap-1">
-                        <span className={cn('text-sm font-extrabold', colors.text)}>
-                          {formatoSoles(curso.price)}
-                        </span>
-                        <span className="text-[10px] text-slate-400">
-                          {formatoUSD(curso.priceUSD)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Botones móviles: grid dual debajo de la tarjeta */}
-                  <div className="md:hidden px-3 pb-3 grid grid-cols-3 gap-1.5">
-                    {/* Mercado Pago */}
-                    <button
-                      disabled={isLoadingMP || isLoadingPP}
-                      onClick={() => handleMercadoPagoDirect(curso)}
-                      className={cn(
-                        'h-8 text-[10px] font-bold text-white gap-1 rounded-lg flex items-center justify-center transition-all disabled:opacity-70',
-                        colors.bg
-                      )}
-                    >
-                      {isLoadingMP ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                      ) : (
-                        <ShoppingCart className="h-3 w-3 shrink-0" />
-                      )}
-                      <span className="truncate">PEN {formatoSoles(curso.price)}</span>
-                    </button>
-
-                    {/* PayPal */}
-                    <button
-                      disabled={isLoadingMP || isLoadingPP}
-                      onClick={() => handlePayPalDirect(curso)}
-                      className="h-8 text-[10px] font-bold gap-1 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-[#ffc439] hover:bg-[#f2ba36] text-[#003087]"
-                    >
-                      {isLoadingPP ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                      ) : (
-                        <img src="/images/paypal-logo.png" alt="PP" className="h-3 w-3 object-contain shrink-0" />
-                      )}
-                      <span className="truncate">USD {formatoUSD(curso.priceUSD)}</span>
-                    </button>
-
-                    {/* Temario */}
                     <button
                       onClick={() => handleVerTemario(curso)}
-                      className="h-8 text-[10px] font-bold gap-1 rounded-lg flex items-center justify-center border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"
+                      className="w-full h-9 text-xs font-bold tracking-wide gap-1.5 rounded-lg flex items-center justify-center border transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                      style={{
+                        borderColor: curso.colorKey === 'emerald' ? '#10B981' : curso.colorKey === 'blue' ? '#3B82F6' : curso.colorKey === 'orange' ? '#F97316' : curso.colorKey === 'purple' ? '#8B5CF6' : curso.colorKey === 'teal' ? '#14B8A6' : curso.colorKey === 'red' ? '#EF4444' : '#0EA5E9',
+                        color: curso.colorKey === 'emerald' ? '#059669' : curso.colorKey === 'blue' ? '#2563EB' : curso.colorKey === 'orange' ? '#EA580C' : curso.colorKey === 'purple' ? '#7C3AED' : curso.colorKey === 'teal' ? '#0D9488' : curso.colorKey === 'red' ? '#DC2626' : '#0284C7',
+                      }}
                     >
-                      <ListChecks className="h-3 w-3 shrink-0" />
-                      <span>TEMARIO</span>
+                      <ListChecks className="h-3.5 w-3.5" />
+                      TEMARIO
                     </button>
                   </div>
                 </motion.div>
