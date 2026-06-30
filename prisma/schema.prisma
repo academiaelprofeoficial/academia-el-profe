@@ -1,0 +1,119 @@
+// ============================================================
+// Schema Prisma — Academia El Profe Oficial
+// Conectado a Supabase PostgreSQL (producción).
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// --- Usuarios sincronizados desde Firebase Auth ---
+
+model User {
+  id        String   @id // Firebase UID
+  email     String   @unique
+  name      String?
+  photoURL  String?
+  role      String   @default("estudiante") // estudiante | admin
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  purchases     Purchase[]
+  progress      CourseProgress[]
+  wishlist      Wishlist[]
+  courseAccesses CourseAccess[]
+}
+
+// --- Compras / Transacciones ---
+
+model Purchase {
+  id               String    @id @default(cuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId         String    // slug del curso (ej: 'calculo-diferencial')
+  courseTitle      String?   // título al momento de la compra
+  gateway          String    // mercadopago | paypal
+  gatewayPaymentId String?   // ID del pago en MP o txn_id en PayPal
+  amount           Float
+  currency         String    // PEN | USD
+  status           String    @default("pending") // pending | approved | rejected | refunded
+  payerEmail       String?
+  approvedAt       DateTime?
+
+  @@index([userId])
+  @@index([userId, courseId])
+  @@index([gatewayPaymentId])
+  @@index([status])
+}
+
+// --- Progreso de clases por alumno ---
+
+model CourseProgress {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId  String
+  temaId    String?  // ID del tema del temario
+  completed Boolean  @default(false)
+  watchTime Int      @default(0) // segundos vistos
+  lastPos   Float?   // última posición del video en segundos
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, courseId])
+  @@unique([userId, courseId, temaId])
+}
+
+// --- Lista de deseos ---
+
+model Wishlist {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId  String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, courseId])
+}
+
+// --- Acceso manual otorgado por admin ---
+
+model CourseAccess {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId    String   // slug del curso
+  grantedBy   String   // email del admin que otorgó el acceso
+  grantedAt   DateTime @default(now())
+  revokedAt   DateTime?
+  isActive    Boolean  @default(true)
+  note        String?  // nota interna del admin
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+  @@index([isActive])
+}
+
+// --- Tickets de Soporte ---
+
+model SupportTicket {
+  id        String   @id @default(cuid())
+  nombre    String
+  email     String
+  asunto    String?
+  mensaje   String
+  estado    String   @default("nuevo") // nuevo | en_proceso | resuelto | cerrado
+  userId    String?  // Opcional — si el usuario está logueado
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([estado])
+  @@index([email])
+}
