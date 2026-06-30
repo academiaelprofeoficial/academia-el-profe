@@ -70,7 +70,7 @@ export default async function TemarioPage({ params }: PageProps) {
     <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950">
       <LandingHeader />
       <main className="flex-1">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-4 md:py-10 pb-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-4 md:py-10">
           <TemarioPageClient course={sanityCourse} whatsapp={whatsapp} whatsappMessage={whatsappMsg} />
         </div>
       </main>

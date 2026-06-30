@@ -35,6 +35,7 @@ import type { SanityCourse, SanityClassVideo, SanityTopic, PortableTextBlock } f
 import { getImageUrl } from '@/lib/sanity.client';
 import { PortableText } from '@portabletext/react';
 import { useAuth } from '@/lib/auth-context';
+import { FixedBuyBar } from '@/components/FixedBuyBar';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -140,7 +141,6 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage }: Temario
   const [sendingComment, setSendingComment] = useState(false);
   const [loadingComments, setLoadingComments] = useState(false);
   const [loadingPay, setLoadingPay] = useState<Record<string, boolean>>({});
-  const [purchased, setPurchased] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Course data from CMS (must be BEFORE callbacks that use them)
@@ -175,10 +175,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage }: Temario
         body: JSON.stringify({ cursoId: slug, titulo: safeTitle, precio: pricePEN, userId: user?.uid || undefined }),
       });
       const data = await res.json();
-      if (data.url) {
-        setPurchased(true);
-        window.location.href = data.url;
-      }
+      if (data.url) window.location.href = data.url;
     } catch {} finally {
       setLoadingPay((prev) => ({ ...prev, [key]: false }));
     }
@@ -195,10 +192,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage }: Temario
         body: JSON.stringify({ cursoId: slug, titulo: safeTitle, precioUSD: priceUSD, userId: user?.uid || undefined }),
       });
       const data = await res.json();
-      if (data.url) {
-        setPurchased(true);
-        window.location.href = data.url;
-      }
+      if (data.url) window.location.href = data.url;
     } catch {} finally {
       setLoadingPay((prev) => ({ ...prev, [key]: false }));
     }
@@ -440,7 +434,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage }: Temario
   }
 
   return (
-    <div className="space-y-6 pb-24">
+    <div className="space-y-6">
       {/* ===== BACK LINK ===== */}
       <Link
         href="/cursos#titulo-cursos"
@@ -1097,55 +1091,21 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage }: Temario
         )}
       </div>
 
-      {/* ===== FIXED BOTTOM BAR: MP + PayPal + WhatsApp ===== */}
-      {!isFreeCourse && (
-        <div className="fixed bottom-0 left-0 right-0 z-[9999] bg-[#0A192F] dark:bg-[#0A192F] border-t-2 border-[#F5A623] shadow-[0_-4px_15px_rgba(0,0,0,0.6)] px-3 py-2.5 sm:px-4 sm:py-3">
-          <div className="max-w-7xl mx-auto flex items-center gap-2 sm:gap-3">
-            {/* MP */}
-            {!purchased && !hasFullAccess && (
-              <button
-                onClick={handleMP}
-                disabled={loadingPay[`${slug}-mp`] || loadingPay[`${slug}-pp`]}
-                className="flex-1 flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2.5 sm:py-3 rounded-lg font-bold text-white text-[11px] sm:text-sm transition-all disabled:opacity-50 bg-[#00A650] hover:bg-[#009040] active:scale-[0.98]"
-              >
-                {loadingPay[`${slug}-mp`] ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <span className="text-sm sm:text-base">💳</span>
-                )}
-                <span className="truncate">{loadingPay[`${slug}-mp`] ? '...' : `${formatoSoles(pricePEN)}`}</span>
-              </button>
-            )}
-
-            {/* PayPal */}
-            {!purchased && !hasFullAccess && (
-              <button
-                onClick={handlePayPal}
-                disabled={loadingPay[`${slug}-mp`] || loadingPay[`${slug}-pp`]}
-                className="flex-1 flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2.5 sm:py-3 rounded-lg font-bold text-white text-[11px] sm:text-sm transition-all disabled:opacity-50 bg-[#0070BA] hover:bg-[#005c9e] active:scale-[0.98]"
-              >
-                {loadingPay[`${slug}-pp`] ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <img src="/images/paypal-logo.png" alt="PP" className="h-4 w-4 sm:h-5 sm:w-5 object-contain" />
-                )}
-                <span className="truncate">{loadingPay[`${slug}-pp`] ? '...' : `${formatoUSD(priceUSD)}`}</span>
-              </button>
-            )}
-
-            {/* WhatsApp — siempre visible */}
-            <a
-              href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(whatsappMessage + ' ' + title)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2.5 sm:py-3 rounded-lg font-bold text-white text-[11px] sm:text-sm transition-all bg-[#25D366] hover:bg-[#20bd5a] active:scale-[0.98] ${(!purchased && !hasFullAccess) ? '' : 'flex-[2]'}`}
-            >
-              <span className="text-sm sm:text-base">📲</span>
-              <span className="truncate">WhatsApp</span>
-            </a>
-          </div>
-        </div>
-      )}
+      {/* ===== FIXED BOTTOM BAR ===== */}
+      <FixedBuyBar
+        pricePEN={pricePEN}
+        priceUSD={priceUSD}
+        slug={slug}
+        title={title}
+        safeTitle={safeTitle}
+        whatsapp={whatsapp}
+        whatsappMessage={whatsappMessage}
+        isFreeCourse={isFreeCourse}
+        hasFullAccess={hasFullAccess}
+        loadingPay={loadingPay}
+        onMP={handleMP}
+        onPayPal={handlePayPal}
+      />
 
       {/* ===== CERTIFICATE SECTION ===== */}
       <div className="rounded-xl border border-border/40 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 p-6">
