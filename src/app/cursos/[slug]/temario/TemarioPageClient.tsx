@@ -27,9 +27,8 @@ import {
   MonitorPlay,
   MessageSquare,
   Send,
-  Heart,
+  ListChecks,
   Loader2,
-  UserCircle,
 } from 'lucide-react';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
 import type { SanityCourse, SanityClassVideo, SanityTopic, PortableTextBlock } from '@/lib/sanity.client';
