@@ -5,7 +5,8 @@ import { Footer } from '@/components/layout/Footer';
 import { TemarioPageClient } from './TemarioPageClient';
 import { fetchCMS } from '@/lib/fetchCMS';
 import { COURSE_BY_SLUG_QUERY, ALL_COURSES_QUERY } from '@/lib/sanity.queries';
-import type { SanityCourse } from '@/lib/sanity.client';
+import type { SanityCourse, SanitySiteSettings } from '@/lib/sanity.client';
+import { SITE_SETTINGS_QUERY } from '@/lib/sanity.queries';
 
 // ============================================================
 // Temario del Curso — Server Component (100% CMS-driven)
@@ -53,18 +54,24 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function TemarioPage({ params }: PageProps) {
   const { slug } = await params;
-  const sanityCourse = await fetchCMS<SanityCourse>(COURSE_BY_SLUG_QUERY(slug));
+  const [sanityCourse, siteSettings] = await Promise.all([
+    fetchCMS<SanityCourse>(COURSE_BY_SLUG_QUERY(slug)),
+    fetchCMS<SanitySiteSettings>(SITE_SETTINGS_QUERY),
+  ]);
 
   if (!sanityCourse) {
     notFound();
   }
 
+  const whatsapp = siteSettings?.whatsapp || '51999999999';
+  const whatsappMsg = siteSettings?.whatsappMessage || 'Hola, quiero información sobre el curso.';
+
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950">
       <LandingHeader />
       <main className="flex-1">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-4 md:py-10">
-          <TemarioPageClient course={sanityCourse} />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-4 md:py-10 pb-24">
+          <TemarioPageClient course={sanityCourse} whatsapp={whatsapp} whatsappMessage={whatsappMsg} />
         </div>
       </main>
       <Footer />

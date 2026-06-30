@@ -42,6 +42,8 @@ import { useAuth } from '@/lib/auth-context';
 
 interface TemarioPageClientProps {
   readonly course: SanityCourse | null;
+  readonly whatsapp: string;
+  readonly whatsappMessage: string;
 }
 
 // Selected video for the right panel
@@ -128,7 +130,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
-export function TemarioPageClient({ course }: TemarioPageClientProps) {
+export function TemarioPageClient({ course, whatsapp, whatsappMessage }: TemarioPageClientProps) {
   const { user, purchasedCourseIds, isOwner } = useAuth();
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set());
   const [selectedVideo, setSelectedVideo] = useState<SelectedVideo | null>(null);
@@ -138,6 +140,7 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
   const [sendingComment, setSendingComment] = useState(false);
   const [loadingComments, setLoadingComments] = useState(false);
   const [loadingPay, setLoadingPay] = useState<Record<string, boolean>>({});
+  const [purchased, setPurchased] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Course data from CMS (must be BEFORE callbacks that use them)
@@ -172,7 +175,10 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
         body: JSON.stringify({ cursoId: slug, titulo: safeTitle, precio: pricePEN, userId: user?.uid || undefined }),
       });
       const data = await res.json();
-      if (data.url) window.location.href = data.url;
+      if (data.url) {
+        setPurchased(true);
+        window.location.href = data.url;
+      }
     } catch {} finally {
       setLoadingPay((prev) => ({ ...prev, [key]: false }));
     }
@@ -189,7 +195,10 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
         body: JSON.stringify({ cursoId: slug, titulo: safeTitle, precioUSD: priceUSD, userId: user?.uid || undefined }),
       });
       const data = await res.json();
-      if (data.url) window.location.href = data.url;
+      if (data.url) {
+        setPurchased(true);
+        window.location.href = data.url;
+      }
     } catch {} finally {
       setLoadingPay((prev) => ({ ...prev, [key]: false }));
     }
@@ -431,14 +440,14 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       {/* ===== BACK LINK ===== */}
       <Link
-        href={slug ? `/cursos/${slug}` : '/cursos'}
+        href="/cursos#titulo-cursos"
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <ChevronRight className="h-4 w-4 rotate-180" />
-        Volver al curso
+        Volver al catálogo de cursos
       </Link>
 
       {/* ===== COURSE HEADER ===== */}
@@ -1087,6 +1096,56 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
           </div>
         )}
       </div>
+
+      {/* ===== FIXED BOTTOM BAR: MP + PayPal + WhatsApp ===== */}
+      {!isFreeCourse && (
+        <div className="fixed bottom-0 left-0 right-0 z-[9999] bg-[#0A192F] dark:bg-[#0A192F] border-t-2 border-[#F5A623] shadow-[0_-4px_15px_rgba(0,0,0,0.6)] px-3 py-2.5 sm:px-4 sm:py-3">
+          <div className="max-w-7xl mx-auto flex items-center gap-2 sm:gap-3">
+            {/* MP */}
+            {!purchased && !hasFullAccess && (
+              <button
+                onClick={handleMP}
+                disabled={loadingPay[`${slug}-mp`] || loadingPay[`${slug}-pp`]}
+                className="flex-1 flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2.5 sm:py-3 rounded-lg font-bold text-white text-[11px] sm:text-sm transition-all disabled:opacity-50 bg-[#00A650] hover:bg-[#009040] active:scale-[0.98]"
+              >
+                {loadingPay[`${slug}-mp`] ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <span className="text-sm sm:text-base">💳</span>
+                )}
+                <span className="truncate">{loadingPay[`${slug}-mp`] ? '...' : `${formatoSoles(pricePEN)}`}</span>
+              </button>
+            )}
+
+            {/* PayPal */}
+            {!purchased && !hasFullAccess && (
+              <button
+                onClick={handlePayPal}
+                disabled={loadingPay[`${slug}-mp`] || loadingPay[`${slug}-pp`]}
+                className="flex-1 flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2.5 sm:py-3 rounded-lg font-bold text-white text-[11px] sm:text-sm transition-all disabled:opacity-50 bg-[#0070BA] hover:bg-[#005c9e] active:scale-[0.98]"
+              >
+                {loadingPay[`${slug}-pp`] ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <img src="/images/paypal-logo.png" alt="PP" className="h-4 w-4 sm:h-5 sm:w-5 object-contain" />
+                )}
+                <span className="truncate">{loadingPay[`${slug}-pp`] ? '...' : `${formatoUSD(priceUSD)}`}</span>
+              </button>
+            )}
+
+            {/* WhatsApp — siempre visible */}
+            <a
+              href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(whatsappMsg + ' ' + title)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2.5 sm:py-3 rounded-lg font-bold text-white text-[11px] sm:text-sm transition-all bg-[#25D366] hover:bg-[#20bd5a] active:scale-[0.98] ${(!purchased && !hasFullAccess) ? '' : 'flex-[2]'}`}
+            >
+              <span className="text-sm sm:text-base">📲</span>
+              <span className="truncate">WhatsApp</span>
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* ===== CERTIFICATE SECTION ===== */}
       <div className="rounded-xl border border-border/40 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 p-6">
