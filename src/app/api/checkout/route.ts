@@ -18,7 +18,10 @@ interface CheckoutRequestBody {
 export async function POST(request: NextRequest) {
   try {
     const body: CheckoutRequestBody = await request.json();
-    const { cursoId, titulo, precio, userId } = body;
+    let { cursoId, titulo, precio, userId } = body;
+
+    // Sanitizar título: eliminar caracteres de ancho cero que inflan la URL
+    titulo = titulo.replace(/[\u200B-\u200D\uFEFF\u2060-\u2064\u00AD]/g, '').trim().substring(0, 127);
 
     if (!cursoId || !titulo || !precio || precio <= 0) {
       return NextResponse.json(

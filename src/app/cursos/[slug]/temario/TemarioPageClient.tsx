@@ -159,6 +159,8 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
   const hasFullAccess = isOwner || purchasedCourseIds.includes('__ALL_COURSES__') || purchasedCourseIds.includes(slug);
 
   // Payment handlers — POST como en /cursos (no GET que da 405)
+  const safeTitle = title.replace(/[\u200B-\u200D\uFEFF\u2060-\u2064\u00AD]/g, '').trim();
+
   const handleMP = useCallback(async () => {
     const key = `${slug}-mp`;
     if (loadingPay[key]) return;
@@ -167,14 +169,14 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cursoId: slug, titulo: title, precio: pricePEN, userId: user?.uid || undefined }),
+        body: JSON.stringify({ cursoId: slug, titulo: safeTitle, precio: pricePEN, userId: user?.uid || undefined }),
       });
       const data = await res.json();
       if (data.url) window.location.href = data.url;
     } catch {} finally {
       setLoadingPay((prev) => ({ ...prev, [key]: false }));
     }
-  }, [slug, title, pricePEN, user, loadingPay]);
+  }, [slug, safeTitle, pricePEN, user, loadingPay]);
 
   const handlePayPal = useCallback(async () => {
     const key = `${slug}-pp`;
@@ -184,14 +186,14 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
       const res = await fetch('/api/checkout/paypal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cursoId: slug, titulo: title, precioUSD: priceUSD, userId: user?.uid || undefined }),
+        body: JSON.stringify({ cursoId: slug, titulo: safeTitle, precioUSD: priceUSD, userId: user?.uid || undefined }),
       });
       const data = await res.json();
       if (data.url) window.location.href = data.url;
     } catch {} finally {
       setLoadingPay((prev) => ({ ...prev, [key]: false }));
     }
-  }, [slug, title, priceUSD, user, loadingPay]);
+  }, [slug, safeTitle, priceUSD, user, loadingPay]);
 
   const topics = course?.topics || [];
 

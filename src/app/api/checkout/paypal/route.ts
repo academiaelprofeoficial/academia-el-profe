@@ -19,7 +19,10 @@ interface PayPalCheckoutBody {
 export async function POST(request: NextRequest) {
   try {
     const body: PayPalCheckoutBody = await request.json();
-    const { cursoId, titulo, precioUSD, userId } = body;
+    let { cursoId, titulo, precioUSD, userId } = body;
+
+    // Sanitizar título: eliminar caracteres de ancho cero que inflan la URL
+    titulo = titulo.replace(/[\u200B-\u200D\uFEFF\u2060-\u2064\u00AD]/g, '').trim().substring(0, 127);
 
     if (!cursoId || !titulo || !precioUSD || precioUSD <= 0) {
       return NextResponse.json(
