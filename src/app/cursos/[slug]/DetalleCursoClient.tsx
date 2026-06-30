@@ -92,8 +92,9 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
   const courseType = course.courseType || 'paid';
   const isFreeCourse = courseType === 'free';
   const topics = course.topics || [];
-  const classVideos = course.classVideos || [];
-  const topicMaterials = course.topicMaterials || [];
+  // Count all class videos across all topics
+  const classVideos = topics.flatMap(t => t.classVideos || []);
+  const topicMaterials = topics.flatMap(t => t.materials || []);
   const coverImg = course.coverImage ? getImageUrl(course.coverImage, 800, 500) : null;
 
   // Video

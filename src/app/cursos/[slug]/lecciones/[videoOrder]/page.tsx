@@ -26,12 +26,16 @@ export async function generateStaticParams() {
       const params: Array<{ slug: string; videoOrder: string }> = [];
       for (const course of courses) {
         const full = await client.fetch<SanityCourse | null>(
-          `*[_type == "course" && slug.current == "${course.slug}"][0] { classVideos[] { order } }`
+          `*[_type == "course" && slug.current == "${course.slug}"][0] { topics[] { classVideos[] { order } } }`
         );
-        if (full?.classVideos) {
-          for (const v of full.classVideos) {
-            if (v.order !== undefined) {
-              params.push({ slug: course.slug, videoOrder: String(v.order) });
+        if (full?.topics) {
+          for (const topic of full.topics) {
+            if (topic.classVideos) {
+              for (const v of topic.classVideos) {
+                if (v.order !== undefined) {
+                  params.push({ slug: course.slug, videoOrder: String(v.order) });
+                }
+              }
             }
           }
         }
@@ -46,7 +50,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug, videoOrder } = await params;
   const sanityCourse = await fetchCMS<SanityCourse>(COURSE_BY_SLUG_QUERY(slug));
 
-  const video = sanityCourse?.classVideos?.find((v) => String(v.order) === videoOrder);
+  // Find video from nested topics
+  const allVideos = (sanityCourse?.topics || []).flatMap((t) => t.classVideos || []);
+  const video = allVideos.find((v) => String(v.order) === videoOrder);
   const title = video?.title || sanityCourse?.title || 'Clase';
   const courseTitle = sanityCourse?.title || 'Curso';
 

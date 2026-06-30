@@ -27,7 +27,7 @@ import {
   MonitorPlay,
 } from 'lucide-react';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
-import type { SanityCourse, SanityClassVideo, SanityTopicMaterial, PortableTextBlock } from '@/lib/sanity.client';
+import type { SanityCourse, SanityClassVideo, SanityTopic, PortableTextBlock } from '@/lib/sanity.client';
 import { getImageUrl } from '@/lib/sanity.client';
 import { PortableText } from '@portabletext/react';
 import { useAuth } from '@/lib/auth-context';
@@ -38,14 +38,6 @@ import { useAuth } from '@/lib/auth-context';
 
 interface TemarioPageClientProps {
   readonly course: SanityCourse | null;
-}
-
-interface TopicGroup {
-  readonly title: string;
-  readonly description?: string;
-  readonly classCount: number;
-  readonly videos: (SanityClassVideo & { index: number })[];
-  readonly materials: SanityTopicMaterial[];
 }
 
 // Selected video for the right panel
@@ -129,53 +121,6 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 /* ------------------------------------------------------------------ */
-/*  Smart Topic Matching with Scoring                                  */
-/*  Assigns each video/PDF to its BEST matching topic                  */
-/* ------------------------------------------------------------------ */
-
-function normalize(s: string): string {
-  return s
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim();
-}
-
-function topicMatchScore(topicName: string, candidate: string): number {
-  if (!topicName || !candidate) return 0;
-  if (candidate === topicName) return 100;
-  const nt = normalize(topicName);
-  const nc = normalize(candidate);
-  if (nc === nt) return 90;
-  // Contains match — longer containment = better score
-  if (nc.includes(nt)) return 50 + (nt.length / nc.length) * 40;
-  if (nt.includes(nc)) return 30 + (nc.length / nt.length) * 30;
-  return 0;
-}
-
-// Find the best topic for a video/material using both topic field and title
-function findBestTopic(
-  item: { topic?: string | null; title?: string | null },
-  topicTitles: string[],
-): string | null {
-  let bestScore = 0;
-  let bestTopic: string | null = null;
-  for (const t of topicTitles) {
-    // Explicit topic field gets full weight
-    if (item.topic) {
-      const s = topicMatchScore(t, item.topic);
-      if (s > bestScore) { bestScore = s; bestTopic = t; }
-    }
-    // Title match gets 80% weight (prefer explicit topic assignment)
-    if (item.title) {
-      const s = topicMatchScore(t, item.title) * 0.8;
-      if (s > bestScore) { bestScore = s; bestTopic = t; }
-    }
-  }
-  return bestScore >= 25 ? bestTopic : null;
-}
-
-/* ------------------------------------------------------------------ */
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
@@ -205,137 +150,45 @@ export function TemarioPageClient({ course }: TemarioPageClientProps) {
   const isFreeCourse = courseType === 'free';
   const hasFullAccess = isOwner || purchasedCourseIds.includes('__ALL_COURSES__') || purchasedCourseIds.includes(slug);
 
-  const topics = course?.topics || [];
-  const classVideos = course?.classVideos || [];
-  const topicMaterials = course?.topicMaterials || [];
-
-  // Group videos and materials by topic — scoring-based best match
-  const topicGroups = useMemo<TopicGroup[]>(() => {
-    const groups: TopicGroup[] = [];
-    const topicTitles = topics.map((t) => t.title);
-
-    if (topics.length > 0) {
-      // Pre-assign each video to its BEST topic using scoring
-      const videoAssignments = new Map<string, number>(); // videoId → topicIndex
-      const materialAssignments = new Map<string, number>(); // "title|order" → topicIndex
-
-      for (const v of classVideos) {
-        const best = findBestTopic(v, topicTitles);
-        if (best !== null) {
-          const idx = topicTitles.indexOf(best);
-          videoAssignments.set(v._id, idx);
-        }
-      }
-
-      for (const m of topicMaterials) {
-        const best = findBestTopic(m, topicTitles);
-        if (best !== null) {
-          const idx = topicTitles.indexOf(best);
-          materialAssignments.set(`${m.title}|${m.order}`, idx);
-        }
-      }
-
-      // Build groups from assignments
-      for (let i = 0; i < topics.length; i++) {
-        const topic = topics[i];
-        const videos = classVideos
-          .filter((v) => videoAssignments.get(v._id) === i)
-          .sort((a, b) => (a.order ?? 100) - (b.order ?? 100))
-          .map((v, j) => ({ ...v, index: j }));
-        const materials = topicMaterials
-          .filter((m) => materialAssignments.get(`${m.title}|${m.order}`) === i)
-          .sort((a, b) => (a.order ?? 100) - (b.order ?? 100));
-
-        groups.push({
-          title: topic.title,
-          description: topic.description || undefined,
-          classCount: topic.classes ?? videos.length,
-          videos,
-          materials,
-        });
-      }
-
-      // Orphans: items with no match at all
-      const orphanVideos = classVideos
-        .filter((v) => !videoAssignments.has(v._id))
+  // Build topic groups directly from nested structure — no fuzzy matching needed
+  const topicGroups = useMemo(() => {
+    return topics.map((topic) => ({
+      title: topic.title,
+      description: topic.description || undefined,
+      classCount: topic.classes ?? topic.classVideos?.length ?? 0,
+      videos: (topic.classVideos || [])
         .sort((a, b) => (a.order ?? 100) - (b.order ?? 100))
-        .map((v, j) => ({ ...v, index: j }));
-      const orphanMaterials = topicMaterials
-        .filter((m) => !materialAssignments.has(`${m.title}|${m.order}`))
-        .sort((a, b) => (a.order ?? 100) - (b.order ?? 100));
+        .map((v, j) => ({ ...v, index: j })),
+      materials: (topic.materials || [])
+        .sort((a, b) => (a.order ?? 100) - (b.order ?? 100)),
+    }));
+  }, [topics]);
 
-      if (orphanVideos.length > 0 || orphanMaterials.length > 0) {
-        groups.push({
-          title: 'Contenido Adicional',
-          classCount: orphanVideos.length,
-          videos: orphanVideos,
-          materials: orphanMaterials,
-        });
-      }
-    } else if (classVideos.length > 0 || topicMaterials.length > 0) {
-      // No topics defined — group by topic field using smart matching
-      const allTopicNames = Array.from(
-        new Set([
-          ...classVideos.map((v) => v.topic).filter(Boolean) as string[],
-          ...topicMaterials.map((m) => m.topic).filter(Boolean) as string[],
-        ])
-      );
-
-      if (allTopicNames.length > 0) {
-        for (const topicName of allTopicNames) {
-          const videos = classVideos
-            .filter((v) => v.topic && normalize(v.topic) === normalize(topicName))
-            .sort((a, b) => (a.order ?? 100) - (b.order ?? 100))
-            .map((v, i) => ({ ...v, index: i }));
-          const materials = topicMaterials
-            .filter((m) => m.topic && normalize(m.topic) === normalize(topicName))
-            .sort((a, b) => (a.order ?? 100) - (b.order ?? 100));
-
-          groups.push({
-            title: topicName,
-            classCount: videos.length,
-            videos,
-            materials,
-          });
+  // Flatten all class videos across all topics for stats
+  const classVideos = useMemo(() => {
+    const all: (SanityClassVideo & { index: number; topicTitle: string })[] = [];
+    for (const topic of topics) {
+      if (topic.classVideos) {
+        for (const v of topic.classVideos) {
+          all.push({ ...v, index: all.length, topicTitle: topic.title });
         }
-
-        // Orphans for this branch
-        const matchedVIds = new Set<string>();
-        const matchedMKeys = new Set<string>();
-        for (const g of groups) {
-          for (const v of g.videos) matchedVIds.add(v._id);
-          for (const m of g.materials) matchedMKeys.add(`${m.title}|${m.order}`);
-        }
-        const orphanVids = classVideos
-          .filter((v) => !matchedVIds.has(v._id))
-          .sort((a, b) => (a.order ?? 100) - (b.order ?? 100))
-          .map((v, i) => ({ ...v, index: i }));
-        const orphanMats = topicMaterials
-          .filter((m) => !matchedMKeys.has(`${m.title}|${m.order}`))
-          .sort((a, b) => (a.order ?? 100) - (b.order ?? 100));
-
-        if (orphanVids.length > 0 || orphanMats.length > 0) {
-          groups.push({
-            title: 'Contenido Adicional',
-            classCount: orphanVids.length,
-            videos: orphanVids,
-            materials: orphanMats,
-          });
-        }
-      } else {
-        groups.push({
-          title: 'Contenido del Curso',
-          classCount: classVideos.length,
-          videos: classVideos
-            .sort((a, b) => (a.order ?? 100) - (b.order ?? 100))
-            .map((v, i) => ({ ...v, index: i })),
-          materials: topicMaterials.sort((a, b) => (a.order ?? 100) - (b.order ?? 100)),
-        });
       }
     }
+    return all;
+  }, [topics]);
 
-    return groups;
-  }, [topics, classVideos, topicMaterials]);
+  // Flatten all materials across all topics for stats
+  const topicMaterials = useMemo(() => {
+    const all: any[] = [];
+    for (const topic of topics) {
+      if (topic.materials) {
+        for (const m of topic.materials) {
+          all.push({ ...m, topic: topic.title });
+        }
+      }
+    }
+    return all;
+  }, [topics]);
 
   // Get active group's data for right panel
   const activeGroup = useMemo(

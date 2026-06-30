@@ -35,19 +35,18 @@ export async function POST() {
       description: [{ _type: "block", _key: "cd1", children: [{ _type: "span", _key: "cds1", text: "Domina los fundamentos del Cálculo Diferencial: límites, derivadas y aplicaciones. Curso diseñado para la UTP con ejercicios resueltos paso a paso." }], style: "normal" }],
       professor: "Prof. Kall Bruno Díaz", pricePEN: 80, priceUSD: 22, totalClasses: 28, totalHours: "42", level: "intermedio", featured: true, order: 1,
       topics: [
-        { title: "Límites y Continuidad", description: "Definición de límite, propiedades, continuidad", classes: 4 },
+        { title: "Límites y Continuidad", description: "Definición de límite, propiedades, continuidad", classes: 4, classVideos: [
+          { title: "Clase 1 — Introducción a Límites", description: "Definición de límite", duration: "45:30", isFree: true, order: 1 },
+          { title: "Clase 2 — Propiedades de Límites", description: "Suma, producto, cociente", duration: "52:15", isFree: false, order: 2 },
+          { title: "Clase 3 — Límites Laterales", description: "Laterales y al infinito", duration: "48:00", isFree: false, order: 3 },
+          { title: "Clase 4 — Continuidad", description: "Tipos de discontinuidad", duration: "50:10", isFree: false, order: 4 },
+        ] },
         { title: "Derivadas", description: "Reglas de derivación, cadena, implícita", classes: 6 },
         { title: "Aplicaciones de la Derivada", description: "Máximos, mínimos, optimización", classes: 4 },
         { title: "Función Logarítmica y Exponencial", description: "Propiedades y derivadas", classes: 4 },
         { title: "Integrales Impropias", description: "Criterios de convergencia", classes: 3 },
         { title: "Función Gamma y Beta", description: "Definición y aplicaciones", classes: 3 },
         { title: "Sucesiones y Series", description: "Convergencia, criterios", classes: 4 },
-      ],
-      classVideos: [
-        { title: "Clase 1 — Introducción a Límites", description: "Definición de límite", duration: "45:30", topic: "Límites y Continuidad", isFree: true, order: 1 },
-        { title: "Clase 2 — Propiedades de Límites", description: "Suma, producto, cociente", duration: "52:15", topic: "Límites y Continuidad", isFree: false, order: 2 },
-        { title: "Clase 3 — Límites Laterales", description: "Laterales y al infinito", duration: "48:00", topic: "Límites y Continuidad", isFree: false, order: 3 },
-        { title: "Clase 4 — Continuidad", description: "Tipos de discontinuidad", duration: "50:10", topic: "Límites y Continuidad", isFree: false, order: 4 },
       ],
     },
     {
@@ -56,13 +55,12 @@ export async function POST() {
       description: [{ _type: "block", _key: "ci1", children: [{ _type: "span", _key: "cis1", text: "Aprende integrales definidas e indefinidas, métodos de integración y aplicaciones geométricas." }], style: "normal" }],
       professor: "Prof. Kall Bruno Díaz", pricePEN: 80, priceUSD: 22, totalClasses: 24, totalHours: "36", level: "intermedio", featured: true, order: 2,
       topics: [
-        { title: "Integral Indefinida", description: "Reglas básicas", classes: 4 },
+        { title: "Integral Indefinida", description: "Reglas básicas", classes: 4, classVideos: [
+          { title: "Clase 1 — Concepto de Integral", description: "Antiderivadas", duration: "44:00", isFree: true, order: 1 },
+        ] },
         { title: "Métodos de Integración", description: "Sustitución, partes, fracciones", classes: 6 },
         { title: "Integral Definida", description: "Teorema fundamental", classes: 4 },
         { title: "Aplicaciones", description: "Volúmenes, longitud de arco", classes: 5 },
-      ],
-      classVideos: [
-        { title: "Clase 1 — Concepto de Integral", description: "Antiderivadas", duration: "44:00", topic: "Integral Indefinida", isFree: true, order: 1 },
       ],
     },
     {
@@ -75,7 +73,6 @@ export async function POST() {
         { title: "ED de Segundo Orden", description: "Coeficientes constantes", classes: 5 },
         { title: "Transformada de Laplace", description: "Definición y propiedades", classes: 5 },
       ],
-      classVideos: [],
     },
     {
       _type: "course", title: "Mecánica Clásica (Estática)",
@@ -87,7 +84,6 @@ export async function POST() {
         { title: "Equilibrio", description: "Cuerpo rígido, DCL", classes: 5 },
         { title: "Centroides", description: "Centro de gravedad", classes: 4 },
       ],
-      classVideos: [],
     },
     {
       _type: "course", title: "Fluidos",
@@ -98,7 +94,6 @@ export async function POST() {
         { title: "Propiedades de Fluidos", description: "Densidad, viscosidad", classes: 3 },
         { title: "Ecuación de Bernoulli", description: "Conservación de energía", classes: 5 },
       ],
-      classVideos: [],
     },
     {
       _type: "course", title: "Termodinámica",
@@ -106,7 +101,6 @@ export async function POST() {
       description: [{ _type: "block", _key: "td1", children: [{ _type: "span", _key: "tds1", text: "Leyes de la termodinámica, ciclos termodinámicos y entropía." }], style: "normal" }],
       professor: "Prof. Kall Bruno Díaz", pricePEN: 70, priceUSD: 19, totalClasses: 18, totalHours: "27", level: "avanzado", featured: false, order: 6,
       topics: [{ title: "Primera Ley", description: "Trabajo, calor", classes: 4 }, { title: "Segunda Ley", description: "Entropía", classes: 5 }],
-      classVideos: [],
     },
     {
       _type: "course", title: "Estadística Aplicada",
@@ -114,7 +108,6 @@ export async function POST() {
       description: [{ _type: "block", _key: "ea1", children: [{ _type: "span", _key: "eas1", text: "Probabilidad, distribuciones, intervalos de confianza y pruebas de hipótesis." }], style: "normal" }],
       professor: "Prof. Kall Bruno Díaz", pricePEN: 60, priceUSD: 16, totalClasses: 16, totalHours: "24", level: "basico", featured: false, order: 7,
       topics: [{ title: "Probabilidad", description: "Eventos, bayes", classes: 4 }, { title: "Distribuciones", description: "Normal, binomial", classes: 4 }],
-      classVideos: [],
     },
   ];
 

@@ -30,7 +30,7 @@ import {
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
-import type { SanityCourse, SanityClassVideo, SanityTopicMaterial } from '@/lib/sanity.client';
+import type { SanityCourse, SanityClassVideo, SanityTopic } from '@/lib/sanity.client';
 import { useAuth } from '@/lib/auth-context';
 import { VideoPlayer } from '@/components/course/VideoPlayer';
 
@@ -89,14 +89,22 @@ export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
   const pricePEN = course.pricePEN || 0;
   const priceUSD = course.priceUSD || 0;
 
-  // All class videos sorted by order
+  // Flatten all class videos from nested topics, sorted by order globally
   const sortedVideos = useMemo(() => {
-    return [...(course.classVideos || [])].sort((a, b) => (a.order ?? 100) - (b.order ?? 100));
-  }, [course.classVideos]);
+    const all: (SanityClassVideo & { globalIndex: number; topicTitle: string })[] = [];
+    for (const topic of course.topics || []) {
+      if (topic.classVideos) {
+        for (const v of topic.classVideos) {
+          all.push({ ...v, globalIndex: all.length, topicTitle: topic.title });
+        }
+      }
+    }
+    return all.sort((a, b) => (a.order ?? 100) - (b.order ?? 100));
+  }, [course.topics]);
 
   // Current video
   const currentVideoIndex = sortedVideos.findIndex((v) => String(v.order) === videoOrder);
-  const currentVideo: SanityClassVideo | undefined = sortedVideos[currentVideoIndex];
+  const currentVideo = sortedVideos[currentVideoIndex];
   const prevVideo = currentVideoIndex > 0 ? sortedVideos[currentVideoIndex - 1] : null;
   const nextVideo = currentVideoIndex < sortedVideos.length - 1 ? sortedVideos[currentVideoIndex + 1] : null;
 
@@ -107,33 +115,37 @@ export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
   const canAccessMaterials = isFreeCourse || hasFullAccess || !!user;
   const isPremiumLocked = !canAccessCurrentLesson;
 
-  // Group videos by topic for sidebar navigation
+  // Group videos by topic for sidebar navigation — using nested structure
   const topicGroups = useMemo<TopicWithLessons[]>(() => {
-    const groups: Map<string, (SanityClassVideo & { globalIndex: number })[]> = new Map();
+    const groups: { title: string; lessons: (SanityClassVideo & { globalIndex: number })[] }[] = [];
 
-    sortedVideos.forEach((video, index) => {
-      const topic = video.topic || 'General';
-      if (!groups.has(topic)) groups.set(topic, []);
-      groups.get(topic)!.push({ ...video, globalIndex: index });
-    });
+    for (const topic of course.topics || []) {
+      if (topic.classVideos && topic.classVideos.length > 0) {
+        const lessons = topic.classVideos
+          .map((v) => {
+            const sortedIdx = sortedVideos.findIndex((sv) => sv.title === v.title && sv.order === v.order);
+            return { ...v, globalIndex: sortedIdx >= 0 ? sortedIdx : 0 };
+          })
+          .sort((a, b) => (a.order ?? 100) - (b.order ?? 100));
 
-    return Array.from(groups.entries()).map(([topicTitle, lessons]) => ({
-      title: topicTitle,
-      lessons,
-    }));
-  }, [sortedVideos]);
+        groups.push({ title: topic.title, lessons });
+      }
+    }
+
+    return groups;
+  }, [course.topics, sortedVideos]);
 
   // Auto-expand the topic that contains the current video
-  const currentTopic = currentVideo?.topic || 'General';
+  const currentTopic = currentVideo?.topicTitle || 'General';
   const activeExpandedTopic = expandedTopic || currentTopic;
 
-  // Materials for the current video's topic
+  // Materials for the current video's topic — from nested structure
   const currentMaterials = useMemo(() => {
-    if (!currentVideo?.topic) return (course.topicMaterials || []).sort((a, b) => (a.order ?? 100) - (b.order ?? 100));
-    return (course.topicMaterials || [])
-      .filter((m) => m.topic === currentVideo.topic)
-      .sort((a, b) => (a.order ?? 100) - (b.order ?? 100));
-  }, [currentVideo?.topic, course.topicMaterials]);
+    if (!currentVideo?.topicTitle) return [];
+    const topic = (course.topics || []).find((t) => t.title === currentVideo.topicTitle);
+    if (!topic?.materials) return [];
+    return topic.materials.sort((a, b) => (a.order ?? 100) - (b.order ?? 100));
+  }, [currentVideo?.topicTitle, course.topics]);
 
   // canAccessMaterials is already defined above
 

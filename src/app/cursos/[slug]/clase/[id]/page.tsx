@@ -28,8 +28,9 @@ export default async function PaginaAulaVirtual({ params }: PageProps) {
   }
 
   // Try to match the old id format (e.g., "pc1-1") to a CMS video
-  // Old format: {evalId}-{temaNum} → find first video as fallback
-  const firstVideo = sanityCourse.classVideos?.[0];
+  // Read first video from nested topics
+  const allVideos = (sanityCourse.topics || []).flatMap((t) => t.classVideos || []);
+  const firstVideo = allVideos[0];
 
   if (firstVideo && firstVideo.order !== undefined) {
     // Redirect to new CMS-driven lesson page
