@@ -213,9 +213,10 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
                 <AnimatedSection key={curso.id} delay={idx * 0.08} direction="up">
                 <motion.div
                   id={`curso-${curso.id}`}
-                  className="flex flex-col rounded-xl overflow-hidden shadow-md border border-slate-100 dark:border-[var(--surface-border)] hover:shadow-xl transition-shadow premium-card-shimmer card-glow"
+                  className="flex flex-col rounded-xl overflow-hidden shadow-md border border-slate-100 dark:border-[var(--surface-border)] hover:shadow-xl transition-shadow premium-card-shimmer card-glow cursor-pointer"
                   whileHover={{ y: -4 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                  onClick={() => handleVerTemario(curso)}
                 >
                   {/* HEADER: colored background with formula + title + description */}
                   <div className={`${colors.bg} px-4 py-5 flex flex-col gap-2 min-h-[120px] relative`}>
@@ -253,7 +254,7 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
                     <div className="grid grid-cols-2 gap-2 w-full">
                       <button
                         disabled={isLoadingMP || isLoadingPP}
-                        onClick={() => handleMercadoPagoDirect(curso)}
+                        onClick={(e) => { e.stopPropagation(); handleMercadoPagoDirect(curso); }}
                         className={cn(
                           'h-9 text-[11px] font-bold tracking-wide text-white gap-1 rounded-lg flex items-center justify-center transition-all disabled:opacity-70',
                           colors.bg,
@@ -271,7 +272,7 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
                       </button>
                       <button
                         disabled={isLoadingMP || isLoadingPP}
-                        onClick={() => handlePayPalDirect(curso)}
+                        onClick={(e) => { e.stopPropagation(); handlePayPalDirect(curso); }}
                         className="h-9 text-[11px] font-bold tracking-wide gap-1 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-[#ffc439] hover:bg-[#f2ba36] text-[#003087]"
                       >
                         {isLoadingPP ? (
@@ -285,17 +286,7 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
                       </button>
                     </div>
 
-                    <button
-                      onClick={() => handleVerTemario(curso)}
-                      className="w-full h-9 text-xs font-bold tracking-wide gap-1.5 rounded-lg flex items-center justify-center border transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
-                      style={{
-                        borderColor: curso.colorKey === 'emerald' ? '#10B981' : curso.colorKey === 'blue' ? '#3B82F6' : curso.colorKey === 'orange' ? '#F97316' : curso.colorKey === 'purple' ? '#8B5CF6' : curso.colorKey === 'teal' ? '#14B8A6' : curso.colorKey === 'red' ? '#EF4444' : '#0EA5E9',
-                        color: curso.colorKey === 'emerald' ? '#059669' : curso.colorKey === 'blue' ? '#2563EB' : curso.colorKey === 'orange' ? '#EA580C' : curso.colorKey === 'purple' ? '#7C3AED' : curso.colorKey === 'teal' ? '#0D9488' : curso.colorKey === 'red' ? '#DC2626' : '#0284C7',
-                      }}
-                    >
-                      <ListChecks className="h-3.5 w-3.5" />
-                      TEMARIO
-                    </button>
+                    {/* TEMARIO button removed — whole card is clickable */}
                   </div>
                 </motion.div>
                 </AnimatedSection>

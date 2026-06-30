@@ -1135,7 +1135,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage }: Temario
 
             {/* WhatsApp — siempre visible */}
             <a
-              href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(whatsappMsg + ' ' + title)}`}
+              href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(whatsappMessage + ' ' + title)}`}
               target="_blank"
               rel="noopener noreferrer"
               className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2.5 sm:py-3 rounded-lg font-bold text-white text-[11px] sm:text-sm transition-all bg-[#25D366] hover:bg-[#20bd5a] active:scale-[0.98] ${(!purchased && !hasFullAccess) ? '' : 'flex-[2]'}`}
