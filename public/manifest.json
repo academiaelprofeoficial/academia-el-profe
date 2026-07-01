@@ -1,17 +1,19 @@
 {
   "name": "Academia El Profe Oficial",
   "short_name": "Academia El Profe",
-  "description": "Plataforma educativa SaaS de refuerzo académico para estudiantes de ingeniería.",
+  "description": "Plataforma educativa de refuerzo académico para estudiantes de ingeniería.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0A192F",
-  "theme_color": "#10B981",
+  "theme_color": "#D4A017",
   "orientation": "portrait-primary",
+  "categories": ["education"],
+  "lang": "es-PE",
   "icons": [
-    {
-      "src": "/icon.svg",
-      "sizes": "192x192",
-      "type": "image/svg+xml"
-    }
+    { "src": "/favicon.ico", "sizes": "64x64", "type": "image/x-icon" },
+    { "src": "/icon.svg", "sizes": "192x192", "type": "image/svg+xml" },
+    { "src": "/icon.svg", "sizes": "512x512", "type": "image/svg+xml" },
+    { "src": "/icon.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "maskable" },
+    { "src": "/icon.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "maskable" }
   ]
 }
