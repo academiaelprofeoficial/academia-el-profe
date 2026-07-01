@@ -693,10 +693,10 @@ export function HomepageClient({ sanityData }: Props) {
       {/* ============================================================ */}
       {/* UNIVERSIDADES — Scroll animated */}
       {/* ============================================================ */}
-      <section id="universidades" className="border-t border-b border-slate-100 dark:border-[var(--surface-border)] bg-slate-50/50 dark:bg-[var(--surface-1)] py-8 lg:py-10 scroll-mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="universidades" className="py-12 lg:py-16 scroll-mt-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.p
-            className="text-center text-sm font-semibold text-slate-600 dark:text-white mb-6"
+            className="text-center text-sm font-semibold text-slate-500 dark:text-slate-400 mb-8"
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -704,35 +704,30 @@ export function HomepageClient({ sanityData }: Props) {
             Cursos especializados para estudiantes de:
           </motion.p>
           <motion.div
-            className="flex flex-wrap items-center justify-center gap-4 lg:gap-8"
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8 items-center justify-items-center"
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
           >
-              {partners && partners.map((p) => {
+            {partners && partners.map((p) => {
               const logoUrl = p.logo?.asset
-                ? urlFor(p.logo).width(120).height(120).fit('clip').url()
+                ? urlFor(p.logo).width(160).height(100).fit('clip').url()
                 : null;
               return (
                 <motion.div
                   key={p._id}
                   variants={itemVariants}
-                  whileHover={{ scale: 1.1 }}
-                  className="flex flex-col items-center gap-2"
+                  whileHover={{ scale: 1.08 }}
+                  className="flex items-center justify-center p-2"
                 >
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/80 dark:bg-[var(--surface-2)] flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
-                    {logoUrl ? (
-                      <img src={logoUrl} alt={p.name} className="w-8 h-8 sm:w-10 sm:h-10 object-contain dark:brightness-0 dark:invert dark:opacity-90" />
-                    ) : (
-                      <span className="text-sm font-bold text-slate-700 dark:text-white">
-                        {p.abbreviation || p.name}
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                    {p.name}
-                  </span>
+                  {logoUrl ? (
+                    <img src={logoUrl} alt={p.name} className="max-h-12 sm:max-h-16 w-auto object-contain dark:brightness-0 dark:invert dark:opacity-80" />
+                  ) : (
+                    <span className="text-sm font-bold text-slate-600 dark:text-slate-300">
+                      {p.abbreviation || p.name}
+                    </span>
+                  )}
                 </motion.div>
               );
             })}
