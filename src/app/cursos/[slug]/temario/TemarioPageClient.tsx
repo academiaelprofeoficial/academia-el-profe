@@ -250,10 +250,9 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage }: Temario
   const totalMaterials = topicMaterials.length;
   const totalTopicCount = topicGroups.length;
 
-  // Auto-play video when selectedVideo changes
+  // Auto-play video when selectedVideo changes (only once)
   useEffect(() => {
     if (videoRef.current && selectedVideo) {
-      videoRef.current.load();
       videoRef.current.play().catch(() => {});
     }
   }, [selectedVideo]);
@@ -561,10 +560,12 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage }: Temario
             <PlayCircle className="h-5 w-5 text-brand-primary" />
             Video de Presentacion
           </h2>
-          <div className="bg-black aspect-video sm:rounded-lg overflow-hidden">
+          <div className="bg-black aspect-video sm:rounded-lg overflow-hidden" onContextMenu={(e) => e.preventDefault()}>
             <video
               src={course.videoUrl || course.courseVideo?.asset?.url}
               controls
+              controlsList="nodownload"
+              disablePictureInPicture
               className="w-full h-full"
               poster={coverImg || undefined}
             />
@@ -745,12 +746,13 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage }: Temario
                           <div className="lg:hidden border-t border-border/10 my-1 pt-2 px-1">
                             {/* Video Player */}
                             <div className="rounded-xl border border-border/40 bg-card overflow-hidden mb-3">
-                              <div className="bg-black aspect-video">
+                              <div className="bg-black aspect-video" onContextMenu={(e) => e.preventDefault()}>
                                 <video
                                   key={`mobile-${selectedVideo.url}`}
                                   src={selectedVideo.url}
                                   controls
-                                  autoPlay
+                                  controlsList="nodownload"
+                                  disablePictureInPicture
                                   className="w-full h-full"
                                   poster={selectedVideo.poster}
                                   playsInline
@@ -927,13 +929,14 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage }: Temario
                 <div className="space-y-4">
                   {/* Video Player */}
                   <div className="rounded-xl border border-border/40 bg-card overflow-hidden">
-                    <div className="bg-black aspect-video">
+                    <div className="bg-black aspect-video" onContextMenu={(e) => e.preventDefault()}>
                       <video
                         ref={videoRef}
                         key={selectedVideo.url}
                         src={selectedVideo.url}
                         controls
-                        autoPlay
+                        controlsList="nodownload"
+                        disablePictureInPicture
                         className="w-full h-full"
                         poster={selectedVideo.poster}
                         playsInline

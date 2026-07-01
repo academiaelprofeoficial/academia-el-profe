@@ -55,6 +55,8 @@ export function FixedBuyBar({
       borderTop: '3px solid #F5A623',
       boxShadow: '0 -4px 20px rgba(0,0,0,0.8)',
       padding: '10px 15px',
+      margin: 0,
+      boxSizing: 'border-box',
     }}>
       <div style={{
         maxWidth: '1280px',

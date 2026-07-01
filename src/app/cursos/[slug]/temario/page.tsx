@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { LandingHeader } from '@/components/layout/LandingHeader';
 import { Footer } from '@/components/layout/Footer';
 import { TemarioPageClient } from './TemarioPageClient';
+import { AntiPiracyShell } from '@/components/security/AntiPiracyShell';
 import { fetchCMS } from '@/lib/fetchCMS';
 import { COURSE_BY_SLUG_QUERY, ALL_COURSES_QUERY } from '@/lib/sanity.queries';
 import type { SanityCourse, SanitySiteSettings } from '@/lib/sanity.client';
@@ -68,6 +69,7 @@ export default async function TemarioPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950">
+      <AntiPiracyShell />
       <LandingHeader />
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-4 md:py-10">
