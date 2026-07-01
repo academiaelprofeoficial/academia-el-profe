@@ -33,6 +33,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useSiteSettings } from '@/components/SiteSettingsProvider';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { urlFor } from '@/lib/sanity.client';
+import { PwaInstallButton } from '@/components/PwaInstallButton';
 
 // ---- Nav links para visitante (landing) ----
 const LANDING_NAV = [
@@ -170,6 +171,15 @@ function Logo({ className }: { readonly className?: string }) {
 
 export function LandingHeader() {
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  // Scroll detection for header effect
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 30);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
   const pathname = usePathname();
   const { user, signOut, loading } = useAuth();
 
@@ -210,7 +220,11 @@ export function LandingHeader() {
       {/* ============================================================ */}
       {/* NAVBAR SUPERIOR FIJA                                          */}
       {/* ============================================================ */}
-      <header className="fixed top-0 inset-x-0 z-50 h-16 bg-white/80 dark:bg-[var(--surface-0)]/80 backdrop-blur-xl border-b border-zinc-100/80 dark:border-[var(--surface-border)]">
+      <header className={`fixed top-0 inset-x-0 z-50 h-16 transition-all duration-300 ${
+        scrolled
+          ? 'bg-brand-primary/95 dark:bg-brand-primary/95 backdrop-blur-xl shadow-lg shadow-brand-primary/20 border-b border-brand-primary/10'
+          : 'bg-white/80 dark:bg-[var(--surface-0)]/80 backdrop-blur-xl border-b border-zinc-100/80 dark:border-[var(--surface-border)]'
+      }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
 
           {/* ====== LAYOUT PC ====== */}
@@ -229,8 +243,12 @@ export function LandingHeader() {
                     href={link.href}
                     className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                       isActive(link.href)
-                        ? 'text-brand-primary-text bg-brand-primary-bg-light'
-                        : 'text-brand-body hover:text-brand-primary-text dark:hover:text-brand-primary-text'
+                        ? scrolled
+                          ? 'text-white bg-white/20'
+                          : 'text-brand-primary-text bg-brand-primary-bg-light'
+                        : scrolled
+                          ? 'text-white/90 hover:text-white hover:bg-white/10'
+                          : 'text-brand-body hover:text-brand-primary-text dark:hover:text-brand-primary-text'
                     }`}
                   >
                     {link.etiqueta}
@@ -247,6 +265,9 @@ export function LandingHeader() {
             <div className="flex items-center gap-3">
               {/* Theme Toggle */}
               <ThemeToggle />
+
+              {/* PWA Install Button */}
+              <PwaInstallButton />
 
               {/* Badge plataforma (solo visitante) */}
               {!isLoggedIn && (

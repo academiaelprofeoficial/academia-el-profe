@@ -397,3 +397,25 @@
 .spotlight-card:hover::before {
   opacity: 1;
 }
+
+/* ============================================================
+   Custom Scrollbar — Verde neón inmersivo
+   ============================================================ */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0A192F;
+}
+::-webkit-scrollbar-thumb {
+  background: #10B981;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #059669;
+}
+html {
+  scroll-behavior: smooth;
+}
