@@ -52,8 +52,9 @@ export function MobileBottomBar() {
   const goldBase = '#D4A017';
   const goldLight = '#F0C75E';
 
-  // Si standalone, no mostrar nada (estamos dentro de la app instalada)
-  if (isStandalone) return null;
+  // Si standalone, solo mostrar WhatsApp y Theme (sin boton App)
+  const showInstall = !isStandalone && !isInstalled;
+  const showOpenApp = !isStandalone && isInstalled;
 
   return (
     <div className="sm:hidden fixed bottom-0 left-0 right-0 z-[9999] border-t bg-white/95 dark:bg-[#0A192F]/95 backdrop-blur-xl"
@@ -70,22 +71,24 @@ export function MobileBottomBar() {
           <span className="text-[9px] font-medium text-slate-500 dark:text-slate-400">WhatsApp</span>
         </a>
 
-        {/* Install / Open App */}
-        <button
-          onClick={isInstalled ? handleOpenApp : handleInstall}
-          className="flex flex-col items-center justify-center gap-0.5 w-14 h-12 rounded-lg transition-all"
-        >
-          <div className="flex items-center justify-center w-7 h-7 rounded-full" style={{ background: `linear-gradient(135deg, ${goldBase}, ${goldLight})` }}>
-            {isInstalled ? (
-              <ExternalLink className="h-3.5 w-3.5" style={{ color: '#0A192F' }} />
-            ) : (
-              <Download className="h-3.5 w-3.5" style={{ color: '#0A192F' }} />
-            )}
-          </div>
-          <span className="text-[9px] font-medium" style={{ color: goldBase }}>
-            {isInstalled ? 'Abrir' : 'App'}
-          </span>
-        </button>
+        {/* Install / Open App — solo si NO estamos en standalone */}
+        {(showInstall || showOpenApp) && (
+          <button
+            onClick={isInstalled ? handleOpenApp : handleInstall}
+            className="flex flex-col items-center justify-center gap-0.5 w-14 h-12 rounded-lg transition-all"
+          >
+            <div className="flex items-center justify-center w-7 h-7 rounded-full" style={{ background: `linear-gradient(135deg, ${goldBase}, ${goldLight})` }}>
+              {isInstalled ? (
+                <ExternalLink className="h-3.5 w-3.5" style={{ color: '#0A192F' }} />
+              ) : (
+                <Download className="h-3.5 w-3.5" style={{ color: '#0A192F' }} />
+              )}
+            </div>
+            <span className="text-[9px] font-medium" style={{ color: goldBase }}>
+              {isInstalled ? 'Abrir' : 'App'}
+            </span>
+          </button>
+        )}
 
         {/* Tema claro/oscuro */}
         {montado && (

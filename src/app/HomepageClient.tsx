@@ -558,7 +558,7 @@ export function HomepageClient({ sanityData }: Props) {
             Cursos especializados para estudiantes de:
           </motion.p>
           <motion.div
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 md:gap-8 items-start justify-items-center"
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 md:gap-8 items-center justify-items-center"
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
@@ -566,25 +566,22 @@ export function HomepageClient({ sanityData }: Props) {
           >
             {partners && partners.map((p) => {
               const logoUrl = p.logo?.asset
-                ? urlFor(p.logo).width(160).height(100).fit('clip').url()
+                ? urlFor(p.logo).width(300).fit('max').url()
                 : null;
               return (
                 <motion.div
                   key={p._id}
                   variants={itemVariants}
-                  whileHover={{ scale: 1.05 }}
-                  className="flex flex-col items-center gap-2 p-2 h-auto overflow-visible"
+                  whileHover={{ scale: 1.08 }}
+                  className="flex items-center justify-center p-2"
                 >
                   {logoUrl ? (
-                    <img src={logoUrl} alt={p.name} className="w-auto h-auto max-w-[120px] sm:max-w-[140px] object-contain dark:brightness-0 dark:invert dark:opacity-80" />
+                    <img src={logoUrl} alt={p.name} className="w-auto h-auto max-w-full dark:brightness-0 dark:invert dark:opacity-80" style={{ maxHeight: '80px', width: 'auto', height: 'auto' }} />
                   ) : (
                     <span className="text-lg font-bold text-slate-600 dark:text-slate-300">
                       {p.abbreviation || p.name}
                     </span>
                   )}
-                  <span className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 text-center leading-snug max-w-full break-words">
-                    {p.name}
-                  </span>
                 </motion.div>
               );
             })}
