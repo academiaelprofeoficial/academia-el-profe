@@ -696,7 +696,7 @@ export function HomepageClient({ sanityData }: Props) {
       <section id="universidades" className="py-12 lg:py-16 scroll-mt-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.p
-            className="text-center text-sm font-semibold text-slate-500 dark:text-slate-400 mb-8"
+            className="text-center text-sm font-semibold text-slate-500 dark:text-slate-400 mb-10"
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -704,7 +704,7 @@ export function HomepageClient({ sanityData }: Props) {
             Cursos especializados para estudiantes de:
           </motion.p>
           <motion.div
-            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8 items-center justify-items-center"
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 md:gap-8 items-start justify-items-center"
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
@@ -718,16 +718,19 @@ export function HomepageClient({ sanityData }: Props) {
                 <motion.div
                   key={p._id}
                   variants={itemVariants}
-                  whileHover={{ scale: 1.08 }}
-                  className="flex items-center justify-center p-2"
+                  whileHover={{ scale: 1.05 }}
+                  className="flex flex-col items-center gap-2 p-2 h-auto overflow-visible"
                 >
                   {logoUrl ? (
-                    <img src={logoUrl} alt={p.name} className="max-h-12 sm:max-h-16 w-auto object-contain dark:brightness-0 dark:invert dark:opacity-80" />
+                    <img src={logoUrl} alt={p.name} className="max-h-14 sm:max-h-16 w-auto object-contain dark:brightness-0 dark:invert dark:opacity-80" />
                   ) : (
-                    <span className="text-sm font-bold text-slate-600 dark:text-slate-300">
+                    <span className="text-lg font-bold text-slate-600 dark:text-slate-300">
                       {p.abbreviation || p.name}
                     </span>
                   )}
+                  <span className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 text-center leading-snug max-w-full break-words">
+                    {p.name}
+                  </span>
                 </motion.div>
               );
             })}
