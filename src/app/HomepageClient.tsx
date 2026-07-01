@@ -286,176 +286,30 @@ function MagneticButton({ children, className, ...props }: { children: React.Rea
 }
 
 /* ------------------------------------------------------------------ */
-/*  UTP Spotlight Section — 21st.dev inspired                          */
+/*  UTP Image Section — Two full-bleed images                          */
 /* ------------------------------------------------------------------ */
 function UTPSection() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
-
-  // GSAP spotlight follow mouse
-  useEffect(() => {
-    const card = cardRef.current;
-    if (!card) return;
-
-    const handleMove = (e: MouseEvent) => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      card.style.setProperty('--spotlight-x', `${x}px`);
-      card.style.setProperty('--spotlight-y', `${y}px`);
-    };
-
-    card.addEventListener('mousemove', handleMove);
-    return () => card.removeEventListener('mousemove', handleMove);
-  }, []);
-
-  // GSAP border animation
-  useEffect(() => {
-    const card = cardRef.current;
-    if (!card) return;
-    const ctx = gsap.context(() => {
-      gsap.fromTo(card.querySelector('.utp-border-glow'), 
-        { backgroundPosition: '0% 0%' },
-        { backgroundPosition: '200% 0%', duration: 3, repeat: -1, ease: 'linear' }
-      );
-    }, card);
-    return () => ctx.revert();
-  }, []);
-
-  const utpFeatures = [
-    'Contenido 100% actualizado',
-    'Basado en el temario oficial UTP',
-    'Dictado por El Profe, especialistas en UTP',
-    'Miles de estudiantes ya aprobaron',
-  ];
-
   return (
-    <section
-      id="utp"
-      ref={sectionRef}
-      className="py-16 lg:py-24 scroll-mt-16 relative overflow-hidden"
-    >
-      {/* Background gradient orbs */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-red-500/5 dark:bg-red-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-brand-primary/5 dark:bg-brand-primary/10 rounded-full blur-3xl" />
-      </div>
-
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="text-center mb-10"
-        >
-          <motion.span
-            className="inline-flex items-center gap-2 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 px-4 py-1.5 rounded-full text-sm font-semibold border border-red-100 dark:border-red-900/50 mb-4"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={isInView ? { scale: 1, opacity: 1 } : {}}
-            transition={{ delay: 0.1, duration: 0.5 }}
-          >
-            <Zap className="h-3.5 w-3.5" />
-            UNIVERSIDAD TECNOLÓGICA DEL PERÚ
-          </motion.span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-heading mb-3">
-            Enfocado en la <span className="text-red-600 dark:text-red-500">UTP</span>
-          </h2>
-          <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
-            Todos nuestros cursos están alineados con el pensum académico de la UTP para ayudarte a aprobar tus exámenes y avanzar con éxito.
-          </p>
-        </motion.div>
-
-        {/* UTP Card — Spotlight + Magnetic */}
-        <motion.div
-          initial={{ opacity: 0, y: 40, scale: 0.97 }}
-          animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
-          transition={{ delay: 0.2, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <Link href="/cursos/utp" className="block group">
-            <div
-              ref={cardRef}
-              className="relative rounded-2xl overflow-hidden border-2 border-red-200 dark:border-red-900/60 bg-white dark:bg-[var(--surface-2)] p-1"
-            >
-              {/* Animated border glow */}
-              <div
-                className="utp-border-glow absolute inset-0 rounded-2xl opacity-60 dark:opacity-40 pointer-events-none"
-                style={{
-                  background: 'linear-gradient(90deg, transparent, rgba(220, 38, 38, 0.3), transparent, rgba(220, 38, 38, 0.1), transparent)',
-                  backgroundSize: '200% 100%',
-                }}
-              />
-
-              {/* Spotlight effect */}
-              <div
-                className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                style={{
-                  background: `radial-gradient(400px circle at var(--spotlight-x, 50%) var(--spotlight-y, 50%), rgba(220, 38, 38, 0.06), transparent 60%)`,
-                }}
-              />
-
-              <div className="relative z-10 grid grid-cols-1 md:grid-cols-[auto_1fr] gap-6 p-6 sm:p-8">
-                {/* UTP Logo */}
-                <div className="flex flex-col items-center gap-3">
-                  <motion.div
-                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-red-600 flex items-center justify-center utp-pulse"
-                    whileHover={{ scale: 1.05, rotate: [0, -2, 2, 0] }}
-                    transition={{ duration: 0.4 }}
-                  >
-                    <span className="text-white font-black text-2xl sm:text-3xl tracking-tight">UTP</span>
-                  </motion.div>
-                  <motion.div
-                    className="hidden sm:flex items-center gap-1.5 bg-red-50 dark:bg-red-950/30 px-3 py-1 rounded-full"
-                    whileHover={{ scale: 1.05 }}
-                  >
-                    <ArrowRight className="h-3 w-3 text-red-500 group-hover:translate-x-1 transition-transform" />
-                    <span className="text-[11px] font-semibold text-red-600 dark:text-red-400 uppercase tracking-wider">Ver cursos</span>
-                  </motion.div>
-                </div>
-
-                {/* Content */}
-                <div className="space-y-4">
-                  <h3 className="text-xl sm:text-2xl font-bold text-brand-heading">
-                    Enfocado en la Universidad Tecnológica del Perú (UTP)
-                  </h3>
-                  <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
-                    Todos nuestros cursos están alineados con el pensum académico de la UTP para ayudarte a aprobar tus exámenes y avanzar con éxito.
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {utpFeatures.map((feature, i) => (
-                      <motion.div
-                        key={feature}
-                        className="flex items-center gap-2.5"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={isInView ? { opacity: 1, x: 0 } : {}}
-                        transition={{ delay: 0.4 + i * 0.1, duration: 0.5, ease: 'power2.out' }}
-                      >
-                        <div className="h-5 w-5 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center shrink-0">
-                          <CheckCircle2 className="h-3 w-3 text-red-600 dark:text-red-400" />
-                        </div>
-                        <span className="text-sm text-brand-heading-secondary dark:text-slate-300">{feature}</span>
-                      </motion.div>
-                    ))}
-                  </div>
-
-                  {/* CTA */}
-                  <motion.div
-                    className="pt-2"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={isInView ? { opacity: 1, y: 0 } : {}}
-                    transition={{ delay: 0.7, duration: 0.5 }}
-                  >
-                    <span className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold text-sm px-6 py-3 rounded-xl transition-colors shadow-lg shadow-red-600/20 dark:shadow-red-600/30">
-                      <BookOpen className="h-4 w-4" />
-                      VER CURSOS UTP
-                      <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                    </span>
-                  </motion.div>
-                </div>
-              </div>
-            </div>
-          </Link>
-        </motion.div>
+    <section className="py-0 scroll-mt-16">
+      <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8">
+        <div className="flex flex-col sm:flex-row sm:items-stretch gap-0 sm:gap-6">
+          <div className="flex-1 w-full">
+            <img
+              src="/images/1.webp"
+              alt="Cursos UTP"
+              className="w-full h-auto object-contain block"
+              loading="lazy"
+            />
+          </div>
+          <div className="flex-1 w-full">
+            <img
+              src="/images/2.webp"
+              alt="Cursos UTP"
+              className="w-full h-auto object-contain block"
+              loading="lazy"
+            />
+          </div>
+        </div>
       </div>
     </section>
   );
