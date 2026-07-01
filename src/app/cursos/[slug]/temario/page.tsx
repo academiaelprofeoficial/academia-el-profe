@@ -7,7 +7,6 @@ import { AntiPiracyShell } from '@/components/security/AntiPiracyShell';
 import { fetchCMS } from '@/lib/fetchCMS';
 import { COURSE_BY_SLUG_QUERY, ALL_COURSES_QUERY, SITE_SETTINGS_QUERY } from '@/lib/sanity.queries';
 import type { SanityCourse, SanitySiteSettings } from '@/lib/sanity.client';
-import { SITE_SETTINGS_QUERY } from '@/lib/sanity.queries';
 
 // ============================================================
 // Temario del Curso — Server Component (100% CMS-driven)

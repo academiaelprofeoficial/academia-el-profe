@@ -170,7 +170,7 @@ function CourseCard({ course, isPurchased, index }: { readonly course: MergedCou
       transition={{ delay: index * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
       onClick={() => { window.location.href = `/cursos/${course.slug}/temario`; }}
-      className="flex flex-col rounded-xl overflow-hidden shadow-md border border-slate-100 dark:border-[var(--surface-border)] hover:shadow-xl transition-shadow premium-card-shimmer card-glow cursor-pointer"}
+      className="flex flex-col rounded-xl overflow-hidden shadow-md border border-slate-100 dark:border-[var(--surface-border)] hover:shadow-xl transition-shadow premium-card-shimmer card-glow cursor-pointer"
     >
       <div className={`${course.color} px-4 py-5 flex flex-col gap-2 min-h-[120px] relative`} style={{ backgroundColor: hex }}>
         {isPurchased && (
