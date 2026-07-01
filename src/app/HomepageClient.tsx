@@ -40,6 +40,7 @@ import { useScrollSpy } from '@/hooks/useScrollSpy';
 import { useSiteSettings } from '@/components/SiteSettingsProvider';
 import { plainText, getImageUrl, urlFor } from '@/lib/sanity.client';
 import type { SanityHeroSlide, SanityStat, SanityPartner, SanityTestimonial, SanitySiteSettings } from '@/lib/sanity.client';
+import { LightningBackground } from '@/components/LightningBackground';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -332,6 +333,10 @@ export function HomepageClient({ sanityData }: Props) {
   const heroSlides = sanityData?.heroSlides?.length ? sanityData.heroSlides : null;
   const currentSlide = heroSlides?.[0];
 
+  // Determine if we should show lightning (mobile: no to save performance)
+  const [showLightning, setShowLightning] = useState(false);
+  useEffect(() => { setShowLightning(window.innerWidth >= 768); }, []);
+
   // GSAP stagger for hero benefits
   const benefitsRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
@@ -400,6 +405,12 @@ export function HomepageClient({ sanityData }: Props) {
       {/* HERO SECTION — GSAP + Framer Motion */}
       {/* ============================================================ */}
       <section id="hero" ref={heroRef} className="flex-1 scroll-mt-16 relative overflow-hidden">
+        {/* Lightning WebGL background (solo desktop) */}
+        {showLightning && (
+          <div className="absolute inset-0 z-0 opacity-60 dark:opacity-40">
+            <LightningBackground hue={155} speed={1.4} intensity={0.5} size={2.5} />
+          </div>
+        )}
         {heroVideoUrl && (
           <div className="absolute inset-0 z-0">
             <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover" style={{ filter: 'brightness(0.7)' }}>
