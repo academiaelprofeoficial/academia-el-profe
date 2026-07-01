@@ -255,18 +255,11 @@ function CourseCard({
   const hex = extractHex(course.color);
   const { user } = useAuth();
   const temarioSlug = (course as any).sanitySlug || course.id;
-  const exists = (course as any).existsInSanity !== false;
-
-  const handleCardClick = () => {
-    if (exists) {
-      window.location.href = `/cursos/${temarioSlug}/temario`;
-    }
-  };
 
   return (
     <div
-      className={`flex flex-col rounded-xl overflow-hidden shadow-md border border-slate-100 dark:border-[var(--surface-border)] hover:shadow-lg transition-shadow premium-card-shimmer card-glow ${exists ? 'cursor-pointer' : 'cursor-default'}`}
-      onClick={handleCardClick}
+      className="flex flex-col rounded-xl overflow-hidden shadow-md border border-slate-100 dark:border-[var(--surface-border)] hover:shadow-lg transition-shadow premium-card-shimmer card-glow cursor-pointer"
+      onClick={() => window.location.href = `/cursos/${temarioSlug}/temario`}
     >
       {/* --- Colored header --- */}
       <div className={`${course.color} px-4 py-5 flex flex-col gap-2 min-h-[120px] relative`}>
@@ -391,7 +384,7 @@ function DashboardCursosContent() {
     return {
       ...dc,
       sanitySlug,
-      existsInSanity: !!sp,
+      existsInSanity: true, // always clickable — fallback page handles missing CMS courses
       price: sp?.price ?? dc.price,
       priceUSD: sp?.priceUSD ?? dc.priceUSD,
     };

@@ -68,15 +68,12 @@ interface MergedCourse {
   readonly price: number;
   readonly priceUSD: number;
   readonly slug: string;
-  readonly existsInSanity: boolean;
 }
 
 function mergeCourses(sanityCourses: SanityCourse[] | null): MergedCourse[] {
-  const sanitySlugs = new Set((sanityCourses || []).map((s) => s.slug));
   return DASHBOARD_COURSES.map((dc) => {
     const sanity = sanityCourses?.find((s) => s.slug === dc.id);
     const sanitySlug = SANITY_SLUG_MAP[dc.id] || dc.id;
-    const exists = sanitySlugs.has(sanitySlug) || !!sanity;
     return {
       id: dc.id,
       title: dc.title,
@@ -86,7 +83,6 @@ function mergeCourses(sanityCourses: SanityCourse[] | null): MergedCourse[] {
       price: sanity?.pricePEN ?? dc.price,
       priceUSD: sanity?.priceUSD ?? dc.priceUSD,
       slug: sanitySlug,
-      existsInSanity: exists,
     };
   });
 }
@@ -173,10 +169,8 @@ function CourseCard({ course, isPurchased, index }: { readonly course: MergedCou
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay: index * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      onClick={() => {
-        if (course.existsInSanity) window.location.href = `/cursos/${course.slug}/temario`;
-      }}
-      className={`flex flex-col rounded-xl overflow-hidden shadow-md border border-slate-100 dark:border-[var(--surface-border)] hover:shadow-xl transition-shadow premium-card-shimmer card-glow ${course.existsInSanity ? 'cursor-pointer' : 'cursor-default'}`}
+      onClick={() => { window.location.href = `/cursos/${course.slug}/temario`; }}
+      className="flex flex-col rounded-xl overflow-hidden shadow-md border border-slate-100 dark:border-[var(--surface-border)] hover:shadow-xl transition-shadow premium-card-shimmer card-glow cursor-pointer"}
     >
       <div className={`${course.color} px-4 py-5 flex flex-col gap-2 min-h-[120px] relative`} style={{ backgroundColor: hex }}>
         {isPurchased && (
