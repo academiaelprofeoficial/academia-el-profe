@@ -228,8 +228,8 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
                     <p className="text-[11px] text-white/70 leading-snug mt-auto">{curso.description || 'Curso completo con clases grabadas y material descargable.'}</p>
                   </div>
 
-                  {/* BODY: features list */}
-                  <div className="bg-white dark:bg-[var(--surface-2)] px-4 py-3 flex flex-col gap-2 border-b border-slate-100 dark:border-[var(--surface-border)]">
+                  {/* BODY: features list — flex-1 para igualar alturas */}
+                  <div className="bg-white dark:bg-[var(--surface-2)] px-4 py-3 flex flex-col gap-2 border-b border-slate-100 dark:border-[var(--surface-border)] flex-1">
                     <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs">
                       <CheckCircle2 className={cn('h-3.5 w-3.5 shrink-0', colors.text)} />
                       <span>{curso.modules} temas</span>
@@ -244,8 +244,8 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
                     </div>
                   </div>
 
-                  {/* FOOTER: price + payment buttons + temario */}
-                  <div className="bg-white dark:bg-[var(--surface-2)] px-4 py-4 flex flex-col gap-3">
+                  {/* FOOTER: price + payment buttons + temario — mt-auto para alinear abajo */}
+                  <div className="bg-white dark:bg-[var(--surface-2)] px-4 py-4 flex flex-col gap-3 mt-auto">
                     <div className="flex items-baseline gap-3">
                       <span className="text-xl font-bold text-orange-500">{formatoSoles(curso.price)}</span>
                       <span className="text-xs text-slate-400 font-medium">{formatoUSD(curso.priceUSD)}</span>

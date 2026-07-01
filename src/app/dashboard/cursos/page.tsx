@@ -22,6 +22,7 @@ import {
   XCircle,
   Clock,
   PlayCircle,
+  BookOpen,
 } from 'lucide-react';
 import { DASHBOARD_COURSES } from '@/lib/data';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
@@ -275,7 +276,7 @@ function CourseCard({
       </div>
 
       {/* --- Body --- */}
-      <div className="bg-white dark:bg-[var(--surface-2)] px-4 py-3 flex flex-col gap-2 border-b border-slate-100 dark:border-[var(--surface-border)]">
+      <div className="bg-white dark:bg-[var(--surface-2)] px-4 py-3 flex flex-col gap-2 border-b border-slate-100 dark:border-[var(--surface-border)] flex-1">
         <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs">
           <Video className="h-3.5 w-3.5 shrink-0" />
           <span>Clases grabadas</span>
@@ -287,7 +288,7 @@ function CourseCard({
       </div>
 
       {/* --- Footer --- */}
-      <div className="bg-white dark:bg-[var(--surface-2)] px-4 py-4 flex flex-col gap-3">
+      <div className="bg-white dark:bg-[var(--surface-2)] px-4 py-4 flex flex-col gap-3 mt-auto">
         {isPurchased ? (
           <>
             {/* CURSO COMPRADO — Acceder directamente */}
@@ -342,12 +343,35 @@ function CourseCard({
 
 function DashboardCursosContent() {
   const [busqueda, setBusqueda] = useState('');
+  const [sanityPrices, setSanityPrices] = useState<Record<string, { price: number; priceUSD: number }>>({});
   const searchParams = useSearchParams();
   const paymentStatus = searchParams.get('status') || '';
   const paymentGateway = searchParams.get('gateway') || '';
   const { purchasedCourseIds, refreshPurchases, user } = useAuth();
 
-  const cursosFiltrados = DASHBOARD_COURSES.filter(
+  // Fetch Sanity prices on mount
+  useEffect(() => {
+    fetch('/api/sanity-courses')
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          const map: Record<string, { price: number; priceUSD: number }> = {};
+          for (const c of data) {
+            if (c.slug && c.pricePEN) map[c.slug] = { price: c.pricePEN, priceUSD: c.priceUSD || 0 };
+          }
+          setSanityPrices(map);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Merge Sanity prices into DASHBOARD_COURSES
+  const mergedCourses = DASHBOARD_COURSES.map((dc) => {
+    const sp = sanityPrices[dc.id];
+    return sp ? { ...dc, price: sp.price, priceUSD: sp.priceUSD } : dc;
+  });
+
+  const cursosFiltrados = mergedCourses.filter(
     (c) =>
       c.title.toLowerCase().includes(busqueda.toLowerCase()) ||
       c.desc.toLowerCase().includes(busqueda.toLowerCase())
@@ -368,30 +392,30 @@ function DashboardCursosContent() {
   return (
     <>
       {/* Header row */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <h1 className="text-xl sm:text-2xl font-bold text-brand-heading dark:text-slate-100 leading-tight">
-          <span className="block sm:inline">
-            Cursos exclusivos para estudiantes de la{' '}
-          </span>
-          <span className="inline-flex sm:inline-flex items-center gap-2">
-            <span className="inline-flex items-center justify-center h-8 px-3 rounded-lg bg-red-600 text-white text-sm font-bold">
-              UTP
-            </span>
-          </span>
-        </h1>
+	      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+	        <h1 className="text-xl sm:text-2xl font-bold text-brand-heading dark:text-slate-100 leading-tight">
+	          <span className="block sm:inline">
+	            Mis Cursos
+	          </span>
+	          <span className="inline-flex sm:inline-flex items-center gap-2 ml-2">
+	            <span className="inline-flex items-center justify-center h-8 px-3 rounded-lg bg-brand-primary text-white text-sm font-bold">
+	              {purchasedCourseIds.length} activos
+	            </span>
+	          </span>
+	        </h1>
 
-        <div className="hidden sm:flex items-center">
-          <span className="inline-flex items-center justify-center h-10 px-4 rounded-lg bg-red-600 text-white text-lg font-bold">
-            UTP
-          </span>
-        </div>
-      </div>
+	        <div className="hidden sm:flex items-center">
+	          <Link href="/cursos" className="inline-flex items-center gap-2 h-10 px-4 rounded-lg bg-brand-primary text-white text-sm font-bold hover:bg-brand-primary-hover transition-colors">
+	            <BookOpen className="h-4 w-4" /> Catálogo
+	          </Link>
+	        </div>
+	      </div>
 
-      {/* Subtitle */}
-      <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-        <Lock className="h-4 w-4 shrink-0" />
-        <span>Accede a todos estos cursos con tu membresía activa.</span>
-      </div>
+	      {/* Subtitle */}
+	      <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+	        <Lock className="h-4 w-4 shrink-0" />
+	        <span>Tus cursos adquiridos. Accede a las clases, materiales y certificados.</span>
+	      </div>
 
       {/* Banner de estado de pago */}
       {paymentStatus && (
