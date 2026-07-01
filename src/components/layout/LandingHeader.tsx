@@ -222,7 +222,7 @@ export function LandingHeader() {
       {/* ============================================================ */}
       <header className={`fixed top-0 inset-x-0 z-50 h-16 transition-all duration-300 ${
         scrolled
-          ? 'bg-brand-primary/95 dark:bg-brand-primary/95 backdrop-blur-xl shadow-lg shadow-brand-primary/20 border-b border-brand-primary/10'
+          ? 'bg-brand-primary/95 dark:bg-[var(--surface-0)]/95 backdrop-blur-xl shadow-lg border-b border-brand-primary/20 dark:border-[var(--surface-border)]'
           : 'bg-white/80 dark:bg-[var(--surface-0)]/80 backdrop-blur-xl border-b border-zinc-100/80 dark:border-[var(--surface-border)]'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
@@ -244,10 +244,10 @@ export function LandingHeader() {
                     className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                       isActive(link.href)
                         ? scrolled
-                          ? 'text-white bg-white/20'
+                          ? 'text-brand-primary bg-white/90 dark:text-white dark:bg-white/20'
                           : 'text-brand-primary-text bg-brand-primary-bg-light'
                         : scrolled
-                          ? 'text-white/90 hover:text-white hover:bg-white/10'
+                          ? 'text-white/90 hover:text-white hover:bg-white/10 dark:text-slate-300 dark:hover:text-white'
                           : 'text-brand-body hover:text-brand-primary-text dark:hover:text-brand-primary-text'
                     }`}
                   >
