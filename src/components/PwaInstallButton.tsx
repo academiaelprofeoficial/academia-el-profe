@@ -47,10 +47,10 @@ export function PwaInstallButton() {
 
   return (
     <>
-      {/* Botón escritorio — siempre visible */}
+      {/* Botón escritorio — dorado con trueno ⚡ */}
       <button
         onClick={handleInstall}
-        className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-all duration-300"
+        className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 group"
         style={{
           border: `2px solid ${goldBase}`,
           color: goldBase,
@@ -59,19 +59,23 @@ export function PwaInstallButton() {
         onMouseEnter={(e) => {
           e.currentTarget.style.background = `linear-gradient(135deg, ${goldBase}, ${goldLight})`;
           e.currentTarget.style.color = '#0A192F';
-          e.currentTarget.style.boxShadow = `0 0 20px ${goldLight}80`;
+          e.currentTarget.style.boxShadow = `0 0 25px ${goldLight}99, 0 0 50px ${goldLight}40`;
           e.currentTarget.style.borderColor = goldLight;
+          e.currentTarget.style.transform = 'scale(1.05)';
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.background = 'transparent';
           e.currentTarget.style.color = goldBase;
           e.currentTarget.style.boxShadow = 'none';
           e.currentTarget.style.borderColor = goldBase;
+          e.currentTarget.style.transform = 'scale(1)';
         }}
         title="Instalar App"
       >
-        <Download className="h-3.5 w-3.5" />
-        Instalar App
+        <span className="group-hover:animate-ping absolute inset-0 rounded-full" style={{ boxShadow: `0 0 15px ${goldLight}` }} />
+        <Download className="h-3.5 w-3.5 group-hover:animate-bounce" />
+        <span>Instalar App</span>
+        <span className="text-sm group-hover:scale-125 transition-transform">⚡</span>
       </button>
 
       {/* Botón móvil flotante — siempre visible si hay prompt o no */}

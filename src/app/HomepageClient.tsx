@@ -722,7 +722,7 @@ export function HomepageClient({ sanityData }: Props) {
                   className="flex flex-col items-center gap-2 p-2 h-auto overflow-visible"
                 >
                   {logoUrl ? (
-                    <img src={logoUrl} alt={p.name} className="max-h-14 sm:max-h-16 w-auto object-contain dark:brightness-0 dark:invert dark:opacity-80" />
+                    <img src={logoUrl} alt={p.name} className="w-auto h-auto max-w-[120px] sm:max-w-[140px] object-contain dark:brightness-0 dark:invert dark:opacity-80" />
                   ) : (
                     <span className="text-lg font-bold text-slate-600 dark:text-slate-300">
                       {p.abbreviation || p.name}
