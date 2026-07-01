@@ -201,7 +201,7 @@ function PaymentButtons({
       <div className="grid grid-cols-2 gap-2 w-full">
         {/* Botón Mercado Pago */}
         <button
-          onClick={handleMercadoPago}
+          onClick={(e) => { e.stopPropagation(); handleMercadoPago(); }}
           disabled={!!loadingRef.current[`${course.id}-mp`]}
           className="h-9 text-[11px] font-bold tracking-wide text-white gap-1 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-brand-primary-hover hover:bg-brand-primary"
         >
@@ -217,7 +217,7 @@ function PaymentButtons({
 
         {/* Botón PayPal */}
         <button
-          onClick={handlePayPal}
+          onClick={(e) => { e.stopPropagation(); handlePayPal(); }}
           disabled={!!loadingRef.current[`${course.id}-pp`]}
           className="h-9 text-[11px] font-bold tracking-wide gap-1 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-[#ffc439] hover:bg-[#f2ba36] text-[#003087]"
         >
@@ -249,14 +249,25 @@ function CourseCard({
   course,
   isPurchased,
 }: {
-  readonly course: (typeof DASHBOARD_COURSES)[number];
+  readonly course: (typeof DASHBOARD_COURSES)[number] & { sanitySlug?: string; existsInSanity?: boolean };
   readonly isPurchased: boolean;
 }) {
   const hex = extractHex(course.color);
   const { user } = useAuth();
+  const temarioSlug = (course as any).sanitySlug || course.id;
+  const exists = (course as any).existsInSanity !== false;
+
+  const handleCardClick = () => {
+    if (exists) {
+      window.location.href = `/cursos/${temarioSlug}/temario`;
+    }
+  };
 
   return (
-    <div className="flex flex-col rounded-xl overflow-hidden shadow-md border border-slate-100 dark:border-[var(--surface-border)] hover:shadow-lg transition-shadow premium-card-shimmer card-glow">
+    <div
+      className={`flex flex-col rounded-xl overflow-hidden shadow-md border border-slate-100 dark:border-[var(--surface-border)] hover:shadow-lg transition-shadow premium-card-shimmer card-glow ${exists ? 'cursor-pointer' : 'cursor-default'}`}
+      onClick={handleCardClick}
+    >
       {/* --- Colored header --- */}
       <div className={`${course.color} px-4 py-5 flex flex-col gap-2 min-h-[120px] relative`}>
         {isPurchased && (
@@ -343,11 +354,19 @@ function CourseCard({
 
 function DashboardCursosContent() {
   const [busqueda, setBusqueda] = useState('');
-  const [sanityPrices, setSanityPrices] = useState<Record<string, { price: number; priceUSD: number }>>({});
+  const [sanityPrices, setSanityPrices] = useState<Record<string, { price: number; priceUSD: number; exists: boolean }>>({});
   const searchParams = useSearchParams();
   const paymentStatus = searchParams.get('status') || '';
   const paymentGateway = searchParams.get('gateway') || '';
   const { purchasedCourseIds, refreshPurchases, user } = useAuth();
+
+  // Map DASHBOARD_COURSES slugs to Sanity slugs (for courses with different names)
+  const SANITY_SLUG_MAP: Record<string, string> = {
+    'estatica': 'mecanica-estatica',
+    'calculo-vectorial': 'calculo-vectorial',
+    'fisica-1': 'fisica-1',
+    'fisica-2': 'fisica-2',
+  };
 
   // Fetch Sanity prices on mount
   useEffect(() => {
@@ -355,9 +374,9 @@ function DashboardCursosContent() {
       .then((r) => r.json())
       .then((data) => {
         if (Array.isArray(data)) {
-          const map: Record<string, { price: number; priceUSD: number }> = {};
+          const map: Record<string, { price: number; priceUSD: number; exists: boolean }> = {};
           for (const c of data) {
-            if (c.slug && c.pricePEN) map[c.slug] = { price: c.pricePEN, priceUSD: c.priceUSD || 0 };
+            if (c.slug && c.pricePEN) map[c.slug] = { price: c.pricePEN, priceUSD: c.priceUSD || 0, exists: true };
           }
           setSanityPrices(map);
         }
@@ -365,16 +384,24 @@ function DashboardCursosContent() {
       .catch(() => {});
   }, []);
 
-  // Merge Sanity prices into DASHBOARD_COURSES
+  // Merge Sanity prices into DASHBOARD_COURSES and check existence
   const mergedCourses = DASHBOARD_COURSES.map((dc) => {
-    const sp = sanityPrices[dc.id];
-    return sp ? { ...dc, price: sp.price, priceUSD: sp.priceUSD } : dc;
+    const sanitySlug = SANITY_SLUG_MAP[dc.id] || dc.id;
+    const sp = sanityPrices[sanitySlug];
+    return {
+      ...dc,
+      sanitySlug,
+      existsInSanity: !!sp,
+      price: sp?.price ?? dc.price,
+      priceUSD: sp?.priceUSD ?? dc.priceUSD,
+    };
   });
 
+  // Only show courses that exist in Sanity (or have prices from default)
   const cursosFiltrados = mergedCourses.filter(
     (c) =>
-      c.title.toLowerCase().includes(busqueda.toLowerCase()) ||
-      c.desc.toLowerCase().includes(busqueda.toLowerCase())
+      (c.title.toLowerCase().includes(busqueda.toLowerCase()) ||
+      c.desc.toLowerCase().includes(busqueda.toLowerCase()))
   );
 
   // Limpiar el ?status= de la URL y refrescar compras

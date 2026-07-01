@@ -710,24 +710,29 @@ export function HomepageClient({ sanityData }: Props) {
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
           >
-            {partners && partners.map((p) => {
+              {partners && partners.map((p) => {
               const logoUrl = p.logo?.asset
-                ? urlFor(p.logo).width(120).height(48).fit('clip').url()
+                ? urlFor(p.logo).width(120).height(120).fit('clip').url()
                 : null;
               return (
                 <motion.div
                   key={p._id}
                   variants={itemVariants}
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  className="flex items-center justify-center h-12 px-5 bg-white dark:bg-[var(--surface-2)] rounded-xl border border-slate-100 dark:border-[var(--surface-border-hover)] shadow-sm"
+                  whileHover={{ scale: 1.1 }}
+                  className="flex flex-col items-center gap-2"
                 >
-                  {logoUrl ? (
-                    <img src={logoUrl} alt={p.name} className="h-8 w-auto object-contain dark:brightness-0 dark:invert dark:opacity-90" />
-                  ) : (
-                    <span className="text-sm font-bold text-slate-700 dark:text-white">
-                      {p.abbreviation || p.name}
-                    </span>
-                  )}
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/80 dark:bg-[var(--surface-2)] flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
+                    {logoUrl ? (
+                      <img src={logoUrl} alt={p.name} className="w-8 h-8 sm:w-10 sm:h-10 object-contain dark:brightness-0 dark:invert dark:opacity-90" />
+                    ) : (
+                      <span className="text-sm font-bold text-slate-700 dark:text-white">
+                        {p.abbreviation || p.name}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                    {p.name}
+                  </span>
                 </motion.div>
               );
             })}

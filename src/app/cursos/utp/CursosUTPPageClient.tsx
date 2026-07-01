@@ -51,6 +51,14 @@ function extractHex(twClass: string): string {
 // Merge DASHBOARD_COURSES with Sanity data (prices from CMS)
 // ----------------------------------------------------------------
 
+// Slug mapping: DASHBOARD_COURSES slug → Sanity slug
+const SANITY_SLUG_MAP: Record<string, string> = {
+  'estatica': 'mecanica-estatica',
+  'calculo-vectorial': 'calculo-vectorial',
+  'fisica-1': 'fisica-1',
+  'fisica-2': 'fisica-2',
+};
+
 interface MergedCourse {
   readonly id: string;
   readonly title: string;
@@ -60,11 +68,15 @@ interface MergedCourse {
   readonly price: number;
   readonly priceUSD: number;
   readonly slug: string;
+  readonly existsInSanity: boolean;
 }
 
 function mergeCourses(sanityCourses: SanityCourse[] | null): MergedCourse[] {
+  const sanitySlugs = new Set((sanityCourses || []).map((s) => s.slug));
   return DASHBOARD_COURSES.map((dc) => {
     const sanity = sanityCourses?.find((s) => s.slug === dc.id);
+    const sanitySlug = SANITY_SLUG_MAP[dc.id] || dc.id;
+    const exists = sanitySlugs.has(sanitySlug) || !!sanity;
     return {
       id: dc.id,
       title: dc.title,
@@ -73,7 +85,8 @@ function mergeCourses(sanityCourses: SanityCourse[] | null): MergedCourse[] {
       color: dc.color,
       price: sanity?.pricePEN ?? dc.price,
       priceUSD: sanity?.priceUSD ?? dc.priceUSD,
-      slug: dc.id,
+      slug: sanitySlug,
+      existsInSanity: exists,
     };
   });
 }
@@ -131,12 +144,12 @@ function PaymentButtons({
   return (
     <div className="flex flex-col gap-1.5">
       <div className="grid grid-cols-2 gap-2 w-full">
-        <button onClick={handleMercadoPago} disabled={!!loadingRef.current[`${course.id}-mp`]}
+        <button onClick={(e) => { e.stopPropagation(); handleMercadoPago(); }} disabled={!!loadingRef.current[`${course.id}-mp`]}
           className="h-9 text-[11px] font-bold tracking-wide text-white gap-1 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-brand-primary-hover hover:bg-brand-primary">
           {loadingRef.current[`${course.id}-mp`] ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShoppingCart className="h-3.5 w-3.5 shrink-0" />}
           <span className="truncate">{loadingRef.current[`${course.id}-mp`] ? 'Procesando...' : `PEN ${formatoSoles(course.price)}`}</span>
         </button>
-        <button onClick={handlePayPal} disabled={!!loadingRef.current[`${course.id}-pp`]}
+        <button onClick={(e) => { e.stopPropagation(); handlePayPal(); }} disabled={!!loadingRef.current[`${course.id}-pp`]}
           className="h-9 text-[11px] font-bold tracking-wide gap-1 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-[#ffc439] hover:bg-[#f2ba36] text-[#003087]">
           {loadingRef.current[`${course.id}-pp`] ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <img src="/images/paypal-logo.png" alt="PP" className="h-3.5 w-3.5 object-contain shrink-0" />}
           <span className="truncate">{loadingRef.current[`${course.id}-pp`] ? 'Procesando...' : `USD ${formatoUSD(course.priceUSD)}`}</span>
@@ -160,7 +173,10 @@ function CourseCard({ course, isPurchased, index }: { readonly course: MergedCou
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay: index * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      className="flex flex-col rounded-xl overflow-hidden shadow-md border border-slate-100 dark:border-[var(--surface-border)] hover:shadow-xl transition-shadow premium-card-shimmer card-glow"
+      onClick={() => {
+        if (course.existsInSanity) window.location.href = `/cursos/${course.slug}/temario`;
+      }}
+      className={`flex flex-col rounded-xl overflow-hidden shadow-md border border-slate-100 dark:border-[var(--surface-border)] hover:shadow-xl transition-shadow premium-card-shimmer card-glow ${course.existsInSanity ? 'cursor-pointer' : 'cursor-default'}`}
     >
       <div className={`${course.color} px-4 py-5 flex flex-col gap-2 min-h-[120px] relative`} style={{ backgroundColor: hex }}>
         {isPurchased && (
