@@ -109,6 +109,42 @@ export async function POST() {
       professor: "Prof. Kall Bruno Díaz", pricePEN: 60, priceUSD: 16, totalClasses: 16, totalHours: "24", level: "basico", featured: false, order: 7,
       topics: [{ title: "Probabilidad", description: "Eventos, bayes", classes: 4 }, { title: "Distribuciones", description: "Normal, binomial", classes: 4 }],
     },
+    {
+      _type: "course", title: "Cálculo Vectorial",
+      slug: { _type: "slug", current: "calculo-vectorial" }, category: "calculo",
+      description: [{ _type: "block", _key: "cv1", children: [{ _type: "span", _key: "cvs1", text: "Vectores, campos vectoriales, gradiente, divergencia, rotacional y teoremas integrales." }], style: "normal" }],
+      professor: "Prof. Kall Bruno Díaz", pricePEN: 80, priceUSD: 22, totalClasses: 20, totalHours: "30", level: "avanzado", featured: false, order: 8,
+      topics: [
+        { title: "Álgebra Vectorial", description: "Vectores, producto punto y cruz", classes: 4 },
+        { title: "Campos Vectoriales", description: "Gradiente, divergencia, rotacional", classes: 5 },
+        { title: "Integrales de Línea", description: "Teorema de Green", classes: 4 },
+        { title: "Integrales de Superficie", description: "Teoremas de Stokes y Gauss", classes: 4 },
+      ],
+    },
+    {
+      _type: "course", title: "Física 1",
+      slug: { _type: "slug", current: "fisica-1" }, category: "mecanica",
+      description: [{ _type: "block", _key: "f1", children: [{ _type: "span", _key: "f1s", text: "Cinemática, dinámica, leyes de Newton, trabajo y energía para estudiantes de ingeniería." }], style: "normal" }],
+      professor: "Prof. Kall Bruno Díaz", pricePEN: 75, priceUSD: 20, totalClasses: 22, totalHours: "33", level: "intermedio", featured: false, order: 9,
+      topics: [
+        { title: "Cinemática", description: "MRU, MRUV, movimiento parabólico", classes: 5 },
+        { title: "Dinámica", description: "Leyes de Newton, fuerzas", classes: 5 },
+        { title: "Trabajo y Energía", description: "Energía cinética, potencial, conservación", classes: 4 },
+        { title: "Cantidad de Movimiento", description: "Choques, impulso", classes: 4 },
+      ],
+    },
+    {
+      _type: "course", title: "Física 2",
+      slug: { _type: "slug", current: "fisica-2" }, category: "fluidos",
+      description: [{ _type: "block", _key: "f2", children: [{ _type: "span", _key: "f2s", text: "Electromagnetismo, ondas, óptica y física moderna para ingeniería." }], style: "normal" }],
+      professor: "Prof. Kall Bruno Díaz", pricePEN: 75, priceUSD: 20, totalClasses: 20, totalHours: "30", level: "avanzado", featured: false, order: 10,
+      topics: [
+        { title: "Electrostática", description: "Campo eléctrico, potencial", classes: 4 },
+        { title: "Magnetismo", description: "Campo magnético, inducción", classes: 4 },
+        { title: "Ondas", description: "Ondas mecánicas, sonido", classes: 4 },
+        { title: "Óptica", description: "Reflexión, refracción, lentes", classes: 4 },
+      ],
+    },
   ];
 
   // --- Page content ---
