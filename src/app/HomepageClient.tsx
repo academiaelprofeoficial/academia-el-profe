@@ -335,7 +335,16 @@ export function HomepageClient({ sanityData }: Props) {
 
   // Determine if we should show lightning (mobile: no to save performance)
   const [showLightning, setShowLightning] = useState(false);
-  useEffect(() => { setShowLightning(window.innerWidth >= 768); }, []);
+  const [isDark, setIsDark] = useState(false);
+  useEffect(() => {
+    setShowLightning(window.innerWidth >= 768);
+    setIsDark(document.documentElement.classList.contains('dark'));
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   // GSAP stagger for hero benefits
   const benefitsRef = useRef<HTMLDivElement>(null);
@@ -405,12 +414,26 @@ export function HomepageClient({ sanityData }: Props) {
       {/* HERO SECTION — GSAP + Framer Motion */}
       {/* ============================================================ */}
       <section id="hero" ref={heroRef} className="flex-1 scroll-mt-16 relative overflow-hidden">
-        {/* Lightning WebGL background (solo desktop) */}
+        {/* Lightning WebGL background */}
         {showLightning && (
-          <div className="absolute inset-0 z-0 opacity-60 dark:opacity-40">
-            <LightningBackground hue={155} speed={1.4} intensity={0.5} size={2.5} />
+          <div className="absolute inset-0 z-0 transition-opacity duration-500"
+            style={{ opacity: isDark ? 0.5 : 0.15 }}
+          >
+            {isDark ? (
+              <LightningBackground hue={155} speed={1.4} intensity={0.5} size={2.5} />
+            ) : (
+              <LightningBackground hue={0} speed={1.0} intensity={0.08} size={3.0} />
+            )}
           </div>
         )}
+        {/* Gradient transition to next section */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 sm:h-48 z-10 pointer-events-none"
+          style={{
+            background: isDark
+              ? 'linear-gradient(to bottom, transparent, rgb(2,6,23))'
+              : 'linear-gradient(to bottom, transparent, rgb(248,250,252))'
+          }}
+        />
         {heroVideoUrl && (
           <div className="absolute inset-0 z-0">
             <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover" style={{ filter: 'brightness(0.7)' }}>
