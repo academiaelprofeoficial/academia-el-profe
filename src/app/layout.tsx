@@ -136,6 +136,9 @@ export default async function RootLayout({
         <script dangerouslySetInnerHTML={{
           __html: `if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{})})}`,
         }} />
+        <script dangerouslySetInnerHTML={{
+          __html: `window.addEventListener('error',function(e){if(e.message&&e.message.includes('ChunkLoadError')){location.reload()}});window.addEventListener('unhandledrejection',function(e){if(e.reason&&e.reason.message&&e.reason.message.includes('ChunkLoadError')){location.reload()}});`,
+        }} />
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

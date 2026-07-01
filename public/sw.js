@@ -1,23 +1,32 @@
-const CACHE = 'aep-v1';
-const ASSETS = ['/', '/cursos', '/nosotros', '/soporte', '/manifest.json'];
+const CACHE = 'aep-v2';
+const CORE_ASSETS = ['/', '/cursos', '/nosotros', '/soporte', '/manifest.json'];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE_ASSETS)));
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+  );
   e.waitUntil(clients.claim());
 });
 
 self.addEventListener('fetch', (e) => {
+  // Skip next.js chunks — they change with every deploy
+  if (e.request.url.includes('/_next/static/chunks/')) {
+    e.respondWith(fetch(e.request).catch(() => new Response('', { status: 200 })));
+    return;
+  }
+
   e.respondWith(
     caches.match(e.request).then((r) => r || fetch(e.request).then((res) => {
-      if (res.status === 200) {
+      if (res.status === 200 && !e.request.url.includes('/_next/')) {
         const clone = res.clone();
         caches.open(CACHE).then((c) => c.put(e.request, clone));
       }
       return res;
-    }))
+    }).catch(() => caches.match(CORE_ASSETS[0]) || new Response('Offline', { status: 200 })))
   );
 });
