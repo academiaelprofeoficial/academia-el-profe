@@ -8,6 +8,7 @@ export function MobileBottomBar() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const { resolvedTheme, setTheme } = useTheme();
   const [montado, setMontado] = useState(false);
 
@@ -57,8 +58,26 @@ export function MobileBottomBar() {
   const showOpenApp = !isStandalone && isInstalled;
 
   return (
-    <div className="sm:hidden fixed bottom-0 left-0 right-0 z-[9999] border-t bg-white/95 dark:bg-[#0A192F]/95 backdrop-blur-xl"
-      style={{ borderColor: '#D4A01740' }}>
+    <>
+      {/* Mini botón toggle para ocultar/mostrar la barra */}
+      <button
+        onClick={() => setHidden(!hidden)}
+        className="sm:hidden fixed bottom-0 right-2 z-[9998] w-6 h-5 rounded-t-md flex items-center justify-center transition-all"
+        style={{
+          background: '#D4A017',
+          color: '#0A192F',
+          opacity: 0.7,
+          transform: hidden ? 'translateY(0)' : 'translateY(-56px)',
+        }}
+        aria-label={hidden ? 'Mostrar barra' : 'Ocultar barra'}
+      >
+        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={hidden ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'} />
+        </svg>
+      </button>
+
+      <div className={`sm:hidden fixed bottom-0 left-0 right-0 z-[9997] border-t bg-white/95 dark:bg-[#0A192F]/95 backdrop-blur-xl transition-transform duration-300 ${hidden ? 'translate-y-full' : 'translate-y-0'}`}
+        style={{ borderColor: '#D4A01740' }}>
       <div className="flex items-center justify-around h-14 px-2">
         {/* WhatsApp */}
         <a
@@ -108,5 +127,6 @@ export function MobileBottomBar() {
         )}
       </div>
     </div>
+    </>
   );
 }

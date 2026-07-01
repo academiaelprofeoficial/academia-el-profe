@@ -419,3 +419,19 @@
 html {
   scroll-behavior: smooth;
 }
+
+/* ============================================================
+   Dark mode: brand-primary backgrounds → texto oscuro
+   ============================================================ */
+.dark .bg-brand-primary.text-white,
+.dark .bg-brand-primary-hover.text-white,
+.dark [class*="bg-brand-primary"].text-white,
+.dark [class*="bg-brand-primary-hover"].text-white {
+  color: var(--brand-button-text, #065F46) !important;
+}
+
+.dark .bg-brand-primary.text-white svg,
+.dark .bg-brand-primary-hover.text-white svg,
+.dark [class*="bg-brand-primary"].text-white svg {
+  color: var(--brand-button-text, #065F46) !important;
+}
