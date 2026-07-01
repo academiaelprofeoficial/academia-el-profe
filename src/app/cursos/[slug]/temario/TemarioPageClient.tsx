@@ -45,6 +45,7 @@ interface TemarioPageClientProps {
   readonly course: SanityCourse | null;
   readonly whatsapp: string;
   readonly whatsappMessage: string;
+  readonly backUrl: string;
 }
 
 // Selected video for the right panel
@@ -131,7 +132,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
-export function TemarioPageClient({ course, whatsapp, whatsappMessage }: TemarioPageClientProps) {
+export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }: TemarioPageClientProps) {
   const { user, purchasedCourseIds, isOwner } = useAuth();
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set());
   const [selectedVideo, setSelectedVideo] = useState<SelectedVideo | null>(null);
@@ -436,11 +437,11 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage }: Temario
     <div className="space-y-6">
       {/* ===== BACK LINK ===== */}
       <Link
-        href="/cursos#titulo-cursos"
+        href={backUrl}
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <ChevronRight className="h-4 w-4 rotate-180" />
-        Volver al catálogo de cursos
+        Volver a {backUrl.includes('utp') ? 'cursos UTP' : 'catálogo de cursos'}
       </Link>
 
       {/* ===== COURSE HEADER ===== */}
