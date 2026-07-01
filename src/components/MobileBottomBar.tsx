@@ -1,18 +1,21 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Download, Sun, Moon, MessageCircle } from 'lucide-react';
+import { Download, ExternalLink, Sun, Moon, MessageCircle } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 export function MobileBottomBar() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
   const { resolvedTheme, setTheme } = useTheme();
   const [montado, setMontado] = useState(false);
 
   useEffect(() => {
     setMontado(true);
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    const standalone = window.matchMedia('(display-mode: standalone)').matches;
+    setIsStandalone(standalone);
+    if (standalone) {
       setIsInstalled(true);
       return;
     }
@@ -34,21 +37,26 @@ export function MobileBottomBar() {
         setDeferredPrompt(null);
       }
     } else {
-      // Fallback: show iOS instructions or general info
       alert('Para instalar la app, usa la opción "Agregar a la pantalla de inicio" de tu navegador.');
     }
   }, [deferredPrompt]);
 
-  const toggleTheme = () => {
-    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
-  };
+  const handleOpenApp = useCallback(() => {
+    window.location.href = '/';
+  }, []);
 
-  // WhatsApp number from site settings or fallback
+  const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+
   const whatsappNumber = '51999999999';
   const whatsappMsg = 'Hola, quiero información sobre los cursos.';
+  const goldBase = '#D4A017';
+  const goldLight = '#F0C75E';
+
+  // Si standalone, no mostrar nada (estamos dentro de la app instalada)
+  if (isStandalone) return null;
 
   return (
-    <div className="sm:hidden fixed bottom-0 left-0 right-0 z-[9999] border-t bg-white/95 dark:bg-[#0A192F]/95 backdrop-blur-xl" 
+    <div className="sm:hidden fixed bottom-0 left-0 right-0 z-[9999] border-t bg-white/95 dark:bg-[#0A192F]/95 backdrop-blur-xl"
       style={{ borderColor: '#D4A01740' }}>
       <div className="flex items-center justify-around h-14 px-2">
         {/* WhatsApp */}
@@ -62,16 +70,22 @@ export function MobileBottomBar() {
           <span className="text-[9px] font-medium text-slate-500 dark:text-slate-400">WhatsApp</span>
         </a>
 
-        {/* Install App — solo si no instalado */}
-        {!isInstalled && (
-          <button
-            onClick={handleInstall}
-            className="flex flex-col items-center justify-center gap-0.5 w-14 h-12 rounded-lg transition-colors hover:bg-black/5 dark:hover:bg-white/5"
-          >
-            <Download className="h-5 w-5" style={{ color: '#D4A017' }} />
-            <span className="text-[9px] font-medium" style={{ color: '#D4A017' }}>App</span>
-          </button>
-        )}
+        {/* Install / Open App */}
+        <button
+          onClick={isInstalled ? handleOpenApp : handleInstall}
+          className="flex flex-col items-center justify-center gap-0.5 w-14 h-12 rounded-lg transition-all"
+        >
+          <div className="flex items-center justify-center w-7 h-7 rounded-full" style={{ background: `linear-gradient(135deg, ${goldBase}, ${goldLight})` }}>
+            {isInstalled ? (
+              <ExternalLink className="h-3.5 w-3.5" style={{ color: '#0A192F' }} />
+            ) : (
+              <Download className="h-3.5 w-3.5" style={{ color: '#0A192F' }} />
+            )}
+          </div>
+          <span className="text-[9px] font-medium" style={{ color: goldBase }}>
+            {isInstalled ? 'Abrir' : 'App'}
+          </span>
+        </button>
 
         {/* Tema claro/oscuro */}
         {montado && (
