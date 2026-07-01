@@ -286,7 +286,17 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
                       </button>
                     </div>
 
-                    {/* TEMARIO button removed — whole card is clickable */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleVerTemario(curso); }}
+                      className="w-full h-9 text-xs font-bold tracking-wide gap-1.5 rounded-lg flex items-center justify-center border transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                      style={{
+                        borderColor: curso.colorKey === 'emerald' ? '#10B981' : curso.colorKey === 'blue' ? '#3B82F6' : curso.colorKey === 'orange' ? '#F97316' : curso.colorKey === 'purple' ? '#8B5CF6' : curso.colorKey === 'teal' ? '#14B8A6' : curso.colorKey === 'red' ? '#EF4444' : '#0EA5E9',
+                        color: curso.colorKey === 'emerald' ? '#059669' : curso.colorKey === 'blue' ? '#2563EB' : curso.colorKey === 'orange' ? '#EA580C' : curso.colorKey === 'purple' ? '#7C3AED' : curso.colorKey === 'teal' ? '#0D9488' : curso.colorKey === 'red' ? '#DC2626' : '#0284C7',
+                      }}
+                    >
+                      <ListChecks className="h-3.5 w-3.5" />
+                      TEMARIO
+                    </button>
                   </div>
                 </motion.div>
                 </AnimatedSection>
