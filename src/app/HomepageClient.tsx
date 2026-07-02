@@ -333,11 +333,9 @@ export function HomepageClient({ sanityData }: Props) {
   const heroSlides = sanityData?.heroSlides?.length ? sanityData.heroSlides : null;
   const currentSlide = heroSlides?.[0];
 
-  // Determine if we should show lightning (mobile: no to save performance)
-  const [showLightning, setShowLightning] = useState(false);
+  // Lightning visible en todos los tamanos
   const [isDark, setIsDark] = useState(false);
   useEffect(() => {
-    setShowLightning(window.innerWidth >= 768);
     setIsDark(document.documentElement.classList.contains('dark'));
     const observer = new MutationObserver(() => {
       setIsDark(document.documentElement.classList.contains('dark'));
@@ -414,8 +412,8 @@ export function HomepageClient({ sanityData }: Props) {
       {/* HERO SECTION — GSAP + Framer Motion */}
       {/* ============================================================ */}
       <section id="hero" ref={heroRef} className="flex-1 scroll-mt-16 relative overflow-hidden">
-        {/* Lightning WebGL background */}
-        {showLightning && (
+        {/* Lightning WebGL background — todos los dispositivos */}
+        {true && (
           <div className="absolute inset-0 z-0 transition-opacity duration-500"
             style={{ opacity: isDark ? 0.5 : 0.15 }}
           >

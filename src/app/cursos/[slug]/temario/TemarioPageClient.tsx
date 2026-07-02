@@ -251,12 +251,22 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
   const totalMaterials = topicMaterials.length;
   const totalTopicCount = topicGroups.length;
 
-  // Auto-play video when selectedVideo changes (only once)
+  // Video progress persistence
   useEffect(() => {
-    if (videoRef.current && selectedVideo) {
-      videoRef.current.play().catch(() => {});
+    if (!videoRef.current || !selectedVideo) return;
+    const saved = localStorage.getItem(`vid_progress_${slug}_${selectedVideo.url}`);
+    if (saved) {
+      videoRef.current.currentTime = parseFloat(saved);
     }
-  }, [selectedVideo]);
+  }, [selectedVideo, slug]);
+
+  const handleTimeUpdate = useCallback(() => {
+    if (videoRef.current && selectedVideo) {
+      localStorage.setItem(`vid_progress_${slug}_${selectedVideo.url}`, String(videoRef.current.currentTime));
+    }
+  }, [slug, selectedVideo]);
+
+  // No auto-play — user clicks to play manually
 
   // Fetch comments when a video is selected
   useEffect(() => {
@@ -938,9 +948,11 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                         controls
                         controlsList="nodownload"
                         disablePictureInPicture
+                        preload="metadata"
                         className="w-full h-full"
                         poster={selectedVideo.poster}
                         playsInline
+                        onTimeUpdate={handleTimeUpdate}
                       />
                     </div>
                     <div className="px-5 py-4">

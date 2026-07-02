@@ -131,9 +131,14 @@ export default async function RootLayout({
           }}
         />
       </head>
-	      <body
-	        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground pb-14 sm:pb-0`}
-	      >
+		      <body
+		        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground pb-14 sm:pb-0`}
+		      >
+        {/* Reading progress bar */}
+        <div id="reading-progress" className="fixed top-0 left-0 h-[3px] z-[10000] transition-all duration-150" style={{ background: 'linear-gradient(90deg, #10B981, #059669)', width: '0%' }} />
+        <script dangerouslySetInnerHTML={{
+          __html: `window.addEventListener('scroll',function(){var w=document.getElementById('reading-progress');if(w){var p=(window.scrollY/(document.documentElement.scrollHeight-window.innerHeight))*100;w.style.width=Math.min(p,100)+'%'}},{passive:true})`,
+        }} />
         <script dangerouslySetInnerHTML={{
           __html: `if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{})})}`,
         }} />
