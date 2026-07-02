@@ -61,10 +61,8 @@ export default async function TemarioPage({ params }: PageProps) {
     fetchCMS<SanitySiteSettings>(SITE_SETTINGS_QUERY),
   ]);
 
-  // UTP slugs from DASHBOARD_COURSES + mapping
-  const UTP_SLUGS = ['calculo-diferencial', 'calculo-integral', 'ecuaciones-diferenciales', 'calculo-vectorial', 'fisica-1', 'fisica-2', 'estatica', 'mecanica-estatica'];
-  const isUTP = UTP_SLUGS.includes(slug);
-  const backUrl = isUTP ? '/cursos/utp' : '/cursos#titulo-cursos';
+  // Back link siempre al catalogo general
+  const backUrl = '/cursos#titulo-cursos';
 
   if (!sanityCourse) {
     // Fallback con datos de DASHBOARD_COURSES para cursos sin CMS
@@ -83,7 +81,7 @@ export default async function TemarioPage({ params }: PageProps) {
             {/* Back link */}
             <Link href={backUrl} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-              Volver a {isUTP ? 'cursos UTP' : 'catálogo'}
+              Volver a cursos
             </Link>
 
             {/* Course header */}

@@ -10,6 +10,7 @@ import { SiteSettingsProvider } from "@/components/SiteSettingsProvider";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { VisualEditing } from "@/components/VisualEditing";
 import { MobileBottomBar } from "@/components/MobileBottomBar";
+import { ParticlesBackground } from "@/components/ParticlesBackground";
 import { sanityClient } from "@/lib/sanity.client";
 import { THEME_SETTINGS_QUERY, SITE_SETTINGS_QUERY } from "@/lib/sanity.queries";
 import type { SanityThemeSettings, SanitySiteSettings } from "@/lib/sanity.client";
@@ -154,6 +155,7 @@ export default async function RootLayout({
           <ThemeColorsProvider themeData={themeData}>
             <SiteSettingsProvider siteSettings={siteSettings}>
               <AuthProvider>
+                <ParticlesBackground />
                 {children}
                 {isDraftMode && <VisualEditing />}
                 <Toaster />
