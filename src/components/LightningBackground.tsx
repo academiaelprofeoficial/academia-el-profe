@@ -23,7 +23,11 @@ export function LightningBackground({ hue = 160, speed = 1.4, intensity = 0.5, s
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    const gl = canvas.getContext('webgl');
+    let gl: WebGLRenderingContext | null = null;
+    try {
+      gl = canvas.getContext('webgl') || (canvas.getContext('experimental-webgl') as WebGLRenderingContext | null);
+    } catch {}
+    if (!gl) return; // WebGL not supported — silently skip
     if (!gl) return;
 
     const vertexShaderSource = `
