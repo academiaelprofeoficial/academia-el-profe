@@ -29,7 +29,7 @@ export const CATEGORIAS: readonly CourseCategory[] = [
     icono: 'TrendingUp',
   },
   {
-    slug: 'calculo-vectorial',
+    slug: 'calculo-multivariable',
     nombre: 'Cálculo Vectorial',
     color: 'bg-purple-600',
     colorHover: 'hover:bg-purple-700',
@@ -163,7 +163,7 @@ export const CURSOS_MOCK: readonly Course[] = [
   },
   {
     id: '4',
-    slug: 'calculo-vectorial',
+    slug: 'calculo-multivariable',
     titulo: 'CÁLCULO VECTORIAL',
     subtitulo: 'Vectores, campos vectoriales y teoremas integrales',
     descripcion: 'Domina el cálculo vectorial: operadores diferenciales, integrales de línea y superficie, y los teoremas fundamentales de Green, Stokes y Gauss.',
@@ -297,7 +297,7 @@ export const CURSOS_LANDING: readonly CourseLanding[] = [
   { id: 'calculo-diferencial', title: 'CÁLCULO DIFERENCIAL', desc: 'Funciones, límites, derivadas y aplicaciones.', formula: 'f(x)', formulaIcon: 'FunctionSquare', modules: 14, price: 100, priceUSD: 30, colorKey: 'emerald' },
   { id: 'calculo-integral', title: 'CÁLCULO INTEGRAL', desc: 'Integrales, técnicas de integración y aplicaciones.', formula: '∫dx', formulaIcon: 'Sigma', modules: 19, price: 150, priceUSD: 42, colorKey: 'blue' },
   { id: 'ecuaciones-diferenciales', title: 'ECUACIONES DIFERENCIALES', desc: 'Ecuaciones diferenciales ordinarias y aplicaciones.', formula: 'd²y/dx²', formulaIcon: 'TrendingUp', modules: 20, price: 150, priceUSD: 42, colorKey: 'orange' },
-  { id: 'calculo-vectorial', title: 'CÁLCULO VECTORIAL', desc: 'Vectores, campos vectoriales y teoremas integrales.', formula: 'F', formulaIcon: 'MoveUpRight', modules: 18, price: 150, priceUSD: 42, colorKey: 'purple' },
+  { id: 'calculo-multivariable', title: 'CÁLCULO MULTIVARIABLE', desc: 'Vectores, campos vectoriales y teoremas integrales.', formula: 'F', formulaIcon: 'MoveUpRight', modules: 18, price: 150, priceUSD: 42, colorKey: 'purple' },
   { id: 'fisica-1', title: 'FÍSICA 1', desc: 'Cinemática, dinámica y leyes de Newton.', formula: '', formulaIcon: 'Atom', modules: 18, price: 120, priceUSD: 35, colorKey: 'teal' },
   { id: 'fisica-2', title: 'FÍSICA 2', desc: 'Electromagnetismo, ondas y óptica.', formula: '', formulaIcon: 'Magnet', modules: 18, price: 120, priceUSD: 35, colorKey: 'red' },
   { id: 'estatica', title: 'ESTÁTICA', desc: 'Equilibrio de fuerzas y estructuras.', formula: '', formulaIcon: 'Triangle', modules: 15, price: 120, priceUSD: 35, colorKey: 'sky' },
@@ -457,6 +457,16 @@ export const UTP_EVALUACIONES: readonly UTPEvaluacion[] = [
 ] as const;
 
 export const DASHBOARD_COURSES: readonly DashboardCourse[] = [
+  { id: 'calculo-diferencial', title: 'CÁLCULO DIFERENCIAL', desc: 'Límites, derivadas y aplicaciones.', formula: 'f(x)', color: 'bg-emerald-600', price: 100, priceUSD: 30 },
+  { id: 'calculo-integral', title: 'CÁLCULO INTEGRAL', desc: 'Integrales, técnicas de integración y aplicaciones.', formula: '∫dx', color: 'bg-blue-600', price: 150, priceUSD: 42 },
+  { id: 'ecuaciones-diferenciales', title: 'ECUACIONES DIFERENCIALES', desc: 'Ecuaciones diferenciales ordinarias y aplicaciones.', formula: "d²y/dx²", color: 'bg-orange-500', price: 150, priceUSD: 42 },
+  { id: 'calculo-multivariable', title: 'CÁLCULO MULTIVARIABLE', desc: 'Funciones de varias variables, gradiente y optimización.', formula: '∇f', color: 'bg-purple-600', price: 150, priceUSD: 42 },
+  { id: 'estatica', title: 'ESTÁTICA', desc: 'Fuerzas, equilibrio, centroides y momentos.', formula: 'ΣF', color: 'bg-teal-600', price: 120, priceUSD: 35 },
+  { id: 'fisica-1', title: 'FÍSICA 1', desc: 'Cinemática, dinámica y leyes de Newton.', formula: '⚛', color: 'bg-red-600', price: 120, priceUSD: 35 },
+  { id: 'fisica-2', title: 'FÍSICA 2', desc: 'Electromagnetismo, ondas y óptica.', formula: '∿', color: 'bg-sky-600', price: 120, priceUSD: 35 },
+] as const;
+
+export const UTP_COURSES: readonly DashboardCourse[] = [
   { id: 'calculo-1-utp', title: 'CÁLCULO 1', desc: 'Límites, derivadas y aplicaciones enfocado en el sílabo UTP.', formula: 'f(x)', color: 'bg-emerald-600', price: 80, priceUSD: 22 },
   { id: 'calculo-2-utp', title: 'CÁLCULO 2', desc: 'Integrales, métodos de integración y aplicaciones UTP.', formula: '∫dx', color: 'bg-blue-600', price: 80, priceUSD: 22 },
   { id: 'calculo-toma-decisiones-utp', title: 'CÁLCULO TOMA DE DECISIONES', desc: 'Optimización, programación lineal y análisis de decisiones.', formula: 'max', color: 'bg-orange-500', price: 90, priceUSD: 25 },
@@ -511,7 +521,7 @@ export interface DeseoCurso {
 }
 
 export const DESEOS_USUARIO: readonly DeseoCurso[] = [
-  { id: 'd-1', cursoId: 'calculo-vectorial', cursoNombre: 'CÁLCULO VECTORIAL', formula: 'F', color: 'bg-purple-600', price: 150, fechaAgregado: '10 de junio de 2026' },
+  { id: 'd-1', cursoId: 'calculo-multivariable', cursoNombre: 'CÁLCULO MULTIVARIABLE', formula: 'F', color: 'bg-purple-600', price: 150, fechaAgregado: '10 de junio de 2026' },
   { id: 'd-2', cursoId: 'fisica-2', cursoNombre: 'FÍSICA 2', formula: '∿', color: 'bg-red-600', price: 120, fechaAgregado: '12 de junio de 2026' },
 ] as const;
 

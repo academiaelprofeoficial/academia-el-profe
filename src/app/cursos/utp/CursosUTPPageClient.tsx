@@ -19,7 +19,7 @@ import {
   Zap,
   BookOpen,
 } from 'lucide-react';
-import { DASHBOARD_COURSES } from '@/lib/data';
+import { DASHBOARD_COURSES, UTP_COURSES } from '@/lib/data';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth-context';
@@ -69,7 +69,7 @@ interface MergedCourse {
 }
 
 function mergeCourses(sanityCourses: SanityCourse[] | null): MergedCourse[] {
-  return DASHBOARD_COURSES.map((dc) => {
+  return UTP_COURSES.map((dc) => {
     const sanity = sanityCourses?.find((s) => s.slug === dc.id);
     const sanitySlug = SANITY_SLUG_MAP[dc.id] || dc.id;
     return {

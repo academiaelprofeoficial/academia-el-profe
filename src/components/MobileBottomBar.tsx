@@ -1,10 +1,13 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Download, ExternalLink, Sun, Moon, MessageCircle } from 'lucide-react';
+import { Download, ExternalLink, Sun, Moon, MessageCircle, Home } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { useAuth } from '@/lib/auth-context';
+import Link from 'next/link';
 
 export function MobileBottomBar() {
+  const { user } = useAuth();
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
@@ -89,6 +92,17 @@ export function MobileBottomBar() {
           <MessageCircle className="h-5 w-5" style={{ color: '#25D366' }} />
           <span className="text-[9px] font-medium text-slate-500 dark:text-slate-400">WhatsApp</span>
         </a>
+
+        {/* Home / Inicio — solo si logueado */}
+        {user && (
+          <Link
+            href="/dashboard/cursos"
+            className="flex flex-col items-center justify-center gap-0.5 w-14 h-12 rounded-lg transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+          >
+            <Home className="h-5 w-5" style={{ color: '#10B981' }} />
+            <span className="text-[9px] font-medium text-slate-500 dark:text-slate-400">Inicio</span>
+          </Link>
+        )}
 
         {/* Install / Open App — solo si NO estamos en standalone */}
         {(showInstall || showOpenApp) && (
