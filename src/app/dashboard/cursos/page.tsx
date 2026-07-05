@@ -42,6 +42,9 @@ const COLOR_HEX_MAP: Record<string, string> = {
   'bg-teal-600': '#0D9488',
   'bg-red-600': '#DC2626',
   'bg-sky-600': '#0284C7',
+  'bg-cyan-600': '#0891B2',
+  'bg-lime-600': '#65A30D',
+  'bg-rose-600': '#E11D48',
 };
 
 function extractHex(twClass: string): string {
@@ -353,13 +356,8 @@ function DashboardCursosContent() {
   const paymentGateway = searchParams.get('gateway') || '';
   const { purchasedCourseIds, refreshPurchases, user } = useAuth();
 
-  // Map DASHBOARD_COURSES slugs to Sanity slugs (for courses with different names)
-  const SANITY_SLUG_MAP: Record<string, string> = {
-    'estatica': 'mecanica-estatica',
-    'calculo-vectorial': 'calculo-vectorial',
-    'fisica-1': 'fisica-1',
-    'fisica-2': 'fisica-2',
-  };
+  // Map DASHBOARD_COURSES slugs to Sanity slugs (UTP courses are independent)
+  const SANITY_SLUG_MAP: Record<string, string> = {};
 
   // Fetch Sanity prices on mount
   useEffect(() => {

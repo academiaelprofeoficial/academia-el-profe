@@ -457,13 +457,16 @@ export const UTP_EVALUACIONES: readonly UTPEvaluacion[] = [
 ] as const;
 
 export const DASHBOARD_COURSES: readonly DashboardCourse[] = [
-  { id: 'calculo-diferencial', title: 'CÁLCULO DIFERENCIAL', desc: 'Funciones, límites, derivadas y aplicaciones.', formula: 'f(x)', color: 'bg-emerald-600', price: 100, priceUSD: 30 },
-  { id: 'calculo-integral', title: 'CÁLCULO INTEGRAL', desc: 'Integrales, técnicas de integración y aplicaciones.', formula: '∫dx', color: 'bg-blue-600', price: 150, priceUSD: 42 },
-  { id: 'ecuaciones-diferenciales', title: 'ECUACIONES DIFERENCIALES', desc: 'Ecuaciones diferenciales ordinarias y aplicaciones.', formula: "d²y/dx²", color: 'bg-orange-500', price: 150, priceUSD: 42 },
-  { id: 'calculo-vectorial', title: 'CÁLCULO VECTORIAL', desc: 'Vectores, campos vectoriales y teoremas integrales.', formula: 'F', color: 'bg-purple-600', price: 150, priceUSD: 42 },
-  { id: 'fisica-1', title: 'FÍSICA 1', desc: 'Cinemática, dinámica y leyes de Newton.', formula: '⚛', color: 'bg-teal-600', price: 120, priceUSD: 35 },
-  { id: 'fisica-2', title: 'FÍSICA 2', desc: 'Electromagnetismo, ondas y óptica.', formula: '∿', color: 'bg-red-600', price: 120, priceUSD: 35 },
-  { id: 'estatica', title: 'ESTÁTICA', desc: 'Equilibrio de fuerzas y análisis de estructuras.', formula: '△', color: 'bg-sky-600', price: 120, priceUSD: 35 },
+  { id: 'calculo-1-utp', title: 'CÁLCULO 1', desc: 'Límites, derivadas y aplicaciones enfocado en el sílabo UTP.', formula: 'f(x)', color: 'bg-emerald-600', price: 80, priceUSD: 22 },
+  { id: 'calculo-2-utp', title: 'CÁLCULO 2', desc: 'Integrales, métodos de integración y aplicaciones UTP.', formula: '∫dx', color: 'bg-blue-600', price: 80, priceUSD: 22 },
+  { id: 'calculo-toma-decisiones-utp', title: 'CÁLCULO TOMA DE DECISIONES', desc: 'Optimización, programación lineal y análisis de decisiones.', formula: 'max', color: 'bg-orange-500', price: 90, priceUSD: 25 },
+  { id: 'calculo-avanzado-ingenieria-utp', title: 'CÁLCULO AVANZADO INGENIERÍA', desc: 'Ecuaciones diferenciales, Laplace y métodos numéricos.', formula: '∇²', color: 'bg-purple-600', price: 100, priceUSD: 28 },
+  { id: 'estatica-utp', title: 'ESTÁTICA UTP', desc: 'Fuerzas, equilibrio, centroides y momentos de inercia.', formula: 'ΣF', color: 'bg-teal-600', price: 75, priceUSD: 20 },
+  { id: 'mecanica-clasica-utp', title: 'MECÁNICA CLÁSICA', desc: 'Cinemática, dinámica y leyes de conservación.', formula: '⚛', color: 'bg-red-600', price: 75, priceUSD: 20 },
+  { id: 'fundamentos-electromagnetismo-utp', title: 'FUNDAMENTOS AL ELECTROMAGNETISMO', desc: 'Campos, ondas electromagnéticas y circuitos básicos.', formula: '∿', color: 'bg-sky-600', price: 85, priceUSD: 23 },
+  { id: 'fluidos-termodinamica-utp', title: 'FLUIDOS Y TERMODINÁMICA', desc: 'Estática y dinámica de fluidos, leyes termodinámicas.', formula: 'Δ', color: 'bg-cyan-600', price: 85, priceUSD: 23 },
+  { id: 'quimica-general-utp', title: 'QUÍMICA GENERAL', desc: 'Estructura atómica, enlaces, estequiometría y reacciones.', formula: '⚗', color: 'bg-lime-600', price: 70, priceUSD: 19 },
+  { id: 'quimica-inorganica-utp', title: 'QUÍMICA INORGÁNICA', desc: 'Compuestos inorgánicos, nomenclatura y reacciones químicas.', formula: '🧪', color: 'bg-rose-600', price: 70, priceUSD: 19 },
 ] as const;
 
 export interface DashboardCourse {

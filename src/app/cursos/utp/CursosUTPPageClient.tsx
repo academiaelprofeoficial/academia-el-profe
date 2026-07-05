@@ -41,6 +41,9 @@ const COLOR_HEX_MAP: Record<string, string> = {
   'bg-teal-600': '#0D9488',
   'bg-red-600': '#DC2626',
   'bg-sky-600': '#0284C7',
+  'bg-cyan-600': '#0891B2',
+  'bg-lime-600': '#65A30D',
+  'bg-rose-600': '#E11D48',
 };
 
 function extractHex(twClass: string): string {
@@ -51,13 +54,8 @@ function extractHex(twClass: string): string {
 // Merge DASHBOARD_COURSES with Sanity data (prices from CMS)
 // ----------------------------------------------------------------
 
-// Slug mapping: DASHBOARD_COURSES slug → Sanity slug
-const SANITY_SLUG_MAP: Record<string, string> = {
-  'estatica': 'mecanica-estatica',
-  'calculo-vectorial': 'calculo-vectorial',
-  'fisica-1': 'fisica-1',
-  'fisica-2': 'fisica-2',
-};
+// Slug mapping: UTP courses are independent — no Sanity mapping needed
+const SANITY_SLUG_MAP: Record<string, string> = {};
 
 interface MergedCourse {
   readonly id: string;
