@@ -304,66 +304,14 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
             })}
 
             {/* ============================================================ */}
-            {/* TARJETA UTP ENFOCADA (2 cols en PC, 1 col en móvil) */}
-            {/* ============================================================ */}
+            {/* TARJETA UTP — imagen personalizada */}
             <Link href="/cursos/utp" id="utp-enfoque" className="md:col-span-2 lg:col-span-2 block group">
-              <div className="rounded-2xl border-2 border-red-200 dark:border-red-900/50 bg-white dark:bg-slate-900 p-5 md:p-6 transition-all duration-200 group-hover:border-red-400 dark:group-hover:border-red-700 group-hover:shadow-lg group-hover:shadow-red-500/10 cursor-pointer">
-                {/* Diseño PC */}
-                <div className="hidden md:flex items-center gap-6">
-                  {/* Logo UTP */}
-                  <div className="shrink-0">
-                    <div className="h-20 w-20 rounded-2xl bg-red-600 flex items-center justify-center">
-                      <span className="text-white font-extrabold text-xl">UTP</span>
-                    </div>
-                  </div>
-
-                  {/* Texto */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-base font-bold text-brand-heading mb-1">
-                      Enfocado en la Universidad Tecnológica del Perú (UTP)
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                      Todos nuestros cursos están alineados con el pensum académico de
-                      la UTP para ayudarte a aprobar tus exámenes y avanzar con éxito.
-                    </p>
-                  </div>
-
-                  {/* Viñetas */}
-                  <div className="shrink-0 space-y-2.5">
-                    {[
-                      'Contenido 100% actualizado',
-                      'Basado en el temario oficial UTP',
-                      'Dictado por El Profe, especialistas en UTP',
-                      'Miles de estudiantes ya aprobaron',
-                    ].map((texto) => (
-                      <div key={texto} className="flex items-center gap-2">
-                        <CheckCircle2 className="h-4 w-4 text-red-500 shrink-0" />
-                        <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">
-                          {texto}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Flecha indicadora PC */}
-                  <div className="shrink-0 ml-2">
-                    <MoveUpRight className="h-6 w-6 text-red-500 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </div>
-                </div>
-
-                {/* Diseño Móvil */}
-                <div className="md:hidden flex items-center gap-3">
-                  <div className="h-14 w-14 rounded-xl bg-red-600 flex items-center justify-center shrink-0">
-                    <span className="text-white font-extrabold text-sm">UTP</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-bold text-brand-heading leading-tight">
-                      Enfocado en la Universidad Tecnológica del Perú (UTP)
-                    </h3>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-red-500 shrink-0 transition-transform duration-200 group-hover:translate-x-1" />
-                </div>
-              </div>
+              <img
+                src="/images/boton-utp.webp"
+                alt="Cursos UTP"
+                className="w-full h-auto object-contain rounded-2xl transition-transform duration-200 group-hover:scale-[1.02] group-hover:shadow-xl"
+                loading="lazy"
+              />
             </Link>
           </div>
         </div>
