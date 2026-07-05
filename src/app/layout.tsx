@@ -30,22 +30,22 @@ const geistMono = Geist_Mono({
 // ============================================================
 export const metadata: Metadata = {
   title: {
-    default: "Academia El Profe Oficial | Clases de Ingeniería para la UTP",
-    template: "%s | Academia El Profe Oficial",
+    default: "Academia El Profe | Cursos Universitarios",
+    template: "%s | Academia El Profe",
   },
   description:
-    "Plataforma educativa de refuerzo académico para estudiantes de la Universidad Tecnológica del Perú (UTP). Cursos de Cálculo, Mecánica, Fluidos, Estadística y más con el Prof. Kall Bruno Díaz.",
+    "ACADEMIA EL PROFE : CURSOS UNIVERSITARIOS. Plataforma educativa con cursos de Cálculo, Física, Estática, Química y más para estudiantes universitarios. Clases grabadas, material PDF y certificado.",
   keywords: [
     "Academia El Profe",
-    "clases UTP",
-    "cálculo UTP",
-    "ingeniería Perú",
-    "refuerzo académico",
+    "cursos universitarios",
+    "cálculo diferencial",
+    "cálculo integral",
+    "física universitaria",
+    "estática",
+    "cursos UTP",
+    "clases de ingeniería",
     "Prof. Kall Bruno Díaz",
-    "cursos de cálculo",
-    "mecánica clásica",
-    "fluidos y termodinámica",
-    "estadística aplicada",
+    "refuerzo académico",
   ],
   authors: [{ name: "Prof. Kall Bruno Díaz" }],
   creator: "Prof. Kall Bruno Díaz",
@@ -55,19 +55,21 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "Academia El Profe Oficial | Clases de Ingeniería para la UTP",
+    title: "Academia El Profe | Cursos Universitarios",
     description:
-      "Refuerza tu carrera en ingeniería con los mejores cursos de Cálculo, Mecánica, Fluidos y más. Impartido por el Prof. Kall Bruno Díaz.",
+      "ACADEMIA EL PROFE : CURSOS UNIVERSITARIOS. Cursos de Cálculo, Física, Estática, Química y más. Clases grabadas, material PDF descargable y certificado al finalizar.",
     url: "https://academiaelprofe.com",
-    siteName: "Academia El Profe Oficial",
+    siteName: "Academia El Profe",
     locale: "es_PE",
     type: "website",
+    images: [{ url: "/images/logo-academia.webp", width: 800, height: 400 }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Academia El Profe Oficial",
+    title: "Academia El Profe | Cursos Universitarios",
     description:
-      "Plataforma educativa de refuerzo académico para estudiantes UTP.",
+      "ACADEMIA EL PROFE : CURSOS UNIVERSITARIOS. Cursos online con clases grabadas, material PDF y certificado.",
+    images: ["/images/logo-academia.webp"],
   },
   robots: {
     index: true,

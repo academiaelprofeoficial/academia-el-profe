@@ -61,8 +61,9 @@ export default async function TemarioPage({ params }: PageProps) {
     fetchCMS<SanitySiteSettings>(SITE_SETTINGS_QUERY),
   ]);
 
-  // Back link siempre al catalogo general
-  const backUrl = '/cursos#titulo-cursos';
+  // Back link: UTP courses go to /cursos/utp, general to /cursos#titulo-cursos
+  const isUTP = slug.endsWith('-utp');
+  const backUrl = isUTP ? '/cursos/utp' : '/cursos#titulo-cursos';
 
   if (!sanityCourse) {
     // Fallback con datos de DASHBOARD_COURSES para cursos sin CMS
@@ -81,7 +82,7 @@ export default async function TemarioPage({ params }: PageProps) {
             {/* Back link */}
             <Link href={backUrl} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-              Volver a cursos
+              Volver a {isUTP ? 'cursos UTP' : 'cursos'}
             </Link>
 
             {/* Course header */}

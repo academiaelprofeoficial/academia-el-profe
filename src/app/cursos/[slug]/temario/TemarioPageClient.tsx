@@ -451,7 +451,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <ChevronRight className="h-4 w-4 rotate-180" />
-        Volver a cursos
+        Volver a {backUrl.includes('utp') ? 'cursos UTP' : 'cursos'}
       </Link>
 
       {/* ===== COURSE HEADER ===== */}
