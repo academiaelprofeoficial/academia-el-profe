@@ -353,8 +353,8 @@ export function LandingHeader() {
         </div>
       </header>
 
-      {/* Spacer */}
-      <div className="h-14 md:h-16 shrink-0" />
+      {/* Spacer — always match header height (h-16 = 64px) */}
+      <div className="h-16 shrink-0" />
 
       {/* ============================================================ */}
       {/* MENÚ MÓVIL — Framer Motion                                    */}
@@ -368,7 +368,7 @@ export function LandingHeader() {
               animate="visible"
               exit="exit"
               transition={{ duration: 0.3 }}
-              className="fixed inset-0 z-[9998] bg-black/40 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm lg:hidden"
               onClick={() => setMenuAbierto(false)}
             />
 
@@ -377,7 +377,7 @@ export function LandingHeader() {
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="fixed top-0 left-0 bottom-0 z-[9998] w-[85%] max-w-[360px] bg-white dark:bg-[var(--surface-1)] shadow-2xl lg:hidden flex flex-col"
+              className="fixed top-0 left-0 bottom-0 z-[9999] w-[85%] max-w-[360px] bg-white dark:bg-[var(--surface-1)] shadow-2xl lg:hidden flex flex-col"
               style={{
                 transformOrigin: 'left center',
                 borderTopRightRadius: '24px',

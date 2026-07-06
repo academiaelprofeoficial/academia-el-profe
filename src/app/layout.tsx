@@ -144,7 +144,7 @@ export default async function RootLayout({
           __html: `window.addEventListener('scroll',function(){var w=document.getElementById('reading-progress');if(w){var p=(window.scrollY/(document.documentElement.scrollHeight-window.innerHeight))*100;w.style.width=Math.min(p,100)+'%'}},{passive:true})`,
         }} />
         <script dangerouslySetInnerHTML={{
-          __html: `if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{})})}`,
+          __html: `if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js',{scope:'/'}).then(function(reg){if(reg.waiting){reg.waiting.postMessage({type:'SKIP_WAITING'})}}).catch(function(){})})}`,
         }} />
         <script dangerouslySetInnerHTML={{
           __html: `window.addEventListener('error',function(e){if(e.message&&e.message.includes('ChunkLoadError')){location.reload()}});window.addEventListener('unhandledrejection',function(e){if(e.reason&&e.reason.message&&e.reason.message.includes('ChunkLoadError')){location.reload()}});`,
