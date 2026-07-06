@@ -23,11 +23,13 @@ import {
   Clock,
   PlayCircle,
   BookOpen,
+  QrCode,
 } from 'lucide-react';
 import { DASHBOARD_COURSES } from '@/lib/data';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth-context';
+import { QrPaymentModal } from '@/components/QrPaymentModal';
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 // ---------------------------------------------------------------------------
@@ -124,6 +126,7 @@ function PaymentButtons({
 }) {
   const loadingRef = useRef<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
+  const [showQr, setShowQr] = useState(false);
 
   const handleMercadoPago = useCallback(async () => {
     const key = `${course.id}-mp`;
@@ -201,7 +204,7 @@ function PaymentButtons({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="grid grid-cols-2 gap-2 w-full">
+      <div className="grid grid-cols-3 gap-2 w-full">
         {/* Botón Mercado Pago */}
         <button
           onClick={(e) => { e.stopPropagation(); handleMercadoPago(); }}
@@ -214,7 +217,7 @@ function PaymentButtons({
             <ShoppingCart className="h-3.5 w-3.5 shrink-0" />
           )}
           <span className="truncate">
-            {loadingRef.current[`${course.id}-mp`] ? 'Procesando...' : `PEN ${formatoSoles(course.price)}`}
+            {loadingRef.current[`${course.id}-mp`] ? 'Procesando...' : `S/ ${formatoSoles(course.price)}`}
           </span>
         </button>
 
@@ -230,8 +233,17 @@ function PaymentButtons({
             <img src="/images/paypal-logo.png" alt="PP" className="h-3.5 w-3.5 object-contain shrink-0" />
           )}
           <span className="truncate">
-            {loadingRef.current[`${course.id}-pp`] ? 'Procesando...' : `USD ${formatoUSD(course.priceUSD)}`}
+            {loadingRef.current[`${course.id}-pp`] ? 'Procesando...' : `$${formatoUSD(course.priceUSD)}`}
           </span>
+        </button>
+
+        {/* Botón QR */}
+        <button
+          onClick={(e) => { e.stopPropagation(); setShowQr(true); }}
+          className="h-9 text-[11px] font-bold tracking-wide gap-1 rounded-lg flex items-center justify-center transition-all bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white"
+        >
+          <QrCode className="h-3.5 w-3.5 shrink-0" />
+          <span className="truncate">QR</span>
         </button>
       </div>
 
@@ -240,6 +252,15 @@ function PaymentButtons({
           {error}
         </p>
       )}
+
+      <QrPaymentModal
+        isOpen={showQr}
+        onClose={() => setShowQr(false)}
+        courseTitle={course.title}
+        pricePEN={course.price}
+        priceUSD={course.priceUSD}
+        slug={course.id}
+      />
     </div>
   );
 }
@@ -410,30 +431,30 @@ function DashboardCursosContent() {
   return (
     <>
       {/* Header row */}
-	      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-	        <h1 className="text-xl sm:text-2xl font-bold text-brand-heading dark:text-slate-100 leading-tight">
-	          <span className="block sm:inline">
-	            Mis Cursos
-	          </span>
-	          <span className="inline-flex sm:inline-flex items-center gap-2 ml-2">
-	            <span className="inline-flex items-center justify-center h-8 px-3 rounded-lg bg-brand-primary text-white text-sm font-bold">
-	              {purchasedCourseIds.length} activos
-	            </span>
-	          </span>
-	        </h1>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <h1 className="text-xl sm:text-2xl font-bold text-brand-heading dark:text-slate-100 leading-tight">
+                  <span className="block sm:inline">
+                    Mis Cursos
+                  </span>
+                  <span className="inline-flex sm:inline-flex items-center gap-2 ml-2">
+                    <span className="inline-flex items-center justify-center h-8 px-3 rounded-lg bg-brand-primary text-white text-sm font-bold">
+                      {purchasedCourseIds.length} activos
+                    </span>
+                  </span>
+                </h1>
 
-	        <div className="hidden sm:flex items-center">
-	          <Link href="/cursos" className="inline-flex items-center gap-2 h-10 px-4 rounded-lg bg-brand-primary text-white text-sm font-bold hover:bg-brand-primary-hover transition-colors">
-	            <BookOpen className="h-4 w-4" /> Catálogo
-	          </Link>
-	        </div>
-	      </div>
+                <div className="hidden sm:flex items-center">
+                  <Link href="/cursos" className="inline-flex items-center gap-2 h-10 px-4 rounded-lg bg-brand-primary text-white text-sm font-bold hover:bg-brand-primary-hover transition-colors">
+                    <BookOpen className="h-4 w-4" /> Catálogo
+                  </Link>
+                </div>
+              </div>
 
-	      {/* Subtitle */}
-	      <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-	        <Lock className="h-4 w-4 shrink-0" />
-	        <span>Tus cursos adquiridos. Accede a las clases, materiales y certificados.</span>
-	      </div>
+              {/* Subtitle */}
+              <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                <Lock className="h-4 w-4 shrink-0" />
+                <span>Tus cursos adquiridos. Accede a las clases, materiales y certificados.</span>
+              </div>
 
       {/* Banner de estado de pago */}
       {paymentStatus && (

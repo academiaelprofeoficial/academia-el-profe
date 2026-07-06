@@ -24,6 +24,7 @@ import {
   ShoppingCart,
   BadgeCheck,
   ChevronRight,
+  QrCode,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +35,7 @@ import { cn } from '@/lib/utils';
 import type { SanityCourse, SanityImage, PortableTextBlock } from '@/lib/sanity.client';
 import { getImageUrl } from '@/lib/sanity.client';
 import { PortableText } from '@portabletext/react';
+import { QrPaymentModal } from '@/components/QrPaymentModal';
 
 interface DetalleCursoClientProps {
   readonly course: SanityCourse;
@@ -76,6 +78,7 @@ const ptComponents = {
 
 export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
   const [showPurchase, setShowPurchase] = useState(false);
+  const [showQr, setShowQr] = useState(false);
 
   // CMS Data
   const title = course.title;
@@ -401,7 +404,7 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
                 Soporte del profesor
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2">
               <Link
                 href={`/api/checkout?courseId=${slug}&provider=mercadopago`}
                 className="flex-1 bg-[#009ee3] hover:bg-[#007ab8] text-white font-bold text-sm py-3 rounded-xl text-center transition-colors"
@@ -414,6 +417,13 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
               >
                 Pagar con PayPal
               </Link>
+              <button
+                onClick={() => { setShowPurchase(false); setShowQr(true); }}
+                className="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-sm py-3 rounded-xl text-center transition-colors flex items-center justify-center gap-2"
+              >
+                <QrCode className="h-4 w-4" />
+                Pagar con QR
+              </button>
             </div>
             <button
               onClick={() => setShowPurchase(false)}
@@ -424,6 +434,16 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
           </div>
         </div>
       )}
+
+      {/* QR Payment Modal */}
+      <QrPaymentModal
+        isOpen={showQr}
+        onClose={() => setShowQr(false)}
+        courseTitle={title}
+        pricePEN={pricePEN}
+        priceUSD={priceUSD}
+        slug={slug}
+      />
     </section>
   );
 }

@@ -110,7 +110,6 @@ async function seed() {
     { _type: "partner", name: "Universidad de Lima", abbreviation: "UL", url: "https://www.ulima.edu.pe", order: 5 },
     { _type: "partner", name: "Universidad Ricardo Palma", abbreviation: "URP", url: "https://www.urp.edu.pe", order: 6 },
     { _type: "partner", name: "Universidad César Vallejo", abbreviation: "UCV", url: "https://www.ucv.edu.pe", order: 7 },
-    { _type: "partner", name: "Universidad Señor de Sipán", abbreviation: "USS", url: "https://www.uss.edu.pe", order: 8 },
   ];
   for (const p of partners) {
     await createOrReplace(p, `partner-${p.order}`);

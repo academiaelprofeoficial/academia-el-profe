@@ -23,11 +23,13 @@ import {
   PlayCircle,
   ArrowLeft,
   Zap,
+  QrCode,
 } from 'lucide-react';
 import { DASHBOARD_COURSES } from '@/lib/data';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth-context';
+import { QrPaymentModal } from '@/components/QrPaymentModal';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 
@@ -122,6 +124,7 @@ function PaymentButtons({
 }) {
   const loadingRef = useRef<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
+  const [showQr, setShowQr] = useState(false);
 
   const handleMercadoPago = useCallback(async () => {
     const key = `${course.id}-mp`;
@@ -161,19 +164,32 @@ function PaymentButtons({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="grid grid-cols-2 gap-2 w-full">
+      <div className="grid grid-cols-3 gap-2 w-full">
         <button onClick={handleMercadoPago} disabled={!!loadingRef.current[`${course.id}-mp`]}
           className="h-9 text-[11px] font-bold tracking-wide text-white gap-1 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-brand-primary-hover hover:bg-brand-primary">
           {loadingRef.current[`${course.id}-mp`] ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShoppingCart className="h-3.5 w-3.5 shrink-0" />}
-          <span className="truncate">{loadingRef.current[`${course.id}-mp`] ? 'Procesando...' : `PEN ${formatoSoles(course.price)}`}</span>
+          <span className="truncate">{loadingRef.current[`${course.id}-mp`] ? 'Procesando...' : `S/ ${formatoSoles(course.price)}`}</span>
         </button>
         <button onClick={handlePayPal} disabled={!!loadingRef.current[`${course.id}-pp`]}
           className="h-9 text-[11px] font-bold tracking-wide gap-1 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-[#ffc439] hover:bg-[#f2ba36] text-[#003087]">
           {loadingRef.current[`${course.id}-pp`] ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <img src="/images/paypal-logo.png" alt="PP" className="h-3.5 w-3.5 object-contain shrink-0" />}
-          <span className="truncate">{loadingRef.current[`${course.id}-pp`] ? 'Procesando...' : `USD ${formatoUSD(course.priceUSD)}`}</span>
+          <span className="truncate">{loadingRef.current[`${course.id}-pp`] ? 'Procesando...' : `$${formatoUSD(course.priceUSD)}`}</span>
+        </button>
+        <button onClick={(e) => { e.stopPropagation(); setShowQr(true); }}
+          className="h-9 text-[11px] font-bold tracking-wide gap-1 rounded-lg flex items-center justify-center transition-all bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white">
+          <QrCode className="h-3.5 w-3.5 shrink-0" />
+          <span className="truncate">QR</span>
         </button>
       </div>
       {error && <p className="text-[10px] text-red-500 text-center leading-tight">{error}</p>}
+      <QrPaymentModal
+        isOpen={showQr}
+        onClose={() => setShowQr(false)}
+        courseTitle={course.title}
+        pricePEN={course.price}
+        priceUSD={course.priceUSD}
+        slug={course.id}
+      />
     </div>
   );
 }

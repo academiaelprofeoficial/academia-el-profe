@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Download, ExternalLink, Sun, Moon, MessageCircle, Home } from 'lucide-react';
+import { Download, ExternalLink, Sun, Moon, Home } from 'lucide-react';
+import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import { useTheme } from 'next-themes';
 import { useAuth } from '@/lib/auth-context';
 import Link from 'next/link';
@@ -51,8 +52,8 @@ export function MobileBottomBar() {
 
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
 
-  const whatsappNumber = '51999999999';
-  const whatsappMsg = 'Hola, quiero información sobre los cursos.';
+  const whatsappNumber = '51922737951';
+  const whatsappMsg = 'Hola, quiero información sobre los cursos de Academia El Profe.';
   const goldBase = '#D4A017';
   const goldLight = '#F0C75E';
 
@@ -89,7 +90,7 @@ export function MobileBottomBar() {
           rel="noopener noreferrer"
           className="flex flex-col items-center justify-center gap-0.5 w-14 h-12 rounded-lg transition-colors hover:bg-black/5 dark:hover:bg-white/5"
         >
-          <MessageCircle className="h-5 w-5" style={{ color: '#25D366' }} />
+          <WhatsAppIcon size={22} className="shrink-0" />
           <span className="text-[9px] font-medium text-slate-500 dark:text-slate-400">WhatsApp</span>
         </a>
 

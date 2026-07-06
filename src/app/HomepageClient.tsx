@@ -196,11 +196,11 @@ function HeroImageParallax({ className, desktopWidth, desktopHeight, desktopMaxW
     <div ref={parallaxRef} className={className}>
       <div ref={imgRef} style={{ perspective: '1000px' }}>
         <Image
-          src="/images/hero-profesor.png"
+          src="/images/hero-profesor.webp"
           alt="Academia El Profe - Logo Oficial"
           width={desktopWidth}
           height={desktopHeight}
-          className={`w-full ${desktopMaxW} mx-auto object-contain drop-shadow-2xl dark:drop-shadow-none dark:mix-blend-lighten`}
+          className={`w-full ${desktopMaxW} mx-auto object-contain drop-shadow-2xl dark:drop-shadow-[0_0_40px_rgba(52,211,153,0.3)]`}
           priority
         />
       </div>

@@ -15,7 +15,7 @@ interface SoporteClientProps {
 const CANALES_CONTACTO = [
   { icono: MessageCircle, titulo: 'Chat en Vivo', descripcion: 'Respuesta inmediata en horario de atención.', horario: 'Lun a Vie: 8:00 AM - 10:00 PM' },
   { icono: Mail, titulo: 'Correo Electrónico', descripcion: 'soporte@academiaelprofe.com', horario: 'Respuesta en menos de 24 horas' },
-  { icono: Phone, titulo: 'WhatsApp', descripcion: '+51 987 654 321', horario: 'Lun a Sáb: 9:00 AM - 8:00 PM' },
+  { icono: Phone, titulo: 'WhatsApp', descripcion: '+51 922 737 951', horario: 'Lun a Sáb: 9:00 AM - 8:00 PM' },
 ] as const;
 
 const FAQ_DEFAULT = [

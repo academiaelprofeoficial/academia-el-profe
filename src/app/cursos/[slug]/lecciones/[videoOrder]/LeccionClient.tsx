@@ -27,12 +27,14 @@ import {
   ShoppingCart,
   MessageSquare,
   ThumbsUp,
+  QrCode,
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
 import type { SanityCourse, SanityClassVideo, SanityTopic } from '@/lib/sanity.client';
 import { useAuth } from '@/lib/auth-context';
 import { VideoPlayer } from '@/components/course/VideoPlayer';
+import { QrPaymentModal } from '@/components/QrPaymentModal';
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
@@ -80,6 +82,7 @@ export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
   const { user, purchasedCourseIds, isOwner } = useAuth();
   const [comentario, setComentario] = useState('');
   const [expandedTopic, setExpandedTopic] = useState<string | null>(null);
+  const [showQr, setShowQr] = useState(false);
 
   const slug = course.slug;
   const title = course.title;
@@ -167,7 +170,7 @@ export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
   }
 
   return (
-    <div className="pb-20 lg:pb-0">
+    <>
       {/* ============================================================== */}
       {/*  DESKTOP LAYOUT — 3 columns (1 + 3 + 1)                        */}
       {/* ============================================================== */}
@@ -330,21 +333,28 @@ export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
                   <span className="text-2xl font-bold text-foreground">{formatoSoles(pricePEN)}</span>
                   <span className="text-sm text-muted-foreground">{formatoUSD(priceUSD)}</span>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Link
                     href={`/api/checkout?courseId=${slug}&provider=mercadopago`}
-                    className="bg-[#009ee3] hover:bg-[#007ab8] text-white font-bold text-sm py-2.5 px-6 rounded-xl transition-colors flex items-center gap-2"
+                    className="bg-[#009ee3] hover:bg-[#007ab8] text-white font-bold text-sm py-2.5 px-6 rounded-xl transition-colors flex items-center justify-center gap-2"
                   >
                     <ShoppingCart className="h-4 w-4" />
                     MercadoPago
                   </Link>
                   <Link
                     href={`/api/checkout/paypal?courseId=${slug}`}
-                    className="bg-[#ffc439] hover:bg-[#f0b020] text-[#003087] font-bold text-sm py-2.5 px-6 rounded-xl transition-colors flex items-center gap-2"
+                    className="bg-[#ffc439] hover:bg-[#f0b020] text-[#003087] font-bold text-sm py-2.5 px-6 rounded-xl transition-colors flex items-center justify-center gap-2"
                   >
                     <ShoppingCart className="h-4 w-4" />
                     PayPal
                   </Link>
+                  <button
+                    onClick={() => setShowQr(true)}
+                    className="bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white font-bold text-sm py-2.5 px-6 rounded-xl transition-colors flex items-center justify-center gap-2"
+                  >
+                    <QrCode className="h-4 w-4" />
+                    Pagar con QR
+                  </button>
                 </div>
               </div>
             ) : (
@@ -659,6 +669,16 @@ export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
           </div>
         )}
       </div>
-    </div>
+
+    {/* QR Payment Modal */}
+    <QrPaymentModal
+      isOpen={showQr}
+      onClose={() => setShowQr(false)}
+      courseTitle={title}
+      pricePEN={pricePEN}
+      priceUSD={priceUSD}
+      slug={slug}
+    />
+    </>
   );
 }

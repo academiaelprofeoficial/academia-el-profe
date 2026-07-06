@@ -73,7 +73,7 @@ export default async function TemarioPage({ params }: PageProps) {
     const priceUSD = fallbackCourse?.priceUSD || 22;
     const desc = fallbackCourse?.desc || 'Curso completo con clases grabadas y material descargable.';
     const formula = fallbackCourse?.formula || '📚';
-    const whatsapp = siteSettings?.whatsapp || '51999999999';
+    const whatsapp = siteSettings?.whatsapp || '51922737951';
     return (
       <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950">
         <LandingHeader />
@@ -141,7 +141,7 @@ export default async function TemarioPage({ params }: PageProps) {
     );
   }
 
-  const whatsapp = siteSettings?.whatsapp || '51999999999';
+  const whatsapp = siteSettings?.whatsapp || '51922737951';
   const whatsappMsg = siteSettings?.whatsappMessage || 'Hola, quiero información sobre el curso.';
 
   return (
