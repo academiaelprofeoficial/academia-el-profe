@@ -81,6 +81,12 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
   const title = course.title;
   const slug = course.slug;
   const category = course.category || '';
+
+  // Detect UTP context for back navigation
+  const isUTP = slug.includes('utp') || title.toLowerCase().includes('utp') || category === 'utp';
+  const backHref = isUTP ? '/cursos/utp' : '/cursos';
+  const backLabel = isUTP ? 'Volver a cursos UTP' : 'Volver al catalogo';
+
   const categoryColor = CATEGORY_COLORS[category] || 'bg-emerald-600';
   const categoryLabel = CATEGORY_LABELS[category] || category;
   const professor = course.professor || '';
@@ -109,11 +115,11 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
     <section>
       {/* Back Navigation */}
       <Link
-        href="/cursos"
+        href={backHref}
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
       >
         <ArrowLeft className="h-4 w-4" />
-        Volver al catalogo
+        {backLabel}
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">

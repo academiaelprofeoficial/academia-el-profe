@@ -11,14 +11,27 @@ export default function manifest(): MetadataRoute.Manifest {
       'Plataforma educativa de refuerzo académico para estudiantes de ingeniería de la UTP.',
     start_url: '/',
     display: 'standalone',
-    background_color: '#ffffff',
+    background_color: '#003300',
     theme_color: '#10b981',
     orientation: 'portrait-primary',
     icons: [
       {
-        src: '/icon.svg',
-        sizes: 'any',
-        type: 'image/svg+xml',
+        src: '/pwa-icon-192.webp',
+        sizes: '192x192',
+        type: 'image/webp',
+        purpose: 'any',
+      },
+      {
+        src: '/pwa-icon-512.webp',
+        sizes: '512x512',
+        type: 'image/webp',
+        purpose: 'any',
+      },
+      {
+        src: '/pwa-icon-512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'maskable',
       },
     ],
   };

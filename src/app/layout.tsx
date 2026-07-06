@@ -11,6 +11,7 @@ import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { VisualEditing } from "@/components/VisualEditing";
 import { MobileBottomBar } from "@/components/MobileBottomBar";
 import { ParticlesBackground } from "@/components/ParticlesBackground";
+import { GlowingParticles } from "@/components/GlowingParticles";
 import { sanityClient } from "@/lib/sanity.client";
 import { THEME_SETTINGS_QUERY, SITE_SETTINGS_QUERY } from "@/lib/sanity.queries";
 import type { SanityThemeSettings, SanitySiteSettings } from "@/lib/sanity.client";
@@ -62,14 +63,14 @@ export const metadata: Metadata = {
     siteName: "Academia El Profe",
     locale: "es_PE",
     type: "website",
-    images: [{ url: "/images/logo-academia.webp", width: 800, height: 400 }],
+    images: [{ url: "/og-image.webp", width: 1200, height: 630, type: "image/webp", alt: "Academia El Profe Oficial — Cursos de Ingeniería UTP" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Academia El Profe | Cursos Universitarios",
     description:
       "ACADEMIA EL PROFE : CURSOS UNIVERSITARIOS. Cursos online con clases grabadas, material PDF y certificado.",
-    images: ["/images/logo-academia.webp"],
+    images: ["/og-image.webp"],
   },
   robots: {
     index: true,
@@ -134,9 +135,9 @@ export default async function RootLayout({
           }}
         />
       </head>
-		      <body
-		        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground pb-14 sm:pb-0`}
-		      >
+                      <body
+                        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground pb-14 sm:pb-0`}
+                      >
         {/* Reading progress bar */}
         <div id="reading-progress" className="fixed top-0 left-0 h-[3px] z-[10000] transition-all duration-150" style={{ background: 'linear-gradient(90deg, #10B981, #059669)', width: '0%' }} />
         <script dangerouslySetInnerHTML={{
@@ -158,6 +159,7 @@ export default async function RootLayout({
             <SiteSettingsProvider siteSettings={siteSettings}>
               <AuthProvider>
                 <ParticlesBackground />
+                <GlowingParticles />
                 {children}
                 {isDraftMode && <VisualEditing />}
                 <Toaster />
