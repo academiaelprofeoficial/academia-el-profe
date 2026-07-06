@@ -1,24 +1,14 @@
 // ============================================================
 // Service Worker — Academia El Profe Oficial
-// v3 — Network-first for navigation, cache-only for offline.
-// NEVER cache _next/ assets (immutable hashed URLs).
-// NEVER cache non-http(s) schemes (chrome-extension, etc.).
+// v3 — Network-first for navigation, never cache _next assets.
+// Aggressive cache invalidation on activate to prevent stale content.
 // ============================================================
 
 const CACHE = 'aep-v3';
 
-// Only cache these navigation pages (HTML shells) — NOT _next assets
-const CORE_ASSETS = ['/', '/cursos', '/nosotros', '/soporte', '/manifest.json'];
-
-// --- Install: pre-cache core navigation pages only ---
 self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open(CACHE).then((c) =>
-      c.addAll(CORE_ASSETS).catch(() => {
-        // If any pre-cache fails, continue — we'll fetch on demand
-      })
-    )
-  );
+  // Skip pre-caching — use network-first for everything.
+  // This prevents stale HTML from persisting across deploys.
   self.skipWaiting();
 });
 
@@ -29,14 +19,23 @@ self.addEventListener('message', (e) => {
   }
 });
 
-// --- Activate: delete old caches, claim clients immediately ---
+// --- Activate: delete ALL old caches, claim clients, notify them ---
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
-    )
+      // Delete ALL caches (including our own) to start fresh
+      Promise.all(keys.map((k) => caches.delete(k)))
+    ).then(() => clients.claim()).then(() => {
+      // Notify all open tabs to reload (they may be showing stale content)
+      return clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+        clientList.forEach((client) => {
+          try {
+            client.postMessage({ type: 'SW_UPDATED', cache: CACHE });
+          } catch (err) { /* client may have closed */ }
+        });
+      });
+    })
   );
-  e.waitUntil(clients.claim());
 });
 
 // --- Fetch: smart caching strategy ---
@@ -48,8 +47,7 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // NEVER cache _next/static assets — they have content hashes and are immutable.
-  // Always network-first for these.
+  // NEVER cache or intercept _next/static assets — always network only
   if (url.includes('/_next/static/')) {
     e.respondWith(
       fetch(e.request).catch(() => new Response('', { status: 200 }))
@@ -57,19 +55,21 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // NEVER cache _next/image requests (dynamic, can be large)
+  // NEVER cache _next/image requests
   if (url.includes('/_next/image')) {
     e.respondWith(fetch(e.request).catch(() => new Response('', { status: 200 })));
     return;
   }
 
-  // For API routes and server actions — always network
+  // API routes — always network, never cache
   if (url.includes('/api/')) {
     e.respondWith(fetch(e.request));
     return;
   }
 
-  // Navigation requests (HTML pages): network-first, fallback to cache, then offline shell
+  // Navigation requests (HTML pages): network-first
+  // On success: cache the response for offline fallback
+  // On failure: try cache, then offline shell
   if (e.request.mode === 'navigate') {
     e.respondWith(
       fetch(e.request)
@@ -81,13 +81,13 @@ self.addEventListener('fetch', (e) => {
           return res;
         })
         .catch(() => caches.match(e.request).then((r) => r || caches.match('/')))
-        .catch(() => new Response('Offline', { status: 200 }))
+        .catch(() => new Response('Offline', { status: 503 }))
     );
     return;
   }
 
   // Static assets (images, fonts, etc. not in _next/static): cache-first
-  if (e.request.url.match(/\.(js|css|png|jpg|jpeg|webp|svg|gif|ico|woff2?|ttf|eot)(\?|$)/i)) {
+  if (e.request.url.match(/\.(png|jpg|jpeg|webp|svg|gif|ico|woff2?|ttf|eot)(\?|$)/i)) {
     e.respondWith(
       caches.match(e.request).then((r) => {
         if (r) return r;
@@ -114,6 +114,6 @@ self.addEventListener('fetch', (e) => {
         return res;
       })
       .catch(() => caches.match(e.request))
-      .catch(() => new Response('Offline', { status: 200 }))
+      .catch(() => new Response('Offline', { status: 503 }))
   );
 });

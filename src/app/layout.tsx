@@ -129,6 +129,14 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        {/* Stale cache killer — clears ALL caches on first visit of each session.
+            This runs BEFORE any JS chunks load, so it works even from stale cached HTML.
+            Uses sessionStorage flag to only run once per session. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{if('caches' in window){var K='aep_cache_cleared';if(!sessionStorage.getItem(K)){sessionStorage.setItem(K,'1');caches.keys().then(function(ks){return Promise.all(ks.map(function(k){return caches.delete(k)}))}).then(function(){var u=new URL(location.href);u.searchParams.set('_fresh',Date.now());location.replace(u.toString())}).catch(function(){})}}}catch(e){}})()`,
+          }}
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('theme');if(t!=='light')document.documentElement.classList.add('dark')}catch(e){document.documentElement.classList.add('dark')}})()`,
@@ -143,11 +151,13 @@ export default async function RootLayout({
         <script dangerouslySetInnerHTML={{
           __html: `window.addEventListener('scroll',function(){var w=document.getElementById('reading-progress');if(w){var p=(window.scrollY/(document.documentElement.scrollHeight-window.innerHeight))*100;w.style.width=Math.min(p,100)+'%'}},{passive:true})`,
         }} />
+        {/* SW registration: force update + skip waiting + listen for SW_UPDATED reload */}
         <script dangerouslySetInnerHTML={{
-          __html: `if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js',{scope:'/'}).then(function(reg){if(reg.waiting){reg.waiting.postMessage({type:'SKIP_WAITING'})}}).catch(function(){})})}`,
+          __html: `if('serviceWorker' in navigator){navigator.serviceWorker.addEventListener('message',function(e){if(e.data&&e.data.type==='SW_UPDATED'){var u=new URL(location.href);u.searchParams.set('_swu',Date.now());location.replace(u.toString())}});window.addEventListener('load',function(){navigator.serviceWorker.getRegistration().then(function(r){if(r)r.update()});navigator.serviceWorker.register('/sw.js',{scope:'/'}).then(function(reg){function s(w){try{w.postMessage({type:'SKIP_WAITING'})}catch(e){}}if(reg.waiting)s(reg.waiting);reg.addEventListener('updatefound',function(){var nw=reg.installing;if(nw)nw.addEventListener('statechange',function(){if(nw.state==='installed')s(nw)})})}).catch(function(){})})}`,
         }} />
+        {/* Chunk error recovery: clear ALL caches + reload with cache-bust URL + prevent loop */}
         <script dangerouslySetInnerHTML={{
-          __html: `window.addEventListener('error',function(e){if(e.message&&e.message.includes('ChunkLoadError')){location.reload()}});window.addEventListener('unhandledrejection',function(e){if(e.reason&&e.reason.message&&e.reason.message.includes('ChunkLoadError')){location.reload()}});`,
+          __html: `var _rl=false;function ffr(){if(_rl)return;_rl=true;if('caches' in window){caches.keys().then(function(ks){return Promise.all(ks.map(function(k){return caches.delete(k)}))}).then(function(){var u=new URL(location.href);u.searchParams.set('_nc',Date.now());location.replace(u.toString())}).catch(function(){location.reload()})}else{location.reload()}}window.addEventListener('error',function(e){if(e.message&&(e.message.includes('ChunkLoadError')||e.message.includes('Loading chunk')||e.message.includes('Failed to fetch dynamically imported module')||e.message.includes('Script error.'))){ffr()}});window.addEventListener('unhandledrejection',function(e){var m=e.reason&&e.reason.message?e.reason.message:'';if(m&&(m.includes('ChunkLoadError')||m.includes('Loading chunk')||m.includes('Failed to fetch dynamically imported module'))){ffr()}});`,
         }} />
         <ThemeProvider
           attribute="class"
