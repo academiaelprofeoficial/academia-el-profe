@@ -436,7 +436,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
         <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground/40" />
         <h2 className="text-xl font-bold text-foreground mb-2">Curso no encontrado</h2>
         <p className="text-sm text-muted-foreground mb-6">El curso que buscas no existe o fue eliminado.</p>
-        <Link href="/cursos" className="text-sm text-brand-primary hover:underline font-medium">
+        <Link href={backUrl} className="text-sm text-brand-primary hover:underline font-medium">
           Ver todos los cursos
         </Link>
       </div>

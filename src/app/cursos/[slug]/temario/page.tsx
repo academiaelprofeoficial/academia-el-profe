@@ -62,7 +62,7 @@ export default async function TemarioPage({ params }: PageProps) {
   ]);
 
   // Back link: UTP courses go to /cursos/utp, general to /cursos#titulo-cursos
-  const isUTP = slug.endsWith('-utp');
+  const isUTP = slug.includes('utp');
   const backUrl = isUTP ? '/cursos/utp' : '/cursos#titulo-cursos';
 
   if (!sanityCourse) {
