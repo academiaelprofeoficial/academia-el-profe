@@ -44,7 +44,27 @@ export default defineConfig({
           ),
           S.listItem().title("Cursos").icon(BookIcon).id("courses-group").child(
             S.list().title("Cursos").items([
-              ...S.documentTypeListItems().filter((item) => item.getId() === "course"),
+              S.listItem().title("Todos los Cursos").icon(BookIcon).id("all-courses").child(
+                S.documentTypeList("course").title("Cursos").defaultOrdering([{ field: "order", direction: "asc" }]),
+              ),
+              S.listItem().title("Crear Curso desde Plantilla").icon(BookIcon).id("new-course-from-template").child(
+                S.editor().id("course").schemaType("course").documentId("new-course-template").initialValue({
+                  title: "Nuevo Curso",
+                  professor: "Prof. Kall Bruno Díaz",
+                  courseType: "paid",
+                  level: "intermedio",
+                  featured: false,
+                  order: 100,
+                  studentCount: 0,
+                  pricePEN: 80,
+                  priceUSD: 22,
+                  category: "calculo",
+                  courseStructure: "topics",
+                  topics: [
+                    { title: "Tema 1", description: "Descripción del tema", classes: 4 },
+                  ],
+                }),
+              ),
             ]),
           ),
           S.listItem().title("Equipo").icon(StarIcon).id("team-group").child(
