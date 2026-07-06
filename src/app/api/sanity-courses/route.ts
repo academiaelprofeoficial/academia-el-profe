@@ -12,6 +12,8 @@ export async function GET() {
       title: c.title,
       pricePEN: c.pricePEN || 0,
       priceUSD: c.priceUSD || 0,
+      group: c.group || 'general',
+      cardColor: c.cardColor || '#10B981',
     }));
     return NextResponse.json(data);
   } catch (error) {

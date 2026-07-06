@@ -65,7 +65,9 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
   // CMS data is authoritative. Mock only provides cosmetic display hints (colorKey, formulaIcon).
   const displayCourses = useMemo(() => {
     if (!sanityCourses || sanityCourses.length === 0) return [];
-    return sanityCourses.map((sc) => {
+    return sanityCourses
+      .filter((sc) => sc.group === 'general' || sc.group === 'ambos' || !sc.group)
+      .map((sc) => {
       const mock = CURSOS_LANDING.find((m) => m.id === sc.slug);
       return {
         id: sc.slug,

@@ -146,6 +146,30 @@ export default defineType({
     }),
     defineField({ name: "totalClasses", title: "Total de Clases", type: "number" }),
     defineField({ name: "totalHours", title: "Duración Total (horas)", type: "string" }),
+
+    // === VISIBILIDAD Y COLOR ===
+    defineField({
+      name: "group",
+      title: "¿Dónde se muestra este curso?",
+      type: "string",
+      initialValue: "general",
+      options: {
+        list: [
+          { title: "Cursos Generales", value: "general" },
+          { title: "Cursos UTP", value: "utp" },
+          { title: "Ambos (General + UTP)", value: "ambos" },
+        ],
+        layout: "radio",
+      },
+      description: "Selecciona si el curso aparece en la sección general, UTP o en ambas.",
+    }),
+    defineField({
+      name: "cardColor",
+      title: "Color de la Tarjeta",
+      type: "string",
+      initialValue: "#10B981",
+      description: "Elige el color hexadecimal para la tarjeta del curso (ej: #10B981 para verde, #3B82F6 para azul).",
+    }),
     defineField({ name: "level", title: "Nivel", type: "string", options: { list: [
       { title: "Básico", value: "basico" },
       { title: "Intermedio", value: "intermedio" },

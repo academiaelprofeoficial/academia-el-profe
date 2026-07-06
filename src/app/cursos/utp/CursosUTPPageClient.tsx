@@ -19,9 +19,8 @@ import {
   Zap,
   BookOpen,
 } from 'lucide-react';
-import { DASHBOARD_COURSES, UTP_COURSES } from '@/lib/data';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
-import { Button } from '@/components/ui/button';
+import { plainText } from '@/lib/sanity.client';
 import { useAuth } from '@/lib/auth-context';
 import { LandingHeader } from '@/components/layout/LandingHeader';
 import { Footer } from '@/components/layout/Footer';
@@ -54,8 +53,13 @@ function extractHex(twClass: string): string {
 // Merge DASHBOARD_COURSES with Sanity data (prices from CMS)
 // ----------------------------------------------------------------
 
-// Slug mapping: UTP courses are independent — no Sanity mapping needed
+// Slug mapping: not needed — courses come from Sanity with group field
 const SANITY_SLUG_MAP: Record<string, string> = {};
+
+// Color mapping from Sanity cardColor field
+function extractHex(color?: string): string {
+  return color || '#10B981';
+}
 
 interface MergedCourse {
   readonly id: string;
@@ -63,26 +67,27 @@ interface MergedCourse {
   readonly desc: string;
   readonly formula: string;
   readonly color: string;
+  readonly cardColor: string;
   readonly price: number;
   readonly priceUSD: number;
   readonly slug: string;
 }
 
 function mergeCourses(sanityCourses: SanityCourse[] | null): MergedCourse[] {
-  return UTP_COURSES.map((dc) => {
-    const sanity = sanityCourses?.find((s) => s.slug === dc.id);
-    const sanitySlug = SANITY_SLUG_MAP[dc.id] || dc.id;
-    return {
-      id: dc.id,
+  if (!sanityCourses) return [];
+  return sanityCourses
+    .filter((c) => c.group === 'utp' || c.group === 'ambos')
+    .map((dc) => ({
+      id: dc.slug,
       title: dc.title,
-      desc: dc.desc,
-      formula: dc.formula,
-      color: dc.color,
-      price: sanity?.pricePEN ?? dc.price,
-      priceUSD: sanity?.priceUSD ?? dc.priceUSD,
-      slug: sanitySlug,
-    };
-  });
+      desc: dc.description ? plainText(dc.description).substring(0, 100) : '',
+      formula: '📚',
+      color: 'bg-brand-primary',
+      cardColor: dc.cardColor || '#10B981',
+      price: dc.pricePEN || 0,
+      priceUSD: dc.priceUSD || 0,
+      slug: dc.slug,
+    }));
 }
 
 // ----------------------------------------------------------------
@@ -159,7 +164,7 @@ function PaymentButtons({
 // ----------------------------------------------------------------
 
 function CourseCard({ course, isPurchased, index }: { readonly course: MergedCourse; readonly isPurchased: boolean; readonly index: number }) {
-  const hex = extractHex(course.color);
+  const hex = extractHex(course.cardColor);
 
   return (
     <motion.div
@@ -170,7 +175,7 @@ function CourseCard({ course, isPurchased, index }: { readonly course: MergedCou
       onClick={() => { window.location.href = `/cursos/${course.slug}/temario`; }}
       className="flex flex-col rounded-xl overflow-hidden shadow-md border border-slate-100 dark:border-[var(--surface-border)] hover:shadow-xl transition-shadow premium-card-shimmer card-glow cursor-pointer"
     >
-      <div className={`${course.color} px-4 py-5 flex flex-col gap-2 min-h-[120px] relative`} style={{ backgroundColor: hex }}>
+      <div style={{ backgroundColor: hex }} className="px-4 py-5 flex flex-col gap-2 min-h-[120px] relative">
         {isPurchased && (
           <div className="absolute top-2 right-2">
             <span className="text-xs font-bold bg-white/20 text-white px-2 py-0.5 rounded-md">✓ Activo</span>
