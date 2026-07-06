@@ -136,7 +136,7 @@ export default async function RootLayout({
         />
       </head>
                       <body
-                        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground pb-14 sm:pb-0`}
+                        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground pb-[76px] sm:pb-0`}
                       >
         {/* Reading progress bar */}
         <div id="reading-progress" className="fixed top-0 left-0 h-[3px] z-[10000] transition-all duration-150" style={{ background: 'linear-gradient(90deg, #10B981, #059669)', width: '0%' }} />

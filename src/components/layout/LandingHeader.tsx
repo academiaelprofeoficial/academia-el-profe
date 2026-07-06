@@ -52,20 +52,9 @@ const DASHBOARD_NAV = [
   { etiqueta: 'Soporte', href: '/soporte', icon: Headset },
 ] as const;
 
-// ---- Tab bar visitante ----
-const TAB_VISITANTE = [
-  { label: 'Inicio', href: '/', icon: Home },
-  { label: 'Cursos', href: '/cursos', icon: BookOpen },
-  { label: 'Soporte', href: '/soporte', icon: Headset },
-] as const;
+// ---- Tab bar visitante (handled by MobileBottomBar) ----
 
-// ---- Tab bar logueado ----
-const TAB_LOGUEADO = [
-  { label: 'Cursos', href: '/dashboard/cursos', icon: BookOpen },
-  { label: 'Certificados', href: '/dashboard/certificados', icon: Award },
-  { label: 'Deseos', href: '/dashboard/deseos', icon: Heart },
-  { label: 'Historial', href: '/dashboard/historial', icon: Clock },
-] as const;
+// ---- Tab bar logueado (handled by MobileBottomBar) ----
 
 /* ------------------------------------------------------------------ */
 /*  Framer Motion variants                                             */
@@ -184,19 +173,14 @@ export function LandingHeader() {
   const { user, signOut, loading } = useAuth();
 
   const isLoggedIn = !!user && !loading;
-  const isDashboard = pathname.startsWith('/dashboard');
 
-  // Determinar qué tab bar y nav mostrar
+  // Determinar qué nav mostrar en el drawer
   const currentNav = isLoggedIn ? DASHBOARD_NAV : LANDING_NAV;
-  const currentTabBar = isLoggedIn ? TAB_LOGUEADO : TAB_VISITANTE;
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
     return pathname.startsWith(href);
   };
-
-  // Tab bar SOLO para usuarios logueados (no visitante, no auth pages)
-  const hideTabBar = !isLoggedIn || pathname.startsWith('/iniciar-sesion') || pathname.startsWith('/registrarse');
 
   useEffect(() => { setMenuAbierto(false); }, [pathname]);
 
@@ -205,25 +189,16 @@ export function LandingHeader() {
     return () => { document.body.style.overflow = ''; };
   }, [menuAbierto]);
 
-  // Aplicar padding-bottom al <html> cuando el tab bar inferior es visible (mobile)
-  // Esto evita que el contenido quede detrás del tab bar fijo
-  useEffect(() => {
-    if (!hideTabBar) {
-      const value = 'calc(5.5rem + env(safe-area-inset-bottom, 0px))';
-      document.documentElement.style.paddingBottom = value;
-      return () => { document.documentElement.style.paddingBottom = ''; };
-    }
-  }, [hideTabBar]);
 
   return (
     <>
       {/* ============================================================ */}
       {/* NAVBAR SUPERIOR FIJA                                          */}
       {/* ============================================================ */}
-      <header className={`fixed top-0 inset-x-0 z-50 h-16 transition-all duration-300 ${
+      <header className={`fixed top-0 inset-x-0 z-50 h-16 transition-all duration-500 ${
         scrolled
-          ? 'bg-brand-primary/95 dark:bg-[var(--surface-0)]/95 backdrop-blur-xl shadow-lg border-b border-brand-primary/20 dark:border-[var(--surface-border)]'
-          : 'bg-white/80 dark:bg-[var(--surface-0)]/80 backdrop-blur-xl border-b border-zinc-100/80 dark:border-[var(--surface-border)]'
+          ? 'bg-brand-primary/95 dark:bg-[var(--surface-0)]/95 backdrop-blur-xl shadow-lg shadow-black/10 border-b border-brand-primary/20 dark:border-[var(--surface-border)]'
+          : 'bg-transparent border-b border-transparent'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
 
@@ -335,7 +310,7 @@ export function LandingHeader() {
             {/* Hamburguesa */}
             <button
               onClick={() => setMenuAbierto(true)}
-              className="h-10 w-10 flex items-center justify-center rounded-lg text-brand-body hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors -ml-1"
+              className={`h-10 w-10 flex items-center justify-center rounded-lg transition-colors -ml-1 ${scrolled ? 'text-brand-body dark:text-slate-300 hover:bg-white/10 dark:hover:bg-white/10' : 'text-white hover:bg-white/10'}`}
               aria-label="Abrir menú"
             >
               <Menu className="h-6 w-6" />
@@ -352,7 +327,7 @@ export function LandingHeader() {
                 {/* Lupa */}
                 <Link
                   href="/dashboard/cursos"
-                  className="h-9 w-9 flex items-center justify-center rounded-lg text-slate-400 transition-colors"
+                  className={`h-9 w-9 flex items-center justify-center rounded-lg transition-colors ${scrolled ? 'text-slate-400' : 'text-white/90 hover:text-white'}`}
                 >
                   <Search className="h-4 w-4" />
                 </Link>
@@ -361,14 +336,14 @@ export function LandingHeader() {
                   <div className="h-6 w-6 rounded-full bg-brand-primary flex items-center justify-center text-white text-[10px] font-bold">
                     {(user?.displayName || user?.email || 'U')[0].toUpperCase()}
                   </div>
-                  <span className="text-xs font-medium text-brand-heading-secondary max-w-[80px] truncate">
+                  <span className={`text-xs font-medium max-w-[80px] truncate ${scrolled ? 'text-brand-heading-secondary' : 'text-white/90'}`}>
                     {user?.displayName || user?.email?.split('@')[0] || 'Usuario'}
                   </span>
                 </Link>
               </div>
             ) : (
               <Link href="/iniciar-sesion" onClick={() => setMenuAbierto(false)}>
-                <Button className="bg-brand-primary hover:bg-brand-primary-hover text-white h-8 text-xs font-semibold gap-1.5 px-3 rounded-lg">
+                <Button className={`h-8 text-xs font-semibold gap-1.5 px-3 rounded-lg transition-all ${scrolled ? 'bg-brand-primary hover:bg-brand-primary-hover text-white' : 'bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm border border-white/30'}`}>
                   <LogIn className="h-3.5 w-3.5" />
                   Iniciar
                 </Button>
@@ -491,36 +466,6 @@ export function LandingHeader() {
         )}
       </AnimatePresence>
 
-      {/* ============================================================ */}
-      {/* TAB BAR INFERIOR — Mobile only                                */}
-      {/* ============================================================ */}
-      {!hideTabBar && (
-        <>
-          <nav className="fixed bottom-0 inset-x-0 z-50 h-16 bg-white/80 dark:bg-[var(--surface-0)]/90 backdrop-blur-md border-t border-zinc-200/60 dark:border-[var(--surface-border)] md:hidden pb-[env(safe-area-inset-bottom)]">
-            <div className="flex items-center justify-around h-full max-w-lg mx-auto px-2">
-              {currentTabBar.map((item) => {
-                const Icon = item.icon;
-                const active = isActive(item.href);
-                return (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className={`flex flex-col items-center justify-center gap-0.5 min-w-[60px] transition-colors ${
-                      active
-                        ? 'text-brand-primary dark:text-brand-primary'
-                        : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300'
-                    }`}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span className="text-[10px] font-medium">{item.label}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          </nav>
-
-        </>
-      )}
-    </>
+      </>
   );
 }
