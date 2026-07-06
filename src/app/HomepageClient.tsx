@@ -596,7 +596,7 @@ export function HomepageClient({ sanityData }: Props) {
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
           >
-            {partners && partners.map((p) => {
+            {partners && partners.filter((p) => p.abbreviation !== 'USS').map((p) => {
               const logoUrl = p.logo?.asset
                 ? urlFor(p.logo).width(300).fit('max').url()
                 : null;

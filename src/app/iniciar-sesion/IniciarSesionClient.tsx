@@ -127,7 +127,7 @@ export function IniciarSesionClient() {
           }
         }
       } catch { /* si falla el check, ir al dashboard normal */ }
-      router.push('/dashboard/cursos');
+      router.push('/');
     } catch (err: unknown) {
       triggerShake();
       const firebaseErr = err as { code?: string };
@@ -180,7 +180,7 @@ export function IniciarSesionClient() {
         router.push('/admin');
         return;
       }
-      router.push('/dashboard/cursos');
+      router.push('/');
     } catch (err: unknown) {
       triggerShake();
       const firebaseErr = err as { code?: string };

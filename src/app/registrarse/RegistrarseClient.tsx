@@ -149,7 +149,7 @@ export function RegistrarseClient() {
       await signUpWithEmail(data.email, data.password, data.nombre);
       setSuccess(true);
       setTimeout(() => {
-        router.push('/dashboard/cursos');
+        router.push('/');
       }, 2000);
     } catch (err: unknown) {
       const firebaseErr = err as { code?: string };
@@ -180,7 +180,7 @@ export function RegistrarseClient() {
     setError(null);
     try {
       await signInWithGoogle();
-      router.push('/dashboard/cursos');
+      router.push('/');
     } catch (err: unknown) {
       const firebaseErr = err as { code?: string };
       if (firebaseErr.code === 'auth/popup-closed-by-user') {
