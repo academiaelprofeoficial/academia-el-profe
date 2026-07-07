@@ -20,6 +20,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
+import { Button } from '@/components/ui/button';
 import { UTP_COURSES } from '@/lib/data';
 import { plainText } from '@/lib/sanity.client';
 import { useAuth } from '@/lib/auth-context';
