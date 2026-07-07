@@ -91,7 +91,7 @@ export function MobileBottomBar() {
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: 'spring', damping: 28, stiffness: 300, mass: 0.8, delay: 0.3 }}
-        className="sm:hidden fixed bottom-0 inset-x-0 z-[9997] px-3 pb-[env(safe-area-inset-bottom,8px)] pt-1.5"
+        className="fixed bottom-0 inset-x-0 z-[9997] px-3 pb-[env(safe-area-inset-bottom,8px)] pt-1.5"
       >
         <div
           className="relative flex items-center justify-around gap-1 h-[62px] rounded-2xl border border-white/20 dark:border-white/10 overflow-hidden"
