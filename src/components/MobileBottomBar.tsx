@@ -13,15 +13,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 /*  Tab definitions                                                   */
 /* ------------------------------------------------------------------ */
 
-const TABS_VISITOR = [
+const TABS = [
   { label: 'Inicio', href: '/', icon: Home },
-  { label: 'Cursos', href: '/cursos', icon: BookOpen },
-] as const;
-
-const TABS_LOGGED = [
-  { label: 'Cursos', href: '/dashboard/cursos', icon: BookOpen },
-  { label: 'Diplomas', href: '/dashboard/certificados', icon: Award },
-  { label: 'Deseos', href: '/dashboard/deseos', icon: Heart },
+  { label: 'Cursos', href: '/cursos', icon: BookOpen, loggedHref: '/dashboard/cursos' },
+  { label: 'Diplomas', href: '/dashboard/certificados', icon: Award, requiresAuth: true },
 ] as const;
 
 /* ------------------------------------------------------------------ */
@@ -79,7 +74,11 @@ export function MobileBottomBar() {
     return pathname.startsWith(href);
   };
 
-  const tabs = isLoggedIn ? TABS_LOGGED : TABS_VISITOR;
+  const tabs = TABS.filter((t) => !t.requiresAuth || isLoggedIn);
+  const activeTabs = tabs.map((t) => ({
+    ...t,
+    href: t.loggedHref && isLoggedIn ? t.loggedHref : t.href,
+  }));
   const whatsappNumber = '51922737951';
   const whatsappMsg = 'Hola, quiero información sobre los cursos de Academia El Profe.';
 
@@ -118,7 +117,7 @@ export function MobileBottomBar() {
           />
 
           {/* Nav tabs */}
-          {tabs.map((tab) => {
+          {activeTabs.map((tab) => {
             const Icon = tab.icon;
             const active = isActive(tab.href);
             return (
