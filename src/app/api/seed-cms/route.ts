@@ -221,7 +221,8 @@ async function handleSeed() {
 
   for (const c of courses) {
     const order = c.order as number;
-    await upsert(c, `course-${order}`);
+    const isUTP = c.group === 'utp';
+    await upsert(c, isUTP ? `utp-course-${order}` : `course-${order}`);
   }
 
   return NextResponse.json({ success: true, count: results.length, results });
