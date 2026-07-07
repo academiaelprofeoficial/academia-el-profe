@@ -220,10 +220,10 @@ export function LandingHeader() {
                       isActive(link.href)
                         ? scrolled
                           ? 'text-brand-primary bg-white/90 dark:text-white dark:bg-white/20'
-                          : 'text-brand-primary-text bg-brand-primary-bg-light'
+                          : 'text-white bg-white/15'
                         : scrolled
                           ? 'text-white/90 hover:text-white hover:bg-white/10 dark:text-slate-300 dark:hover:text-white'
-                          : 'text-brand-body hover:text-brand-primary-text dark:hover:text-brand-primary-text'
+                          : 'text-white/80 hover:text-white hover:bg-white/10'
                     }`}
                   >
                     {link.etiqueta}
