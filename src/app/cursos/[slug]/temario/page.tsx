@@ -7,8 +7,9 @@ import { AntiPiracyShell } from '@/components/security/AntiPiracyShell';
 import { fetchCMS } from '@/lib/fetchCMS';
 import { COURSE_BY_SLUG_QUERY, ALL_COURSES_QUERY, SITE_SETTINGS_QUERY } from '@/lib/sanity.queries';
 import type { SanityCourse, SanitySiteSettings } from '@/lib/sanity.client';
-import { DASHBOARD_COURSES } from '@/lib/data';
+import { DASHBOARD_COURSES, UTP_COURSES } from '@/lib/data';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
+import { ShoppingCart } from 'lucide-react';
 
 // ============================================================
 // Temario del Curso — Server Component (100% CMS-driven)
@@ -66,9 +67,9 @@ export default async function TemarioPage({ params }: PageProps) {
   const backUrl = isUTP ? '/cursos/utp' : '/cursos#titulo-cursos';
 
   if (!sanityCourse) {
-    // Fallback con datos de DASHBOARD_COURSES para cursos sin CMS
+    // Fallback con datos de DASHBOARD_COURSES o UTP_COURSES para cursos sin CMS
     const courseName = slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-    const fallbackCourse = DASHBOARD_COURSES.find((c) => c.id === slug || slug === 'mecanica-estatica' && c.id === 'estatica');
+    const fallbackCourse = DASHBOARD_COURSES.find((c) => c.id === slug) || UTP_COURSES.find((c) => c.id === slug);
     const pricePEN = fallbackCourse?.price || 80;
     const priceUSD = fallbackCourse?.priceUSD || 22;
     const desc = fallbackCourse?.desc || 'Curso completo con clases grabadas y material descargable.';
@@ -113,15 +114,31 @@ export default async function TemarioPage({ params }: PageProps) {
                     <span className="text-3xl font-bold text-white">{formatoSoles(pricePEN)}</span>
                     <span className="text-sm text-white/80 font-medium">{formatoUSD(priceUSD)}</span>
                   </div>
-                  <a
-                    href={`https://wa.me/${whatsapp}?text=${encodeURIComponent('Hola, quiero información sobre el curso de ' + courseName)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 w-full h-10 text-xs font-bold text-white rounded-lg mt-2 transition-colors"
-                    style={{ backgroundColor: '#25D366' }}
-                  >
-                    Consultar por WhatsApp
-                  </a>
+                  <div className="flex flex-col gap-2 mt-3">
+                    <a
+                      href={`/api/checkout?courseId=${slug}`}
+                      className="w-full h-9 text-xs font-bold tracking-wide text-white gap-1.5 rounded-lg flex items-center justify-center transition-all bg-brand-primary-hover hover:bg-brand-primary"
+                    >
+                      <ShoppingCart className="h-4 w-4 shrink-0" />
+                      PEN {formatoSoles(pricePEN)} — Mercado Pago
+                    </a>
+                    <a
+                      href={`/api/checkout/paypal?courseId=${slug}`}
+                      className="w-full h-9 text-xs font-bold tracking-wide gap-1.5 rounded-lg flex items-center justify-center transition-all bg-[#ffc439] hover:bg-[#f2ba36] text-[#003087]"
+                    >
+                      <img src="/images/paypal-logo.png" alt="PP" className="h-4 w-4 object-contain shrink-0" />
+                      USD {formatoUSD(priceUSD)} — PayPal
+                    </a>
+                    <a
+                      href={`https://wa.me/${whatsapp}?text=${encodeURIComponent('Hola, quiero información sobre el curso de ' + courseName)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-2 w-full h-9 text-xs font-bold text-white rounded-lg transition-colors"
+                      style={{ backgroundColor: '#25D366' }}
+                    >
+                      Consultar por WhatsApp
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
