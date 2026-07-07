@@ -36,6 +36,7 @@ import { getImageUrl } from '@/lib/sanity.client';
 import { PortableText } from '@portabletext/react';
 import { useAuth } from '@/lib/auth-context';
 import { FixedBuyBar } from '@/components/FixedBuyBar';
+import { SecureVideo } from '@/components/SecureVideo';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -571,14 +572,11 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
             <PlayCircle className="h-5 w-5 text-brand-primary" />
             Video de Presentacion
           </h2>
-          <div className="bg-black aspect-video sm:rounded-lg overflow-hidden" onContextMenu={(e) => e.preventDefault()}>
-            <video
-              src={course.videoUrl || course.courseVideo?.asset?.url}
-              controls
-              controlsList="nodownload"
-              disablePictureInPicture
-              className="w-full h-full"
+          <div className="bg-black aspect-video sm:rounded-lg overflow-hidden">
+            <SecureVideo
+              src={course.videoUrl || course.courseVideo?.asset?.url || ''}
               poster={coverImg || undefined}
+              title={title}
             />
           </div>
         </div>
@@ -940,25 +938,13 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                 <div className="space-y-4">
                   {/* Video Player */}
                   <div className="rounded-xl border border-border/40 bg-card overflow-hidden">
-                    <div className="bg-black aspect-video" onContextMenu={(e) => e.preventDefault()}>
-                      <video
-                        ref={videoRef}
-                        key={selectedVideo.url}
-                        src={selectedVideo.url}
-                        controls
-                        controlsList="nodownload"
-                        disablePictureInPicture
-                        preload="metadata"
-                        className="w-full h-full"
-                        poster={selectedVideo.poster}
-                        playsInline
-                        onTimeUpdate={handleTimeUpdate}
-                      />
-                    </div>
-                    <div className="px-5 py-4">
-                      <h3 className="text-base font-bold text-foreground">{selectedVideo.title}</h3>
-                      <p className="text-xs text-muted-foreground mt-1">{title} — Modulo: {activeTopicTitle}</p>
-                    </div>
+                    <SecureVideo
+                      src={selectedVideo.url}
+                      poster={selectedVideo.poster}
+                      title={selectedVideo.title}
+                      progressKey={`${slug}_${selectedVideo.url}`}
+                      onTimeUpdate={() => {}}
+                    />
                   </div>
 
                   {/* Active group's PDFs */}
