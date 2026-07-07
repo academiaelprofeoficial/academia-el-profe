@@ -103,11 +103,11 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // Everything else: network-first with cache fallback
+  // Everything else: network-first with cache fallback (GET only)
   e.respondWith(
     fetch(e.request)
       .then((res) => {
-        if (res.status === 200) {
+        if (res.status === 200 && e.request.method === 'GET') {
           const clone = res.clone();
           caches.open(CACHE).then((c) => c.put(e.request, clone));
         }
