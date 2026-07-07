@@ -411,7 +411,7 @@ export function HomepageClient({ sanityData }: Props) {
       {/* ============================================================ */}
       {/* HERO SECTION — GSAP + Framer Motion */}
       {/* ============================================================ */}
-      <section id="hero" ref={heroRef} className="min-h-[85vh] scroll-mt-16 relative overflow-hidden">
+      <section id="hero" ref={heroRef} className="min-h-screen scroll-mt-16 relative overflow-hidden flex items-center justify-center">
         {/* Lightning WebGL background — todos los dispositivos */}
         {true && (
           <div className="absolute inset-0 z-0 transition-opacity duration-500"

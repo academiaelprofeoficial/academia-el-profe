@@ -151,8 +151,13 @@ export function LightningBackground({ hue = 160, speed = 1.4, intensity = 0.5, s
 
     const startTime = performance.now();
     const render = () => {
-      resizeCanvas();
+      // Check if canvas size changed
+      if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+      }
       gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.useProgram(program);
       gl.uniform2f(locRes, canvas.width, canvas.height);
       gl.uniform1f(locTime, (performance.now() - startTime) / 1000);
       gl.uniform1f(locHue, hue);
