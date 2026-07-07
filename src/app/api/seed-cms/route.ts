@@ -2,6 +2,14 @@ import { NextResponse } from "next/server";
 import { createClient } from "@sanity/client";
 
 export async function POST() {
+  return handleSeed();
+}
+
+export async function GET() {
+  return handleSeed();
+}
+
+async function handleSeed() {
   const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
   const token = process.env.SANITY_API_READ_TOKEN;
   if (!projectId || !token) {
@@ -31,7 +39,7 @@ export async function POST() {
   const courses: Record<string, unknown>[] = [
     {
       _type: "course", title: "Cálculo Diferencial",
-      slug: { _type: "slug", current: "calculo-diferencial" }, category: "calculo",
+      slug: { _type: "slug", current: "calculo-diferencial" }, category: "calculo", group: "general",
       description: [{ _type: "block", _key: "cd1", children: [{ _type: "span", _key: "cds1", text: "Domina los fundamentos del Cálculo Diferencial: límites, derivadas y aplicaciones. Curso diseñado para la UTP con ejercicios resueltos paso a paso." }], style: "normal" }],
       professor: "Prof. Kall Bruno Díaz", pricePEN: 80, priceUSD: 22, totalClasses: 28, totalHours: "42", level: "intermedio", featured: true, order: 1,
       topics: [
