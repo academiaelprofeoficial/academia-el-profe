@@ -13,7 +13,6 @@ interface SecureVideoProps {
 export function SecureVideo({ src, poster, title, onTimeUpdate, progressKey }: SecureVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isBlackedOut, setIsBlackedOut] = useState(false);
-  const [showPlayButton, setShowPlayButton] = useState(true);
 
   // Restore progress
   useEffect(() => {
@@ -76,20 +75,14 @@ export function SecureVideo({ src, poster, title, onTimeUpdate, progressKey }: S
   }, []);
 
   const handlePlay = () => {
-    setShowPlayButton(false);
     videoRef.current?.play().catch(() => {});
-  };
-
-  const handlePause = () => {
-    if (videoRef.current?.ended) {
-      setShowPlayButton(true);
-    }
   };
 
   return (
     <div
-      className="relative bg-black aspect-video rounded-lg overflow-hidden"
+      className="relative bg-black aspect-video rounded-lg overflow-hidden cursor-pointer"
       onContextMenu={(e) => e.preventDefault()}
+      onClick={handlePlay}
     >
       <video
         ref={videoRef}
@@ -102,24 +95,8 @@ export function SecureVideo({ src, poster, title, onTimeUpdate, progressKey }: S
         playsInline
         className="w-full h-full"
         onTimeUpdate={handleTimeUpdate}
-        onPlay={() => setShowPlayButton(false)}
-        onPause={handlePause}
         style={{ display: isBlackedOut ? 'none' : 'block' }}
       />
-
-      {/* Play button overlay (shown initially) */}
-      {showPlayButton && (
-        <div
-          className="absolute inset-0 flex items-center justify-center cursor-pointer bg-black/40 hover:bg-black/30 transition-colors z-10"
-          onClick={handlePlay}
-        >
-          <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-all hover:scale-110">
-            <svg className="w-7 h-7 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z" />
-            </svg>
-          </div>
-        </div>
-      )}
 
       {/* Black overlay when recording detected */}
       {isBlackedOut && (
