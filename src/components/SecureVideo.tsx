@@ -95,6 +95,7 @@ export function SecureVideo({ src, poster, title, onTimeUpdate, progressKey }: S
         playsInline
         className="w-full h-full"
         onTimeUpdate={handleTimeUpdate}
+        onClick={(e) => e.stopPropagation()}
         style={{ display: isBlackedOut ? 'none' : 'block' }}
       />
 
