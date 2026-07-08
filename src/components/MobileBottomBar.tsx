@@ -16,7 +16,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const TABS = [
   { label: 'Inicio', href: '/', icon: Home },
   { label: 'Cursos', href: '/cursos', icon: BookOpen, loggedHref: '/dashboard/cursos' },
-  { label: 'Diplomas', href: '/dashboard/certificados', icon: Award, requiresAuth: true },
+  { label: 'Diplomas', href: '/dashboard/certificados', icon: Award },
 ] as const;
 
 /* ------------------------------------------------------------------ */
@@ -74,8 +74,7 @@ export function MobileBottomBar() {
     return pathname.startsWith(href);
   };
 
-  const tabs = TABS.filter((t) => !t.requiresAuth || isLoggedIn);
-  const activeTabs = tabs.map((t) => ({
+  const activeTabs = TABS.map((t) => ({
     ...t,
     href: t.loggedHref && isLoggedIn ? t.loggedHref : t.href,
   }));

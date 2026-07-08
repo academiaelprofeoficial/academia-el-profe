@@ -35,7 +35,6 @@ import type { SanityCourse, SanityClassVideo, SanityTopic, PortableTextBlock } f
 import { getImageUrl } from '@/lib/sanity.client';
 import { PortableText } from '@portabletext/react';
 import { useAuth } from '@/lib/auth-context';
-import { FixedBuyBar } from '@/components/FixedBuyBar';
 import { SecureVideo } from '@/components/SecureVideo';
 
 /* ------------------------------------------------------------------ */
@@ -1091,25 +1090,9 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
             </div>
           </div>
         )}
-      </div>
+	      </div>
 
-      {/* ===== FIXED BOTTOM BAR ===== */}
-      <FixedBuyBar
-        pricePEN={pricePEN}
-        priceUSD={priceUSD}
-        slug={slug}
-        title={title}
-        safeTitle={safeTitle}
-        whatsapp={whatsapp}
-        whatsappMessage={whatsappMessage}
-        isFreeCourse={isFreeCourse}
-        hasFullAccess={hasFullAccess}
-        loadingPay={loadingPay}
-        onMP={handleMP}
-        onPayPal={handlePayPal}
-      />
-
-      {/* ===== CERTIFICATE SECTION ===== */}
+	      {/* ===== CERTIFICATE SECTION ===== */}
       <div className="rounded-xl border border-border/40 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 p-6">
         <div className="flex items-start gap-4">
           <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-amber-100 dark:bg-amber-900/30 shrink-0">
