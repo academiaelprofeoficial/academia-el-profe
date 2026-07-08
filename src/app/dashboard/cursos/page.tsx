@@ -492,6 +492,18 @@ function DashboardCursosContent() {
           ))}
         </div>
       )}
+
+      {/* Cursos UTP */}
+      <div className="mt-6">
+        <Link href="/cursos/utp" className="block group">
+          <img
+            src="/images/boton-utp.webp"
+            alt="Cursos UTP"
+            className="w-full h-auto object-contain rounded-2xl transition-transform duration-200 group-hover:scale-[1.02] group-hover:shadow-xl"
+            loading="lazy"
+          />
+        </Link>
+      </div>
     </>
   );
 }
