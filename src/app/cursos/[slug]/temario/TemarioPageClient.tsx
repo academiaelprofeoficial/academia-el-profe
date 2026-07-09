@@ -341,7 +341,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
         const group = topicGroups.find((g) => g.title === topicTitle);
         if (group && group.videos.length > 0) {
           const firstVideo = group.videos[0];
-          const videoUrl = firstVideo.videoUrl || firstVideo.video?.asset?.url;
+          const videoUrl = firstVideo.videoUrl || firstVideo.video?.asset?.url || firstVideo.sharedVideo?.videoFile?.asset?.url || firstVideo.sharedVideo?.videoUrl;
           if (videoUrl) {
             setSelectedVideo({
               url: videoUrl,
@@ -364,7 +364,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
 
   // Select a specific video from a module
   const selectVideo = useCallback((video: SanityClassVideo) => {
-    const videoUrl = video.videoUrl || video.video?.asset?.url;
+    const videoUrl = video.videoUrl || video.video?.asset?.url || video.sharedVideo?.videoFile?.asset?.url || video.sharedVideo?.videoUrl;
     if (!videoUrl) return;
     setSelectedVideo({
       url: videoUrl,
@@ -386,7 +386,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
     const firstGroup = topicGroups[0];
     if (firstGroup && firstGroup.videos.length > 0) {
       const firstVideo = firstGroup.videos[0];
-      const videoUrl = firstVideo.videoUrl || firstVideo.video?.asset?.url;
+      const videoUrl = firstVideo.videoUrl || firstVideo.video?.asset?.url || firstVideo.sharedVideo?.videoFile?.asset?.url || firstVideo.sharedVideo?.videoUrl;
       if (videoUrl) {
         setActiveTopicTitle(firstGroup.title);
         setSelectedVideo({ url: videoUrl, title: firstVideo.title, poster: coverImg || undefined });
@@ -641,7 +641,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                 const isActive = activeTopicTitle === group.title;
                 const hasContent = group.videos.length > 0 || group.materials.length > 0;
                 const groupHasSelectedVideo = !!selectedVideo && group.videos.some((v) => {
-                  const url = v.videoUrl || v.video?.asset?.url;
+                  const url = v.videoUrl || v.video?.asset?.url || v.sharedVideo?.videoFile?.asset?.url || v.sharedVideo?.videoUrl;
                   return url === selectedVideo.url;
                 });
 
@@ -690,7 +690,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                       <div className="border-t border-border/20 py-2 px-2 space-y-1">
                         {group.videos.map((video) => {
                           const accessible = canAccessLesson(video);
-                          const videoUrl = video.videoUrl || video.video?.asset?.url;
+                          const videoUrl = video.videoUrl || video.video?.asset?.url || video.sharedVideo?.videoFile?.asset?.url || video.sharedVideo?.videoUrl;
                           const isSelected = selectedVideo?.url === videoUrl;
                           const hasVideo = !!videoUrl;
 
