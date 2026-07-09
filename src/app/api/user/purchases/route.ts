@@ -17,20 +17,29 @@ export async function GET(request: NextRequest) {
     }
 
     // Devolver solo los IDs para verificación rápida de acceso
-    const purchasedIds = await getPurchasedCourseIds(uid);
-
+    let purchasedIds: string[] = [];
+    try {
+      purchasedIds = await getPurchasedCourseIds(uid);
+    } catch {}
+    
     // También incluir accesos manuales otorgados por admin (activos)
-    const manualAccesses = await db.courseAccess.findMany({
-      where: { userId: uid, isActive: true },
-      select: { courseId: true },
-    });
-    const manualIds = manualAccesses.map(a => a.courseId);
-
+    let manualIds: string[] = [];
+    try {
+      const manualAccesses = await db.courseAccess.findMany({
+        where: { userId: uid, isActive: true },
+        select: { courseId: true },
+      });
+      manualIds = manualAccesses.map(a => a.courseId);
+    } catch {}
+    
     // Combinar y deduplicar
     const allAccessIds = [...new Set([...purchasedIds, ...manualIds])];
-
+    
     // También devolver historial completo
-    const history = await getUserPurchases(uid);
+    let history: any[] = [];
+    try {
+      history = await getUserPurchases(uid);
+    } catch {}
 
     return NextResponse.json({
       purchasedCourseIds: allAccessIds,
