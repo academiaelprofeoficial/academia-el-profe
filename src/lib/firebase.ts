@@ -38,6 +38,7 @@ export const auth: Auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.addScope('profile');
 googleProvider.addScope('email');
+googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 // --- Funciones de autenticación ---
 export async function signInWithGoogle(): Promise<User> {
