@@ -435,3 +435,41 @@ html {
 .dark [class*="bg-brand-primary"].text-white svg {
   color: var(--brand-button-text, #065F46) !important;
 }
+
+/* ============================================================
+   Admin Panel Dark Mode — fixes for hardcoded light colors
+   ============================================================ */
+.dark .text-slate-400,
+.dark .text-slate-500,
+.dark .text-slate-600,
+.dark .text-slate-700,
+.dark .text-brand-body,
+.dark .text-brand-heading-secondary {
+  color: #CBD5E1 !important;
+}
+
+.dark .text-slate-800,
+.dark .text-slate-900,
+.dark .text-brand-heading {
+  color: #F1F5F9 !important;
+}
+
+.dark .bg-white,
+.dark .bg-slate-50 {
+  background-color: #1E293B !important;
+}
+
+.dark .bg-slate-100,
+.dark .bg-gray-50 {
+  background-color: #334155 !important;
+}
+
+.dark .border-slate-100,
+.dark .border-slate-200 {
+  border-color: #334155 !important;
+}
+
+.dark .shadow-sm,
+.dark .shadow {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;
+}
