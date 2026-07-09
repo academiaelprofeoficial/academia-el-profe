@@ -276,6 +276,11 @@ export default function PaginaAdmin() {
   const [searchStudent, setSearchStudent] = useState('');
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [showUserModal, setShowUserModal] = useState(false);
+  const [showGrantForm, setShowGrantForm] = useState(false);
+  const [grantEmail, setGrantEmail] = useState('');
+  const [grantCourse, setGrantCourse] = useState('');
+  const [granting, setGranting] = useState(false);
+  const [grantMsg, setGrantMsg] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   // Protección: salir del loading en cuanto auth termine
@@ -382,6 +387,57 @@ export default function PaginaAdmin() {
     } catch {
       alert('Error al eliminar usuario.');
     }
+  };
+
+  // --- Grant / Revoke course access ---
+  const handleGrantAccess = async () => {
+    if (!grantEmail || !grantCourse) return;
+    setGranting(true);
+    setGrantMsg(null);
+    try {
+      const res = await fetch('/api/admin/grant-access', {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({ action: 'grant', userEmail: grantEmail, courseIds: [grantCourse] }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setGrantMsg(`✅ Acceso otorgado a ${grantEmail}`);
+        setGrantEmail('');
+        setGrantCourse('');
+        fetchStudents(studentsPagination.page, searchStudent);
+      } else {
+        setGrantMsg(`❌ ${data.error || 'Error'}`);
+      }
+    } catch {
+      setGrantMsg('❌ Error de conexión');
+    }
+    setGranting(false);
+  };
+
+  const handleRevokeAccess = async () => {
+    if (!grantEmail || !grantCourse) return;
+    setGranting(true);
+    setGrantMsg(null);
+    try {
+      const res = await fetch('/api/admin/grant-access', {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({ action: 'revoke', userEmail: grantEmail, courseIds: [grantCourse] }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setGrantMsg(`✅ Acceso revocado a ${grantEmail}`);
+        setGrantEmail('');
+        setGrantCourse('');
+        fetchStudents(studentsPagination.page, searchStudent);
+      } else {
+        setGrantMsg(`❌ ${data.error || 'Error'}`);
+      }
+    } catch {
+      setGrantMsg('❌ Error de conexión');
+    }
+    setGranting(false);
   };
 
   // --- Cambiar estado de ticket ---
@@ -736,6 +792,57 @@ export default function PaginaAdmin() {
                 onChange={(e) => setSearchStudent(e.target.value)}
                 className="w-full pl-12 pr-4 py-3.5 text-sm bg-white rounded-2xl shadow-sm border-0 text-brand-heading placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary/30 focus:shadow-[0_0_0_3px_rgba(16,185,129,0.1)] transition-all"
               />
+            </div>
+
+            {/* Grant Access — collapsible */}
+            <div className="bg-white rounded-2xl shadow-sm p-4">
+              <button
+                onClick={() => setShowGrantForm(!showGrantForm)}
+                className="w-full flex items-center justify-between text-sm font-semibold text-brand-heading"
+              >
+                <span className="flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-brand-primary" />
+                  Otorgar acceso manual
+                </span>
+                <svg className={`h-4 w-4 text-slate-400 transition-transform ${showGrantForm ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {showGrantForm && (
+                <div className="mt-3 space-y-3 border-t border-slate-100 pt-3">
+                  <input
+                    type="email"
+                    placeholder="Email del alumno"
+                    value={grantEmail}
+                    onChange={(e) => setGrantEmail(e.target.value)}
+                    className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Slug del curso (ej: calculo-diferencial)"
+                    value={grantCourse}
+                    onChange={(e) => setGrantCourse(e.target.value)}
+                    className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleGrantAccess}
+                      disabled={granting || !grantEmail || !grantCourse}
+                      className="flex-1 h-9 text-xs font-bold text-white rounded-xl bg-brand-primary hover:bg-brand-primary-hover disabled:opacity-50 transition-colors"
+                    >
+                      {granting ? 'Otorgando...' : 'Otorgar acceso'}
+                    </button>
+                    <button
+                      onClick={handleRevokeAccess}
+                      disabled={granting || !grantEmail || !grantCourse}
+                      className="h-9 px-4 text-xs font-bold text-red-500 rounded-xl border border-red-200 hover:bg-red-50 disabled:opacity-50 transition-colors"
+                    >
+                      Revocar
+                    </button>
+                  </div>
+                  {grantMsg && <p className="text-xs text-center" style={{ color: grantMsg.startsWith('✅') ? '#059669' : '#DC2626' }}>{grantMsg}</p>}
+                </div>
+              )}
             </div>
 
             {/* Student count */}
