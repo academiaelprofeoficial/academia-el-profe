@@ -14,6 +14,7 @@ export async function GET() {
       priceUSD: c.priceUSD || 0,
       group: c.group || 'general',
       cardColor: c.cardColor || '#10B981',
+      hidden: c.hidden || false,
     }));
     return NextResponse.json(data);
   } catch (error) {

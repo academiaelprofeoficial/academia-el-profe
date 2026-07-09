@@ -170,6 +170,13 @@ export default defineType({
       initialValue: "#10B981",
       description: "Elige el color hexadecimal para la tarjeta del curso (ej: #10B981 para verde, #3B82F6 para azul).",
     }),
+    defineField({
+      name: "hidden",
+      title: "Ocultar Curso",
+      type: "boolean",
+      initialValue: false,
+      description: "Activa para ocultar este curso de la web pública sin eliminarlo.",
+    }),
     defineField({ name: "level", title: "Nivel", type: "string", options: { list: [
       { title: "Básico", value: "basico" },
       { title: "Intermedio", value: "intermedio" },
