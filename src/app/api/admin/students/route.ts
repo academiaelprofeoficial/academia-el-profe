@@ -40,11 +40,16 @@ export async function GET(request: NextRequest) {
               purchases: { where: { status: 'approved' } },
               progress: true,
               wishlist: true,
+              courseAccesses: { where: { isActive: true } },
             },
           },
           purchases: {
             where: { status: 'approved' },
             select: { id: true, courseId: true, courseTitle: true, amount: true, currency: true, approvedAt: true, status: true },
+          },
+          courseAccesses: {
+            where: { isActive: true },
+            select: { id: true, courseId: true, grantedBy: true, grantedAt: true, note: true },
           },
           progress: {
             select: { completed: true },
@@ -65,6 +70,7 @@ export async function GET(request: NextRequest) {
         lastActive: s.updatedAt.toISOString(),
         stats: {
           cursosComprados: s._count.purchases,
+          accesosManuales: s._count.courseAccesses,
           totalCompras: s.purchases.length,
           clasesVistas: s.progress.filter((p) => p.completed).length,
           totalProgreso: s._count.progress,
@@ -76,6 +82,12 @@ export async function GET(request: NextRequest) {
           monto: p.amount,
           moneda: p.currency,
           fecha: p.approvedAt?.toISOString() || null,
+        })),
+        accesosManuales: s.courseAccesses.map((a) => ({
+          courseId: a.courseId,
+          grantedBy: a.grantedBy,
+          grantedAt: a.grantedAt.toISOString(),
+          note: a.note,
         })),
         totalGastado: s.purchases.reduce((sum, p) => sum + p.amount, 0),
       })),
