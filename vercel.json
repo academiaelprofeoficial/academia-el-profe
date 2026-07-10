@@ -1,4 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "build": {
+    "env": {
+      "FORCE_COLOR": "0"
+    }
+  },
+  "github": {
+    "autoJobCancelation": true,
+    "silent": false
+  }
 }
