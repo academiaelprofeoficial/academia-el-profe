@@ -29,6 +29,7 @@ import {
   Headphones,
   Lock,
   Loader2,
+  LogIn,
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -272,7 +273,8 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
                           ✓ Comprado — Acceso de por vida
                         </p>
                       </>
-                    ) : (
+                    ) : user ? (
+                      /* ---- AUTENTICADO: botones de pago ---- */
                       <>
                         <div className="flex items-baseline gap-3">
                           <span className="text-xl font-bold text-orange-500">{formatoSoles(curso.price)}</span>
@@ -324,6 +326,38 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
                         >
                           <ListChecks className="h-3.5 w-3.5" />
                           TEMARIO
+                        </button>
+                      </>
+                    ) : (
+                      /* ---- INVITADO: "Iniciar sesión para comprar" ---- */
+                      <>
+                        <div className="flex items-baseline gap-3">
+                          <span className="text-xl font-bold text-orange-500">{formatoSoles(curso.price)}</span>
+                          <span className="text-xs text-slate-400 font-medium">{formatoUSD(curso.priceUSD)}</span>
+                        </div>
+
+                        <Link
+                          href="/iniciar-sesion"
+                          onClick={(e) => e.stopPropagation()}
+                          className={cn(
+                            'w-full h-10 text-xs font-bold tracking-wide text-white gap-2 rounded-lg flex items-center justify-center transition-all',
+                            colors.bg, colors.hover
+                          )}
+                        >
+                          <LogIn className="h-4 w-4" />
+                          INICIAR SESIÓN PARA COMPRAR
+                        </Link>
+
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleVerTemario(curso); }}
+                          className="w-full h-9 text-xs font-bold tracking-wide gap-1.5 rounded-lg flex items-center justify-center border transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                          style={{
+                            borderColor: curso.colorKey === 'emerald' ? '#10B981' : curso.colorKey === 'blue' ? '#3B82F6' : curso.colorKey === 'orange' ? '#F97316' : curso.colorKey === 'purple' ? '#8B5CF6' : curso.colorKey === 'teal' ? '#14B8A6' : curso.colorKey === 'red' ? '#EF4444' : '#0EA5E9',
+                            color: curso.colorKey === 'emerald' ? '#059669' : curso.colorKey === 'blue' ? '#2563EB' : curso.colorKey === 'orange' ? '#EA580C' : curso.colorKey === 'purple' ? '#7C3AED' : curso.colorKey === 'teal' ? '#0D9488' : curso.colorKey === 'red' ? '#DC2626' : '#0284C7',
+                          }}
+                        >
+                          <ListChecks className="h-3.5 w-3.5" />
+                          VER TEMARIO
                         </button>
                       </>
                     )}
