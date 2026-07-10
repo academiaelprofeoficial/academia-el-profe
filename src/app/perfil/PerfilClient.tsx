@@ -152,7 +152,7 @@ const selectClass =
 /* ------------------------------------------------------------------ */
 
 export function PerfilClient() {
-  const { user, idToken, loading: authLoading } = useAuth();
+  const { user, idToken, loading: authLoading, refreshIdToken } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
@@ -189,9 +189,14 @@ export function PerfilClient() {
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
 
-  // Fetch profile
+  // Fetch profile — with token refresh on 401
   const fetchProfile = useCallback(async () => {
-    if (!idToken) return;
+    if (!idToken) {
+      setError('No hay sesión activa. Redirigiendo al inicio de sesión...');
+      setLoading(false);
+      setTimeout(() => { window.location.href = '/iniciar-sesion'; }, 2000);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -214,6 +219,37 @@ export function PerfilClient() {
           biography: data.profile.biography || '',
         });
         setPhotoPreview(data.profile.photoURL || null);
+      } else if (res.status === 401) {
+        // Token expired — try refreshing once
+        console.log('[Perfil] Token expirado (401), refrescando...');
+        const newToken = await refreshIdToken();
+        if (newToken) {
+          const retryRes = await fetch('/api/user/profile', {
+            headers: { Authorization: `Bearer ${newToken}` },
+          });
+          const retryData = await retryRes.json().catch(() => null);
+          if (retryRes.ok && retryData?.profile) {
+            setProfile(retryData.profile);
+            setFormData({
+              name: retryData.profile.name || '',
+              phone: retryData.profile.phone || '',
+              address: retryData.profile.address || '',
+              age: retryData.profile.age ? String(retryData.profile.age) : '',
+              birthDate: retryData.profile.birthDate || '',
+              gender: retryData.profile.gender || '',
+              university: retryData.profile.university || '',
+              career: retryData.profile.career || '',
+              biography: retryData.profile.biography || '',
+            });
+            setPhotoPreview(retryData.profile.photoURL || null);
+          } else {
+            setError('Sesión expirada. Por favor inicia sesión nuevamente.');
+            setTimeout(() => { window.location.href = '/iniciar-sesion'; }, 3000);
+          }
+        } else {
+          setError('Sesión expirada. Por favor inicia sesión nuevamente.');
+          setTimeout(() => { window.location.href = '/iniciar-sesion'; }, 3000);
+        }
       } else {
         const msg = data?.error || `Error del servidor (${res.status})`;
         setError(msg);
@@ -226,12 +262,22 @@ export function PerfilClient() {
     } finally {
       setLoading(false);
     }
-  }, [idToken]);
+  }, [idToken, refreshIdToken]);
 
   useEffect(() => {
-    if (!authLoading && !user) return;
-    if (idToken) fetchProfile();
-  }, [idToken, authLoading, user, fetchProfile]);
+    if (authLoading) return; // Wait for Firebase auth to resolve first
+    if (!user) {
+      setError('No hay sesión activa. Redirigiendo al inicio de sesión...');
+      setLoading(false);
+      setTimeout(() => { window.location.href = '/iniciar-sesion'; }, 2000);
+      return;
+    }
+    // Small delay to ensure idToken is populated after auth state resolves
+    const timer = setTimeout(() => {
+      fetchProfile();
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [authLoading, user, fetchProfile]);
 
   // Handle file change
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
