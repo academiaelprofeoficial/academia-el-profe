@@ -10,7 +10,7 @@ import { db } from '@/lib/db';
 
 const FIREBASE_API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY || 'AIzaSyAeMHlQZtUwZqbH5o7nsb4eoUYXLM2y0PU';
 
-// Auto-migration: ensure profile columns exist
+// Auto-migration: ensure all profile columns exist
 let _migrated = false;
 async function ensureColumns() {
   if (_migrated) return;
@@ -19,9 +19,14 @@ async function ensureColumns() {
     if (isPg) {
       await db.$executeRawUnsafe(`
         DO $$ BEGIN
+          ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "phone" TEXT;
+          ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "address" TEXT;
           ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "age" INTEGER;
+          ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "birthDate" TEXT;
+          ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "gender" TEXT;
           ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "university" TEXT;
           ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "career" TEXT;
+          ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "biography" TEXT;
         EXCEPTION WHEN OTHERS THEN NULL;
         END $$;
       `);
@@ -76,9 +81,14 @@ export async function GET(request: NextRequest) {
         name: true,
         photoURL: true,
         role: true,
+        phone: true,
+        address: true,
         age: true,
+        birthDate: true,
+        gender: true,
         university: true,
         career: true,
+        biography: true,
         createdAt: true,
         _count: {
           select: { purchases: true, progress: true, wishlist: true, comments: true },
@@ -113,16 +123,32 @@ export async function PUT(request: NextRequest) {
     await ensureColumns();
 
     const body = await request.json();
-    const { name, age, university, career, photoURL } = body;
+    const { name, phone, address, age, birthDate, gender, university, career, biography, photoURL } = body;
 
     // Validate
     if (name !== undefined && (typeof name !== 'string' || name.trim().length === 0 || name.length > 100)) {
       return NextResponse.json({ error: 'Nombre invalido (1-100 caracteres).' }, { status: 400 });
     }
+    if (phone !== undefined && phone !== null && typeof phone === 'string' && phone.length > 20) {
+      return NextResponse.json({ error: 'Telefono muy largo (max 20).' }, { status: 400 });
+    }
+    if (address !== undefined && address !== null && typeof address === 'string' && address.length > 200) {
+      return NextResponse.json({ error: 'Direccion muy larga (max 200).' }, { status: 400 });
+    }
     if (age !== undefined && age !== null) {
       const ageNum = Number(age);
       if (isNaN(ageNum) || ageNum < 10 || ageNum > 120) {
         return NextResponse.json({ error: 'Edad debe ser entre 10 y 120.' }, { status: 400 });
+      }
+    }
+    if (birthDate !== undefined && birthDate !== null && typeof birthDate === 'string') {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
+        return NextResponse.json({ error: 'Fecha de nacimiento invalida (YYYY-MM-DD).' }, { status: 400 });
+      }
+    }
+    if (gender !== undefined && gender !== null) {
+      if (!['masculino', 'femenino', 'otro'].includes(gender)) {
+        return NextResponse.json({ error: 'Genero invalido.' }, { status: 400 });
       }
     }
     if (university !== undefined && university !== null && typeof university === 'string' && university.length > 100) {
@@ -131,13 +157,21 @@ export async function PUT(request: NextRequest) {
     if (career !== undefined && career !== null && typeof career === 'string' && career.length > 150) {
       return NextResponse.json({ error: 'Carrera muy larga (max 150).' }, { status: 400 });
     }
+    if (biography !== undefined && biography !== null && typeof biography === 'string' && biography.length > 500) {
+      return NextResponse.json({ error: 'Biografia muy larga (max 500).' }, { status: 400 });
+    }
 
     // Build update data
     const updateData: any = {};
     if (name !== undefined) updateData.name = name.trim();
+    if (phone !== undefined) updateData.phone = phone === '' ? null : phone;
+    if (address !== undefined) updateData.address = address === '' ? null : address;
     if (age !== undefined) updateData.age = age === null ? null : Number(age);
+    if (birthDate !== undefined) updateData.birthDate = birthDate === '' ? null : birthDate;
+    if (gender !== undefined) updateData.gender = gender === '' ? null : gender;
     if (university !== undefined) updateData.university = university === '' ? null : university;
     if (career !== undefined) updateData.career = career === '' ? null : career;
+    if (biography !== undefined) updateData.biography = biography === '' ? null : biography;
     if (photoURL !== undefined) updateData.photoURL = photoURL;
 
     const updated = await db.user.update({
@@ -145,7 +179,9 @@ export async function PUT(request: NextRequest) {
       data: updateData,
       select: {
         id: true, email: true, name: true, photoURL: true, role: true,
-        age: true, university: true, career: true, createdAt: true,
+        phone: true, address: true, age: true, birthDate: true, gender: true,
+        university: true, career: true, biography: true, createdAt: true,
+        _count: { select: { purchases: true, progress: true, wishlist: true, comments: true } },
       },
     });
 
