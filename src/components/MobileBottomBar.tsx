@@ -81,8 +81,8 @@ export function MobileBottomBar() {
   const whatsappNumber = '51922737951';
   const whatsappMsg = 'Hola, quiero información sobre los cursos de Academia El Profe.';
 
-  // Don't show on auth pages
-  if (pathname.startsWith('/iniciar-sesion') || pathname.startsWith('/registrarse')) return null;
+  // Don't show on auth pages or admin routes
+  if (pathname.startsWith('/iniciar-sesion') || pathname.startsWith('/registrarse') || pathname.startsWith('/admin')) return null;
 
   return (
     <AnimatePresence>

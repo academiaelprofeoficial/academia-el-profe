@@ -66,7 +66,6 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
   const displayCourses = useMemo(() => {
     if (!sanityCourses || sanityCourses.length === 0) return [];
     return sanityCourses
-      .filter((sc) => sc.group === 'general' || sc.group === 'ambos' || !sc.group)
       .map((sc) => {
       const mock = CURSOS_LANDING.find((m) => m.id === sc.slug);
       return {

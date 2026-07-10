@@ -412,16 +412,12 @@ export function HomepageClient({ sanityData }: Props) {
       {/* HERO SECTION — GSAP + Framer Motion */}
       {/* ============================================================ */}
       <section id="hero" ref={heroRef} className="min-h-screen scroll-mt-16 relative overflow-hidden flex items-center justify-center">
-        {/* Lightning WebGL background — todos los dispositivos */}
-        {true && (
+        {/* Lightning WebGL background — solo dark mode */}
+        {isDark && (
           <div className="absolute inset-0 z-0 transition-opacity duration-500"
-            style={{ opacity: isDark ? 0.5 : 0.15 }}
+            style={{ opacity: 0.5 }}
           >
-            {isDark ? (
-              <LightningBackground hue={155} speed={1.4} intensity={0.5} size={2.5} />
-            ) : (
-              <LightningBackground hue={0} speed={1.0} intensity={0.08} size={3.0} />
-            )}
+            <LightningBackground hue={155} speed={1.4} intensity={0.5} size={2.5} />
           </div>
         )}
         {/* Gradient transition to next section */}

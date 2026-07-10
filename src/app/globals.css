@@ -435,3 +435,65 @@ html {
 .dark [class*="bg-brand-primary"].text-white svg {
   color: var(--brand-button-text, #065F46) !important;
 }
+
+/* ============================================================
+   Responsive & iOS Safari Fixes
+   ============================================================ */
+
+/* --vh Safari fix: avoid 100vh including browser chrome */
+:root {
+  --vh: 100vh;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  :root {
+    --vh: 100dvh;
+  }
+}
+
+/* Safe area for iOS notch */
+body {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Prevent iOS input zoom on focus */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="search"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Fluid typography */
+html {
+  font-size: clamp(14px, 2.5vw, 16px);
+}
+
+/* Minimum touch target 44px for interactive elements */
+@media (hover: none) and (pointer: coarse) {
+  a, button, [role="button"], input[type="submit"], input[type="button"], select {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Admin dark mode overrides */
+.dark .bg-white {
+  background-color: var(--surface-2, hsl(224 50% 10%)) !important;
+}
+.dark .bg-gray-50,
+.dark .bg-slate-50 {
+  background-color: var(--surface-1, hsl(224 50% 7%)) !important;
+}
+.dark .border-gray-200,
+.dark .border-slate-200 {
+  border-color: var(--surface-border, hsl(216 34% 17%)) !important;
+}

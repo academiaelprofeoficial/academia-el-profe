@@ -31,11 +31,13 @@ export function WhatsAppButton() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Contactar por WhatsApp"
-        className="fixed bottom-6 right-6 z-50 flex items-center justify-center rounded-full shadow-lg transition-transform hover:scale-110 active:scale-95 max-sm:hidden"
+        className="fixed z-50 flex items-center justify-center rounded-full shadow-lg transition-transform hover:scale-110 active:scale-95 max-sm:hidden"
         style={{
           width: 60,
           height: 60,
           boxShadow: '0 4px 20px rgba(37, 211, 102, 0.4), 0 0 40px rgba(37, 211, 102, 0.15)',
+          bottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))',
+          right: '1.5rem',
         }}
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}

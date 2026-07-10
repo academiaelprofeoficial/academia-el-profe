@@ -10,11 +10,18 @@ export function PwaInstallButton() {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
+    // Hide if previously installed (localStorage flag)
+    if (localStorage.getItem('pwa_installed')) {
+      setIsInstalled(true);
+      return;
+    }
+
     // Detectar si estamos dentro de la app instalada (standalone)
     const standalone = window.matchMedia('(display-mode: standalone)').matches;
     setIsStandalone(standalone);
     if (standalone) {
       setIsInstalled(true);
+      localStorage.setItem('pwa_installed', '1');
       return;
     }
 
@@ -24,7 +31,10 @@ export function PwaInstallButton() {
       setDeferredPrompt(e);
     };
     window.addEventListener('beforeinstallprompt', handler);
-    window.addEventListener('appinstalled', () => setIsInstalled(true));
+    window.addEventListener('appinstalled', () => {
+      setIsInstalled(true);
+      localStorage.setItem('pwa_installed', '1');
+    });
 
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
@@ -44,8 +54,8 @@ export function PwaInstallButton() {
     window.location.href = '/';
   }, []);
 
-  // Si estamos dentro de la app (standalone), no mostrar nada
-  if (isStandalone || dismissed) return null;
+  // Si estamos dentro de la app (standalone) o ya instalada, no mostrar nada
+  if (isInstalled || isStandalone || dismissed) return null;
 
   const goldBase = '#D4A017';
   const goldLight = '#F0C75E';

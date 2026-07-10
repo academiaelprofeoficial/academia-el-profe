@@ -198,7 +198,7 @@ export function LandingHeader() {
       <header className={`fixed top-0 inset-x-0 z-50 h-16 transition-all duration-500 ${
         scrolled
           ? 'bg-brand-primary/95 dark:bg-[var(--surface-0)]/95 backdrop-blur-xl shadow-lg shadow-black/10 border-b border-brand-primary/20 dark:border-[var(--surface-border)]'
-          : 'bg-transparent border-b border-transparent'
+          : 'bg-white/80 dark:bg-transparent border-b border-slate-200/60 dark:border-transparent backdrop-blur-md'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
 
@@ -220,10 +220,10 @@ export function LandingHeader() {
                       isActive(link.href)
                         ? scrolled
                           ? 'text-brand-primary bg-white/90 dark:text-white dark:bg-white/20'
-                          : 'text-white bg-white/15'
+                          : 'text-brand-primary bg-brand-primary-bg-light'
                         : scrolled
                           ? 'text-white/90 hover:text-white hover:bg-white/10 dark:text-slate-300 dark:hover:text-white'
-                          : 'text-white/80 hover:text-white hover:bg-white/10'
+                          : 'text-slate-700 hover:text-brand-primary hover:bg-slate-50 dark:text-white/80 dark:hover:text-white dark:hover:bg-white/10'
                     }`}
                   >
                     {link.etiqueta}
@@ -310,7 +310,7 @@ export function LandingHeader() {
             {/* Hamburguesa */}
             <button
               onClick={() => setMenuAbierto(true)}
-              className={`h-10 w-10 flex items-center justify-center rounded-lg transition-colors -ml-1 ${scrolled ? 'text-brand-body dark:text-slate-300 hover:bg-white/10 dark:hover:bg-white/10' : 'text-white hover:bg-white/10'}`}
+              className={`h-10 w-10 flex items-center justify-center rounded-lg transition-colors -ml-1 ${scrolled ? 'text-brand-body dark:text-slate-300 hover:bg-white/10 dark:hover:bg-white/10' : 'text-slate-800 dark:text-white hover:bg-slate-100 dark:hover:bg-white/10'}`}
               aria-label="Abrir menú"
             >
               <Menu className="h-6 w-6" />
@@ -327,7 +327,7 @@ export function LandingHeader() {
                 {/* Lupa */}
                 <Link
                   href="/dashboard/cursos"
-                  className={`h-9 w-9 flex items-center justify-center rounded-lg transition-colors ${scrolled ? 'text-slate-400' : 'text-white/90 hover:text-white'}`}
+                  className={`h-9 w-9 flex items-center justify-center rounded-lg transition-colors ${scrolled ? 'text-slate-400' : 'text-slate-800 dark:text-white/90 hover:text-brand-primary dark:hover:text-white'}`}
                 >
                   <Search className="h-4 w-4" />
                 </Link>
@@ -336,14 +336,14 @@ export function LandingHeader() {
                   <div className="h-6 w-6 rounded-full bg-brand-primary flex items-center justify-center text-white text-[10px] font-bold">
                     {(user?.displayName || user?.email || 'U')[0].toUpperCase()}
                   </div>
-                  <span className={`text-xs font-medium max-w-[80px] truncate ${scrolled ? 'text-brand-heading-secondary' : 'text-white/90'}`}>
+                  <span className={`text-xs font-medium max-w-[80px] truncate ${scrolled ? 'text-brand-heading-secondary' : 'text-slate-800 dark:text-white/90'}`}>
                     {user?.displayName || user?.email?.split('@')[0] || 'Usuario'}
                   </span>
                 </Link>
               </div>
             ) : (
               <Link href="/iniciar-sesion" onClick={() => setMenuAbierto(false)}>
-                <Button className={`h-8 text-xs font-semibold gap-1.5 px-3 rounded-lg transition-all ${scrolled ? 'bg-brand-primary hover:bg-brand-primary-hover text-white' : 'bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm border border-white/30'}`}>
+                <Button className={`h-8 text-xs font-semibold gap-1.5 px-3 rounded-lg transition-all ${scrolled ? 'bg-brand-primary hover:bg-brand-primary-hover text-white' : 'bg-brand-primary hover:bg-brand-primary-hover text-white'}`}>
                   <LogIn className="h-3.5 w-3.5" />
                   Iniciar
                 </Button>

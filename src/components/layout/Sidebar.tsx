@@ -33,7 +33,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden lg:flex flex-col w-60 shrink-0 border-r border-border/40 bg-muted/30 h-[calc(100vh-4rem)] sticky top-16">
+    <aside className="hidden lg:flex flex-col w-60 shrink-0 border-r border-border/40 bg-muted/30 h-[calc(100vh-4rem)] lg:sticky lg:top-16" style={{ minHeight: 0 }}>
       <nav className="flex flex-col gap-1 p-4 flex-1" aria-label="Navegación lateral">
         {SIDEBAR_NAV.map((item) => {
           const Icono = ICONOS[item.icono];
