@@ -3,13 +3,14 @@
 // ============================================================
 // Mobile Bottom Bar — UNIFIED
 // Tabs: Inicio, Cursos (siempre) + Mis Cursos (solo auth) + Chat + App + Tema
-// "Diplomas" ELIMINADO del bottom bar
 // "Cursos" SIEMPRE va a /cursos (nunca a /dashboard/cursos)
 // "Mis Cursos" solo visible si está autenticado
+// CORREGIDO: Respeto total del tema dark/light — no renderiza hasta
+// que next-themes haya resuelto el tema (evita flash de tema incorrecto).
 // ============================================================
 
 import { useEffect, useState, useCallback } from 'react';
-import { Download, ExternalLink, Sun, Moon, Home, BookOpen, BookOpenCheck, Heart, Clock } from 'lucide-react';
+import { Download, ExternalLink, Sun, Moon, Home, BookOpen, BookOpenCheck } from 'lucide-react';
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import { useTheme } from 'next-themes';
 import { useAuth } from '@/lib/auth-context';
@@ -18,7 +19,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
 /* ------------------------------------------------------------------ */
-/*  Tab definitions — SIEMPRE visibles                                  */
+/*  Tab definitions                                                    */
 /* ------------------------------------------------------------------ */
 
 const MAIN_TABS = [
@@ -26,13 +27,49 @@ const MAIN_TABS = [
   { label: 'Cursos', href: '/cursos', icon: BookOpen },
 ] as const;
 
-// Solo para usuarios autenticados
 const AUTH_TABS = [
   { label: 'Mis Cursos', href: '/dashboard/cursos', icon: BookOpenCheck },
 ] as const;
 
 /* ------------------------------------------------------------------ */
-/*  Component                                                         */
+/*  Theme-aware style constants                                         */
+/* ------------------------------------------------------------------ */
+
+function useBarStyles(theme: 'dark' | 'light') {
+  const isDark = theme === 'dark';
+
+  return {
+    // Bar container
+    containerBg: isDark
+      ? 'linear-gradient(135deg, rgba(15,23,42,0.95), rgba(15,23,42,0.88))'
+      : 'linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.88))',
+    containerBorder: isDark
+      ? 'rgba(148,163,184,0.12)'
+      : 'rgba(0,0,0,0.06)',
+    containerShadow: isDark
+      ? '0 -4px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(148,163,184,0.08), inset 0 1px 0 rgba(148,163,184,0.06)'
+      : '0 -4px 30px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)',
+
+    // Highlight line
+    highlightGradient: isDark
+      ? 'linear-gradient(90deg, transparent, rgba(52,211,153,0.3), transparent)'
+      : 'linear-gradient(90deg, transparent, rgba(16,185,129,0.2), transparent)',
+
+    // Tab colors
+    activeColor: isDark ? '#34D399' : '#059669',
+    inactiveIcon: isDark ? 'rgba(148,163,184,0.6)' : 'rgba(100,116,139,0.6)',
+    inactiveLabel: isDark ? 'rgba(148,163,184,0.5)' : 'rgba(100,116,139,0.5)',
+    separator: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(0,0,0,0.06)',
+
+    // Theme toggle specific
+    sunColor: '#FBBF24',
+    moonColor: isDark ? 'rgba(148,163,184,0.6)' : 'rgba(100,116,139,0.6)',
+    themeLabel: isDark ? 'Claro' : 'Oscuro',
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
 export function MobileBottomBar() {
@@ -46,7 +83,7 @@ export function MobileBottomBar() {
 
   const isLoggedIn = !!user;
 
-  // PWA detection
+  // PWA + theme detection
   useEffect(() => {
     setMounted(true);
     const standalone = window.matchMedia('(display-mode: standalone)').matches;
@@ -91,11 +128,11 @@ export function MobileBottomBar() {
   // Don't show on auth pages or admin routes
   if (pathname.startsWith('/iniciar-sesion') || pathname.startsWith('/registrarse') || pathname.startsWith('/admin')) return null;
 
-  // Build the active color
-  const activeColor = resolvedTheme === 'dark' ? '#34D399' : '#059669';
-  const inactiveColor = resolvedTheme === 'dark' ? 'rgba(148,163,184,0.6)' : 'rgba(100,116,139,0.6)';
-  const inactiveLabelColor = resolvedTheme === 'dark' ? 'rgba(148,163,184,0.5)' : 'rgba(100,116,139,0.5)';
-  const separatorColor = resolvedTheme === 'dark' ? 'rgba(148,163,184,0.15)' : 'rgba(0,0,0,0.08)';
+  // CRITICAL: Don't render until theme is resolved to avoid flash of wrong theme
+  if (!mounted || !resolvedTheme) return null;
+
+  const theme = resolvedTheme === 'dark' ? 'dark' : 'light';
+  const styles = useBarStyles(theme);
 
   return (
     <AnimatePresence>
@@ -106,26 +143,19 @@ export function MobileBottomBar() {
         className="fixed bottom-0 inset-x-0 z-[9997] px-3 pb-[env(safe-area-inset-bottom,8px)] pt-1.5 lg:hidden"
       >
         <div
-          className="relative flex items-center justify-around gap-1 h-[62px] rounded-2xl border border-white/20 dark:border-white/10 overflow-hidden"
+          className="relative flex items-center justify-around gap-1 h-[62px] rounded-2xl overflow-hidden"
           style={{
-            background: resolvedTheme === 'dark'
-              ? 'linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.85))'
-              : 'linear-gradient(135deg, rgba(255,255,255,0.92), rgba(255,255,255,0.85))',
+            background: styles.containerBg,
+            border: `1px solid ${styles.containerBorder}`,
             backdropFilter: 'blur(20px) saturate(180%)',
             WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-            boxShadow: resolvedTheme === 'dark'
-              ? '0 -4px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.06)'
-              : '0 -4px 30px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8)',
+            boxShadow: styles.containerShadow,
           }}
         >
           {/* Subtle top highlight line */}
           <div
             className="absolute top-0 left-[10%] right-[10%] h-[1px]"
-            style={{
-              background: resolvedTheme === 'dark'
-                ? 'linear-gradient(90deg, transparent, rgba(52,211,153,0.3), transparent)'
-                : 'linear-gradient(90deg, transparent, rgba(16,185,129,0.2), transparent)',
-            }}
+            style={{ background: styles.highlightGradient }}
           />
 
           {/* Main tabs — SIEMPRE visibles */}
@@ -142,14 +172,14 @@ export function MobileBottomBar() {
                   <Icon
                     className="h-[20px] w-[20px] transition-all duration-200"
                     style={{
-                      color: active ? activeColor : inactiveColor,
+                      color: active ? styles.activeColor : styles.inactiveIcon,
                       strokeWidth: active ? 2.2 : 1.8,
                     }}
                   />
                 </div>
                 <span
                   className="text-[10px] font-semibold tracking-wide transition-all duration-200"
-                  style={{ color: active ? activeColor : inactiveLabelColor }}
+                  style={{ color: active ? styles.activeColor : styles.inactiveLabel }}
                 >
                   {tab.label}
                 </span>
@@ -157,7 +187,7 @@ export function MobileBottomBar() {
                   <motion.div
                     layoutId="bottombar-active"
                     className="absolute -top-0.5 left-[20%] right-[20%] h-[2.5px] rounded-full"
-                    style={{ background: activeColor }}
+                    style={{ background: styles.activeColor }}
                     transition={{ type: 'spring', damping: 30, stiffness: 400 }}
                   />
                 )}
@@ -170,7 +200,7 @@ export function MobileBottomBar() {
             <>
               <div
                 className="w-[1px] h-8 my-auto rounded-full"
-                style={{ background: separatorColor }}
+                style={{ background: styles.separator }}
               />
               {AUTH_TABS.map((tab) => {
                 const Icon = tab.icon;
@@ -185,14 +215,14 @@ export function MobileBottomBar() {
                       <Icon
                         className="h-[20px] w-[20px] transition-all duration-200"
                         style={{
-                          color: active ? activeColor : inactiveColor,
+                          color: active ? styles.activeColor : styles.inactiveIcon,
                           strokeWidth: active ? 2.2 : 1.8,
                         }}
                       />
                     </div>
                     <span
                       className="text-[10px] font-semibold tracking-wide transition-all duration-200"
-                      style={{ color: active ? activeColor : inactiveLabelColor }}
+                      style={{ color: active ? styles.activeColor : styles.inactiveLabel }}
                     >
                       {tab.label}
                     </span>
@@ -200,7 +230,7 @@ export function MobileBottomBar() {
                       <motion.div
                         layoutId="bottombar-active"
                         className="absolute -top-0.5 left-[20%] right-[20%] h-[2.5px] rounded-full"
-                        style={{ background: activeColor }}
+                        style={{ background: styles.activeColor }}
                         transition={{ type: 'spring', damping: 30, stiffness: 400 }}
                       />
                     )}
@@ -213,7 +243,7 @@ export function MobileBottomBar() {
           {/* Separator */}
           <div
             className="w-[1px] h-8 my-auto rounded-full"
-            style={{ background: separatorColor }}
+            style={{ background: styles.separator }}
           />
 
           {/* WhatsApp */}
@@ -228,7 +258,7 @@ export function MobileBottomBar() {
             </div>
             <span
               className="text-[10px] font-semibold tracking-wide"
-              style={{ color: inactiveLabelColor }}
+              style={{ color: styles.inactiveLabel }}
             >
               Chat
             </span>
@@ -239,7 +269,7 @@ export function MobileBottomBar() {
             <>
               <div
                 className="w-[1px] h-8 my-auto rounded-full"
-                style={{ background: separatorColor }}
+                style={{ background: styles.separator }}
               />
               <button
                 onClick={isInstalled ? () => { window.location.href = '/'; } : handleInstall}
@@ -269,32 +299,30 @@ export function MobileBottomBar() {
           )}
 
           {/* Theme toggle */}
-          {mounted && (
-            <>
-              <div
-                className="w-[1px] h-8 my-auto rounded-full"
-                style={{ background: separatorColor }}
-              />
-              <button
-                onClick={toggleTheme}
-                className="flex flex-col items-center justify-center gap-0.5 min-w-[48px] py-1.5 transition-transform active:scale-90"
+          <>
+            <div
+              className="w-[1px] h-8 my-auto rounded-full"
+              style={{ background: styles.separator }}
+            />
+            <button
+              onClick={toggleTheme}
+              className="flex flex-col items-center justify-center gap-0.5 min-w-[48px] py-1.5 transition-transform active:scale-90"
+            >
+              <div className="h-5 flex items-center justify-center">
+                {theme === 'dark' ? (
+                  <Sun className="h-[20px] w-[20px]" style={{ color: styles.sunColor }} />
+                ) : (
+                  <Moon className="h-[20px] w-[20px]" style={{ color: styles.moonColor }} />
+                )}
+              </div>
+              <span
+                className="text-[10px] font-semibold tracking-wide"
+                style={{ color: styles.inactiveLabel }}
               >
-                <div className="h-5 flex items-center justify-center">
-                  {resolvedTheme === 'dark' ? (
-                    <Sun className="h-[20px] w-[20px]" style={{ color: '#FBBF24' }} />
-                  ) : (
-                    <Moon className="h-[20px] w-[20px]" style={{ color: 'rgba(100,116,139,0.6)' }} />
-                  )}
-                </div>
-                <span
-                  className="text-[10px] font-semibold tracking-wide"
-                  style={{ color: inactiveLabelColor }}
-                >
-                  {resolvedTheme === 'dark' ? 'Claro' : 'Oscuro'}
-                </span>
-              </button>
-            </>
-          )}
+                {styles.themeLabel}
+              </span>
+            </button>
+          </>
         </div>
       </motion.nav>
     </AnimatePresence>
