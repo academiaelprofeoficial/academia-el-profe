@@ -1,7 +1,15 @@
 'use client';
 
+// ============================================================
+// Mobile Bottom Bar — UNIFIED
+// Tabs: Inicio, Cursos (siempre) + Mis Cursos (solo auth) + Chat + App + Tema
+// "Diplomas" ELIMINADO del bottom bar
+// "Cursos" SIEMPRE va a /cursos (nunca a /dashboard/cursos)
+// "Mis Cursos" solo visible si está autenticado
+// ============================================================
+
 import { useEffect, useState, useCallback } from 'react';
-import { Download, ExternalLink, Sun, Moon, Home, BookOpen, Award, Heart, Clock, Headset } from 'lucide-react';
+import { Download, ExternalLink, Sun, Moon, Home, BookOpen, BookOpenCheck, Heart, Clock } from 'lucide-react';
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import { useTheme } from 'next-themes';
 import { useAuth } from '@/lib/auth-context';
@@ -10,13 +18,17 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
 /* ------------------------------------------------------------------ */
-/*  Tab definitions                                                   */
+/*  Tab definitions — SIEMPRE visibles                                  */
 /* ------------------------------------------------------------------ */
 
-const TABS = [
+const MAIN_TABS = [
   { label: 'Inicio', href: '/', icon: Home },
-  { label: 'Cursos', href: '/cursos', icon: BookOpen, loggedHref: '/dashboard/cursos' },
-  { label: 'Diplomas', href: '/dashboard/certificados', icon: Award },
+  { label: 'Cursos', href: '/cursos', icon: BookOpen },
+] as const;
+
+// Solo para usuarios autenticados
+const AUTH_TABS = [
+  { label: 'Mis Cursos', href: '/dashboard/cursos', icon: BookOpenCheck },
 ] as const;
 
 /* ------------------------------------------------------------------ */
@@ -52,7 +64,6 @@ export function MobileBottomBar() {
       const result = await deferredPrompt.userChoice;
       if (result.outcome === 'accepted') { setIsInstalled(true); setDeferredPrompt(null); }
     } else {
-      // Fallback: show instructions
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       if (isIOS) {
         alert('Para instalar: toca el botón de compartir (cuadrado con flecha) y selecciona "Agregar a pantalla de inicio".');
@@ -74,15 +85,17 @@ export function MobileBottomBar() {
     return pathname.startsWith(href);
   };
 
-  const activeTabs = TABS.map((t) => ({
-    ...t,
-    href: t.loggedHref && isLoggedIn ? t.loggedHref : t.href,
-  }));
   const whatsappNumber = '51922737951';
   const whatsappMsg = 'Hola, quiero información sobre los cursos de Academia El Profe.';
 
   // Don't show on auth pages or admin routes
   if (pathname.startsWith('/iniciar-sesion') || pathname.startsWith('/registrarse') || pathname.startsWith('/admin')) return null;
+
+  // Build the active color
+  const activeColor = resolvedTheme === 'dark' ? '#34D399' : '#059669';
+  const inactiveColor = resolvedTheme === 'dark' ? 'rgba(148,163,184,0.6)' : 'rgba(100,116,139,0.6)';
+  const inactiveLabelColor = resolvedTheme === 'dark' ? 'rgba(148,163,184,0.5)' : 'rgba(100,116,139,0.5)';
+  const separatorColor = resolvedTheme === 'dark' ? 'rgba(148,163,184,0.15)' : 'rgba(0,0,0,0.08)';
 
   return (
     <AnimatePresence>
@@ -115,8 +128,8 @@ export function MobileBottomBar() {
             }}
           />
 
-          {/* Nav tabs */}
-          {activeTabs.map((tab) => {
+          {/* Main tabs — SIEMPRE visibles */}
+          {MAIN_TABS.map((tab) => {
             const Icon = tab.icon;
             const active = isActive(tab.href);
             return (
@@ -125,34 +138,26 @@ export function MobileBottomBar() {
                 href={tab.href}
                 className="relative flex flex-col items-center justify-center gap-0.5 min-w-[52px] py-1.5 transition-all duration-200"
               >
-                {/* Active indicator dot */}
                 <div className="h-5 flex items-center justify-center">
                   <Icon
                     className="h-[20px] w-[20px] transition-all duration-200"
                     style={{
-                      color: active
-                        ? (resolvedTheme === 'dark' ? '#34D399' : '#059669')
-                        : (resolvedTheme === 'dark' ? 'rgba(148,163,184,0.6)' : 'rgba(100,116,139,0.6)'),
+                      color: active ? activeColor : inactiveColor,
                       strokeWidth: active ? 2.2 : 1.8,
                     }}
                   />
                 </div>
                 <span
                   className="text-[10px] font-semibold tracking-wide transition-all duration-200"
-                  style={{
-                    color: active
-                      ? (resolvedTheme === 'dark' ? '#34D399' : '#059669')
-                      : (resolvedTheme === 'dark' ? 'rgba(148,163,184,0.5)' : 'rgba(100,116,139,0.5)'),
-                  }}
+                  style={{ color: active ? activeColor : inactiveLabelColor }}
                 >
                   {tab.label}
                 </span>
-                {/* Active underline */}
                 {active && (
                   <motion.div
                     layoutId="bottombar-active"
                     className="absolute -top-0.5 left-[20%] right-[20%] h-[2.5px] rounded-full"
-                    style={{ background: resolvedTheme === 'dark' ? '#34D399' : '#059669' }}
+                    style={{ background: activeColor }}
                     transition={{ type: 'spring', damping: 30, stiffness: 400 }}
                   />
                 )}
@@ -160,10 +165,55 @@ export function MobileBottomBar() {
             );
           })}
 
+          {/* "Mis Cursos" — SOLO si está autenticado */}
+          {isLoggedIn && (
+            <>
+              <div
+                className="w-[1px] h-8 my-auto rounded-full"
+                style={{ background: separatorColor }}
+              />
+              {AUTH_TABS.map((tab) => {
+                const Icon = tab.icon;
+                const active = isActive(tab.href);
+                return (
+                  <Link
+                    key={tab.href}
+                    href={tab.href}
+                    className="relative flex flex-col items-center justify-center gap-0.5 min-w-[52px] py-1.5 transition-all duration-200"
+                  >
+                    <div className="h-5 flex items-center justify-center">
+                      <Icon
+                        className="h-[20px] w-[20px] transition-all duration-200"
+                        style={{
+                          color: active ? activeColor : inactiveColor,
+                          strokeWidth: active ? 2.2 : 1.8,
+                        }}
+                      />
+                    </div>
+                    <span
+                      className="text-[10px] font-semibold tracking-wide transition-all duration-200"
+                      style={{ color: active ? activeColor : inactiveLabelColor }}
+                    >
+                      {tab.label}
+                    </span>
+                    {active && (
+                      <motion.div
+                        layoutId="bottombar-active"
+                        className="absolute -top-0.5 left-[20%] right-[20%] h-[2.5px] rounded-full"
+                        style={{ background: activeColor }}
+                        transition={{ type: 'spring', damping: 30, stiffness: 400 }}
+                      />
+                    )}
+                  </Link>
+                );
+              })}
+            </>
+          )}
+
           {/* Separator */}
           <div
             className="w-[1px] h-8 my-auto rounded-full"
-            style={{ background: resolvedTheme === 'dark' ? 'rgba(148,163,184,0.15)' : 'rgba(0,0,0,0.08)' }}
+            style={{ background: separatorColor }}
           />
 
           {/* WhatsApp */}
@@ -178,7 +228,7 @@ export function MobileBottomBar() {
             </div>
             <span
               className="text-[10px] font-semibold tracking-wide"
-              style={{ color: resolvedTheme === 'dark' ? 'rgba(148,163,184,0.5)' : 'rgba(100,116,139,0.5)' }}
+              style={{ color: inactiveLabelColor }}
             >
               Chat
             </span>
@@ -189,7 +239,7 @@ export function MobileBottomBar() {
             <>
               <div
                 className="w-[1px] h-8 my-auto rounded-full"
-                style={{ background: resolvedTheme === 'dark' ? 'rgba(148,163,184,0.15)' : 'rgba(0,0,0,0.08)' }}
+                style={{ background: separatorColor }}
               />
               <button
                 onClick={isInstalled ? () => { window.location.href = '/'; } : handleInstall}
@@ -223,7 +273,7 @@ export function MobileBottomBar() {
             <>
               <div
                 className="w-[1px] h-8 my-auto rounded-full"
-                style={{ background: resolvedTheme === 'dark' ? 'rgba(148,163,184,0.15)' : 'rgba(0,0,0,0.08)' }}
+                style={{ background: separatorColor }}
               />
               <button
                 onClick={toggleTheme}
@@ -238,7 +288,7 @@ export function MobileBottomBar() {
                 </div>
                 <span
                   className="text-[10px] font-semibold tracking-wide"
-                  style={{ color: resolvedTheme === 'dark' ? 'rgba(148,163,184,0.5)' : 'rgba(100,116,139,0.5)' }}
+                  style={{ color: inactiveLabelColor }}
                 >
                   {resolvedTheme === 'dark' ? 'Claro' : 'Oscuro'}
                 </span>
