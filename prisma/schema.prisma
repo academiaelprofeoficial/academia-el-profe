@@ -16,13 +16,16 @@ datasource db {
 // --- Usuarios sincronizados desde Firebase Auth ---
 
 model User {
-  id        String   @id // Firebase UID
-  email     String   @unique
-  name      String?
-  photoURL  String?
-  role      String   @default("estudiante") // estudiante | admin
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id // Firebase UID
+  email      String   @unique
+  name       String?
+  photoURL   String?
+  role       String   @default("estudiante") // estudiante | admin
+  age        Int?
+  university String?
+  career     String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   purchases     Purchase[]
   progress      CourseProgress[]
