@@ -1,13 +1,14 @@
 'use client';
 
 // ============================================================
-// Landing Header — Adaptive
-// - NO logueado: Nav landing completa (Inicio, Cursos, Nosotros, Soporte)
-// - Logueado: Nav inmersiva (solo logo + perfil + lupa), tab bar cambia
-//   a items del dashboard
+// Landing Header — UNIFIED
+// Nav principal [Inicio, Cursos, Nosotros, Soporte] SIEMPRE visible.
+// Derecha: Invitado → "Iniciar sesión" | Autenticado → User dropdown
+// Logo → siempre a /
+// Mobile drawer: nav principal + "Mi Panel" extra si logueado
 // ============================================================
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -27,6 +28,8 @@ import {
   Heart,
   Clock,
   User,
+  ChevronDown,
+  Settings,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth-context';
@@ -35,26 +38,21 @@ import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { urlFor } from '@/lib/sanity.client';
 import { PwaInstallButton } from '@/components/PwaInstallButton';
 
-// ---- Nav links para visitante (landing) ----
-const LANDING_NAV = [
+// ---- Nav links principales (SIEMPRE visibles) ----
+const MAIN_NAV = [
   { etiqueta: 'Inicio', href: '/' },
   { etiqueta: 'Cursos', href: '/cursos' },
   { etiqueta: 'Nosotros', href: '/nosotros' },
   { etiqueta: 'Soporte', href: '/soporte' },
 ] as const;
 
-// ---- Nav links para usuario logueado (móvil menú) ----
+// ---- Nav links del panel de usuario (solo logueado, en drawer) ----
 const DASHBOARD_NAV = [
   { etiqueta: 'Mis cursos', href: '/dashboard/cursos', icon: BookOpen },
   { etiqueta: 'Mis certificados', href: '/dashboard/certificados', icon: Award },
   { etiqueta: 'Lista de deseos', href: '/dashboard/deseos', icon: Heart },
   { etiqueta: 'Historial de clases', href: '/dashboard/historial', icon: Clock },
-  { etiqueta: 'Soporte', href: '/soporte', icon: Headset },
 ] as const;
-
-// ---- Tab bar visitante (handled by MobileBottomBar) ----
-
-// ---- Tab bar logueado (handled by MobileBottomBar) ----
 
 /* ------------------------------------------------------------------ */
 /*  Framer Motion variants                                             */
@@ -155,6 +153,92 @@ function Logo({ className }: { readonly className?: string }) {
 }
 
 /* ------------------------------------------------------------------ */
+/*  User Dropdown (desktop)                                            */
+/* ------------------------------------------------------------------ */
+
+function UserDropdown({ user, signOut }: { user: any; signOut: () => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const initials = (user?.displayName || user?.email || 'U')[0].toUpperCase();
+  const name = user?.displayName || user?.email?.split('@')[0] || 'Usuario';
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 rounded-lg bg-slate-100 dark:bg-slate-800 pl-1.5 pr-3 py-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+      >
+        <div className="h-7 w-7 rounded-full bg-brand-primary flex items-center justify-center text-white text-xs font-bold">
+          {initials}
+        </div>
+        <span className="text-sm font-medium text-brand-heading-secondary max-w-[120px] truncate hidden md:inline">
+          {name}
+        </span>
+        <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-[var(--surface-2)] rounded-xl shadow-xl border border-slate-200 dark:border-[var(--surface-border)] overflow-hidden z-[10001]"
+          >
+            {/* User info header */}
+            <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700/50">
+              <p className="text-sm font-semibold text-brand-heading truncate">{name}</p>
+              <p className="text-xs text-slate-400 truncate">{user?.email || ''}</p>
+            </div>
+
+            {/* Links */}
+            <div className="py-1">
+              {[
+                { icon: BookOpen, label: 'Mis cursos', href: '/dashboard/cursos' },
+                { icon: Award, label: 'Mis certificados', href: '/dashboard/certificados' },
+                { icon: Heart, label: 'Lista de deseos', href: '/dashboard/deseos' },
+                { icon: Clock, label: 'Historial de clases', href: '/dashboard/historial' },
+              ].map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                >
+                  <item.icon className="h-4 w-4 text-slate-400" />
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+
+            {/* Logout */}
+            <div className="border-t border-slate-100 dark:border-slate-700/50 py-1">
+              <button
+                onClick={() => { signOut(); setOpen(false); }}
+                className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors w-full"
+              >
+                <LogOut className="h-4 w-4" />
+                Cerrar sesión
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /*  Main Component                                                     */
 /* ------------------------------------------------------------------ */
 
@@ -174,9 +258,6 @@ export function LandingHeader() {
 
   const isLoggedIn = !!user && !loading;
 
-  // Determinar qué nav mostrar en el drawer
-  const currentNav = isLoggedIn ? DASHBOARD_NAV : LANDING_NAV;
-
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
     return pathname.startsWith(href);
@@ -193,7 +274,7 @@ export function LandingHeader() {
   return (
     <>
       {/* ============================================================ */}
-      {/* NAVBAR SUPERIOR FIJA                                          */}
+      {/* NAVBAR SUPERIOR FIJA — UNIFICADA                              */}
       {/* ============================================================ */}
       <header className={`fixed top-0 inset-x-0 z-50 h-16 transition-all duration-500 ${
         scrolled
@@ -204,37 +285,31 @@ export function LandingHeader() {
 
           {/* ====== LAYOUT PC ====== */}
           <div className="hidden lg:flex items-center justify-between h-full">
-            {/* Logo */}
-            <Link href={isLoggedIn ? '/dashboard/cursos' : '/'} className="flex items-center shrink-0">
+            {/* Logo — siempre a / */}
+            <Link href="/" className="flex items-center shrink-0">
               <Logo className="h-12 w-auto object-contain" />
             </Link>
 
-            {/* Centro: Nav landing (solo visitante) */}
-            {!isLoggedIn && (
-              <nav className="flex items-center gap-1">
-                {LANDING_NAV.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                      isActive(link.href)
-                        ? scrolled
-                          ? 'text-brand-primary bg-white/90 dark:text-white dark:bg-white/20'
-                          : 'text-brand-primary bg-brand-primary-bg-light'
-                        : scrolled
-                          ? 'text-white/90 hover:text-white hover:bg-white/10 dark:text-slate-300 dark:hover:text-white'
-                          : 'text-slate-700 hover:text-brand-primary hover:bg-slate-50 dark:text-white/80 dark:hover:text-white dark:hover:bg-white/10'
-                    }`}
-                  >
-                    {link.etiqueta}
-                  </Link>
-                ))}
-              </nav>
-            )}
-
-            {/* Logueado: centro vacío (inmersivo) — espacio para que el
-                header se vea limpio, solo logo + perfil */}
-            {isLoggedIn && <div />}
+            {/* Centro: Nav SIEMPRE visible (invitado + autenticado) */}
+            <nav className="flex items-center gap-1">
+              {MAIN_NAV.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    isActive(link.href)
+                      ? scrolled
+                        ? 'text-brand-primary bg-white/90 dark:text-white dark:bg-white/20'
+                        : 'text-brand-primary bg-brand-primary-bg-light'
+                      : scrolled
+                        ? 'text-white/90 hover:text-white hover:bg-white/10 dark:text-slate-300 dark:hover:text-white'
+                        : 'text-slate-700 hover:text-brand-primary hover:bg-slate-50 dark:text-white/80 dark:hover:text-white dark:hover:bg-white/10'
+                  }`}
+                >
+                  {link.etiqueta}
+                </Link>
+              ))}
+            </nav>
 
             {/* Derecha */}
             <div className="flex items-center gap-3">
@@ -259,41 +334,9 @@ export function LandingHeader() {
                 </div>
               )}
 
-              {/* Logueado: Lupa + Perfil + Cerrar sesión */}
+              {/* Autenticado: User Dropdown */}
               {isLoggedIn ? (
-                <div className="flex items-center gap-2">
-                  {/* Lupa */}
-                  <Link
-                    href="/dashboard/cursos"
-                    className="h-9 w-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-brand-heading-secondary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                    title="Buscar cursos"
-                  >
-                    <Search className="h-4 w-4" />
-                  </Link>
-
-                  {/* Separador */}
-                  <div className="w-px h-6 bg-slate-200 dark:bg-slate-700" />
-
-                  {/* Avatar + nombre */}
-                  <div className="flex items-center gap-2 rounded-lg bg-slate-50 dark:bg-slate-800 px-3 py-1.5">
-                    <div className="h-7 w-7 rounded-full bg-brand-primary flex items-center justify-center text-white text-xs font-bold">
-                      {(user?.displayName || user?.email || 'U')[0].toUpperCase()}
-                    </div>
-                    <span className="text-sm font-medium text-brand-heading-secondary max-w-[120px] truncate">
-                      {user?.displayName || user?.email?.split('@')[0] || 'Usuario'}
-                    </span>
-                  </div>
-
-                  {/* Cerrar sesión */}
-                  <button
-                    onClick={signOut}
-                    className="h-9 w-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
-                    aria-label="Cerrar sesión"
-                    title="Cerrar sesión"
-                  >
-                    <LogOut className="h-4 w-4" />
-                  </button>
-                </div>
+                <UserDropdown user={user} signOut={signOut} />
               ) : (
                 <Link href="/iniciar-sesion">
                   <Button className="bg-brand-primary hover:bg-brand-primary-hover text-white h-9 text-sm font-semibold gap-2 rounded-lg">
@@ -316,34 +359,24 @@ export function LandingHeader() {
               <Menu className="h-6 w-6" />
             </button>
 
-            {/* Logo */}
-            <Link href={isLoggedIn ? '/dashboard/cursos' : '/'} className="flex items-center shrink-0">
+            {/* Logo — siempre a / */}
+            <Link href="/" className="flex items-center shrink-0">
               <Logo className="h-9 w-auto object-contain" />
             </Link>
 
-            {/* Derecha */}
+            {/* Derecha: Avatar mini si logueado, botón login si no */}
             {isLoggedIn ? (
-              <div className="flex items-center gap-1">
-                {/* Lupa */}
-                <Link
-                  href="/dashboard/cursos"
-                  className={`h-9 w-9 flex items-center justify-center rounded-lg transition-colors ${scrolled ? 'text-slate-400' : 'text-slate-800 dark:text-white/90 hover:text-brand-primary dark:hover:text-white'}`}
-                >
-                  <Search className="h-4 w-4" />
-                </Link>
-                {/* Avatar mini */}
-                <Link href="/dashboard/cursos" className="flex items-center gap-1.5">
-                  <div className="h-6 w-6 rounded-full bg-brand-primary flex items-center justify-center text-white text-[10px] font-bold">
-                    {(user?.displayName || user?.email || 'U')[0].toUpperCase()}
-                  </div>
-                  <span className={`text-xs font-medium max-w-[80px] truncate ${scrolled ? 'text-brand-heading-secondary' : 'text-slate-800 dark:text-white/90'}`}>
-                    {user?.displayName || user?.email?.split('@')[0] || 'Usuario'}
-                  </span>
-                </Link>
-              </div>
+              <Link href="/dashboard/cursos" className="flex items-center gap-1.5">
+                <div className="h-6 w-6 rounded-full bg-brand-primary flex items-center justify-center text-white text-[10px] font-bold">
+                  {(user?.displayName || user?.email || 'U')[0].toUpperCase()}
+                </div>
+                <span className={`text-xs font-medium max-w-[80px] truncate ${scrolled ? 'text-brand-heading-secondary' : 'text-slate-800 dark:text-white/90'}`}>
+                  {user?.displayName || user?.email?.split('@')[0] || 'Usuario'}
+                </span>
+              </Link>
             ) : (
               <Link href="/iniciar-sesion" onClick={() => setMenuAbierto(false)}>
-                <Button className={`h-8 text-xs font-semibold gap-1.5 px-3 rounded-lg transition-all ${scrolled ? 'bg-brand-primary hover:bg-brand-primary-hover text-white' : 'bg-brand-primary hover:bg-brand-primary-hover text-white'}`}>
+                <Button className={`h-8 text-xs font-semibold gap-1.5 px-3 rounded-lg transition-all bg-brand-primary hover:bg-brand-primary-hover text-white`}>
                   <LogIn className="h-3.5 w-3.5" />
                   Iniciar
                 </Button>
@@ -402,10 +435,9 @@ export function LandingHeader() {
                 <ThemeToggle />
               </div>
 
-              {/* Links — usa currentNav (landing o dashboard) */}
-              <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-                {currentNav.map((link, i) => {
-                  const Icon = 'icon' in link ? (link.icon as React.ComponentType<{ className?: string }>) : null;
+              {/* Main nav links — SIEMPRE visibles */}
+              <nav className="px-4 pt-4 space-y-1">
+                {MAIN_NAV.map((link, i) => {
                   return (
                     <motion.div
                       key={link.href}
@@ -424,7 +456,6 @@ export function LandingHeader() {
                             : 'text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800'
                         }`}
                       >
-                        {Icon && <Icon className="h-5 w-5" />}
                         {link.etiqueta}
                       </Link>
                     </motion.div>
@@ -432,12 +463,47 @@ export function LandingHeader() {
                 })}
               </nav>
 
-              {/* Pie — Cerrar sesión (solo logueado) o Plataforma (visitante) */}
+              {/* Dashboard nav — SOLO si está logueado */}
+              {isLoggedIn && (
+                <div className="px-4 pt-3">
+                  <p className="px-4 pb-2 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Mi Panel</p>
+                  <nav className="space-y-1">
+                    {DASHBOARD_NAV.map((link, i) => {
+                      const Icon = link.icon;
+                      return (
+                        <motion.div
+                          key={link.href}
+                          custom={i + MAIN_NAV.length}
+                          variants={menuItemVariants}
+                          initial="hidden"
+                          animate="visible"
+                          exit="exit"
+                        >
+                          <Link
+                            href={link.href}
+                            onClick={() => setMenuAbierto(false)}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                              isActive(link.href)
+                                ? 'text-brand-primary-text bg-brand-primary-bg-light'
+                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                            }`}
+                          >
+                            <Icon className="h-4.5 w-4.5" />
+                            {link.etiqueta}
+                          </Link>
+                        </motion.div>
+                      );
+                    })}
+                  </nav>
+                </div>
+              )}
+
+              {/* Pie */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.3 }}
-                className="px-4 pb-6"
+                className="mt-auto px-4 pb-6"
               >
                 {isLoggedIn ? (
                   <button
@@ -448,17 +514,14 @@ export function LandingHeader() {
                     Cerrar sesión
                   </button>
                 ) : (
-                  <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl">
-                    <div className="flex items-center gap-1.5">
-                      <Monitor className="h-4 w-4 text-brand-primary" />
-                      <span className="text-xs text-brand-body dark:text-slate-300">Escritorio</span>
-                    </div>
-                    <div className="w-px h-4 bg-slate-200 dark:bg-slate-700" />
-                    <div className="flex items-center gap-1.5">
-                      <Smartphone className="h-4 w-4 text-brand-primary" />
-                      <span className="text-xs text-brand-body dark:text-slate-300">Android / iOS</span>
-                    </div>
-                  </div>
+                  <Link
+                    href="/iniciar-sesion"
+                    onClick={() => setMenuAbierto(false)}
+                    className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl text-sm font-semibold bg-brand-primary text-white hover:bg-brand-primary-hover transition-colors"
+                  >
+                    <LogIn className="h-4 w-4" />
+                    Iniciar sesión
+                  </Link>
                 )}
               </motion.div>
             </motion.div>
