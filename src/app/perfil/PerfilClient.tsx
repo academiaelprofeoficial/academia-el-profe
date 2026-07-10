@@ -193,12 +193,14 @@ export function PerfilClient() {
   const fetchProfile = useCallback(async () => {
     if (!idToken) return;
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch('/api/user/profile', {
         headers: { Authorization: `Bearer ${idToken}` },
       });
-      if (res.ok) {
-        const data = await res.json();
+      const data = await res.json().catch(() => null);
+
+      if (res.ok && data?.profile) {
         setProfile(data.profile);
         setFormData({
           name: data.profile.name || '',
@@ -212,9 +214,15 @@ export function PerfilClient() {
           biography: data.profile.biography || '',
         });
         setPhotoPreview(data.profile.photoURL || null);
+      } else {
+        const msg = data?.error || `Error del servidor (${res.status})`;
+        setError(msg);
+        console.error('[Perfil] Error cargando perfil:', msg);
       }
-    } catch {
-      // silent
+    } catch (err: any) {
+      const msg = err?.message || 'Error de conexión. Verifica tu internet.';
+      setError(msg);
+      console.error('[Perfil] Error de conexión:', err);
     } finally {
       setLoading(false);
     }
@@ -447,10 +455,35 @@ export function PerfilClient() {
             })}
           </div>
 
-          {/* Loading */}
+          {/* Loading state */}
           {loading && (
-            <div className="flex items-center justify-center py-20">
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
               <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
+              <p className="text-sm text-slate-500 dark:text-slate-400">Cargando perfil...</p>
+            </div>
+          )}
+
+          {/* Error state — show error with retry */}
+          {!loading && error && !profile && (
+            <div className="flex flex-col items-center justify-center py-16 gap-4">
+              <div className="w-16 h-16 rounded-full bg-red-50 dark:bg-red-950/30 flex items-center justify-center">
+                <X className="h-8 w-8 text-red-500" />
+              </div>
+              <div className="text-center max-w-sm">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+                  Error al cargar el perfil
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+                  {error}
+                </p>
+                <button
+                  onClick={fetchProfile}
+                  className="inline-flex items-center gap-2 h-10 px-6 rounded-lg bg-brand-primary hover:bg-brand-primary-hover text-white text-sm font-semibold transition-colors"
+                >
+                  <Loader2 className="h-4 w-4" />
+                  Reintentar
+                </button>
+              </div>
             </div>
           )}
 
