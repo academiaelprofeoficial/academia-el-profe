@@ -181,6 +181,15 @@ export function PerfilClient() {
     biography: '',
   });
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState(false);
+
+  // Helper: add cache-buster to Supabase Storage URLs
+  const storageUrl = (url: string | null) => {
+    if (!url) return null;
+    if (url.startsWith('data:') || url.startsWith('blob:')) return url;
+    const sep = url.includes('?') ? '&' : '?';
+    return `${url}${sep}t=${Date.now()}`;
+  };
   const [pendingPhotoFile, setPendingPhotoFile] = useState<File | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
 
@@ -224,7 +233,8 @@ export function PerfilClient() {
           career: data.profile.career || '',
           biography: data.profile.biography || '',
         });
-        setPhotoPreview(data.profile.photoURL || null);
+        setPhotoPreview(storageUrl(data.profile.photoURL));
+        setPhotoError(false);
       } else if (res.status === 401) {
         // Token expired — try refreshing once
         console.log('[Perfil] Token expirado (401), refrescando...');
@@ -247,7 +257,8 @@ export function PerfilClient() {
               career: retryData.profile.career || '',
               biography: retryData.profile.biography || '',
             });
-            setPhotoPreview(retryData.profile.photoURL || null);
+            setPhotoPreview(storageUrl(retryData.profile.photoURL));
+            setPhotoError(false);
           } else {
             setError('Sesión expirada. Por favor inicia sesión nuevamente.');
             setTimeout(() => { window.location.href = '/iniciar-sesion'; }, 3000);
@@ -441,7 +452,8 @@ export function PerfilClient() {
         const freshData = await freshRes.json().catch(() => null);
         if (freshData?.profile) {
           setProfile(freshData.profile);
-          setPhotoPreview(freshData.profile.photoURL || null);
+          setPhotoPreview(storageUrl(freshData.profile.photoURL));
+          setPhotoError(false);
         } else {
           setProfile(responseData.profile);
         }
@@ -474,7 +486,8 @@ export function PerfilClient() {
         career: profile.career || '',
         biography: profile.biography || '',
       });
-      setPhotoPreview(profile.photoURL || null);
+      setPhotoPreview(storageUrl(profile.photoURL));
+      setPhotoError(false);
     }
     setPendingPhotoFile(null);
   };
@@ -676,11 +689,15 @@ export function PerfilClient() {
                               <Loader2 className="h-8 w-8 animate-spin text-white" />
                             </div>
                           ) : null}
-                          {photoPreview ? (
+                          {photoPreview && !photoError ? (
                             <img
                               src={photoPreview}
                               alt="Foto de perfil"
                               className="w-full h-full object-cover"
+                              onError={() => {
+                                console.warn('[PERFIL] Imagen no cargó:', photoPreview?.substring(0, 80));
+                                setPhotoError(true);
+                              }}
                             />
                           ) : (
                             <div className="w-full h-full bg-white/20 flex items-center justify-center">
