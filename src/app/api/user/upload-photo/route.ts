@@ -62,7 +62,6 @@ async function tryCreateBucket() {
     });
 
     if (res.ok || res.status === 409) {
-      // 409 = bucket already exists, that's fine
       console.log('[UploadPhoto] Bucket "fotos-perfil" is ready.');
     } else {
       const errText = await res.text();
@@ -70,6 +69,25 @@ async function tryCreateBucket() {
     }
   } catch (err) {
     console.warn('[UploadPhoto] Bucket creation error (non-critical):', err);
+  }
+}
+
+// Ensure public read RLS policy (separate flag so it runs even after bucket was created)
+let _policyAttempted = false;
+async function ensureReadPolicy() {
+  if (_policyAttempted) return;
+  _policyAttempted = true;
+  try {
+    await db.$executeRawUnsafe(`
+      DO $$ BEGIN
+        CREATE POLICY "Public read fotos-perfil" ON storage.objects
+        FOR SELECT USING (bucket_id = 'fotos-perfil');
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$;
+    `);
+    console.log('[UploadPhoto] Public read policy ready.');
+  } catch (err) {
+    console.warn('[UploadPhoto] Could not create read policy:', err);
   }
 }
 
@@ -119,6 +137,8 @@ export async function POST(request: NextRequest) {
 
     // Try creating bucket (non-blocking, best-effort)
     await tryCreateBucket();
+    // Ensure public read policy exists
+    await ensureReadPolicy();
 
     // Determine file extension
     const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
