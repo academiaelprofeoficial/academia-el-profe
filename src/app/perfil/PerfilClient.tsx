@@ -323,6 +323,8 @@ export function PerfilClient() {
         body.photoURL = pendingPhotoURL;
       }
 
+      console.log('📤 [PERFIL] Datos a enviar:', body);
+
       const res = await fetch('/api/user/profile', {
         method: 'PUT',
         headers: {
@@ -332,14 +334,15 @@ export function PerfilClient() {
         body: JSON.stringify(body),
       });
 
+      const responseData = await res.json().catch(() => null);
+      console.log('📥 [PERFIL] Respuesta del servidor:', { status: res.status, ok: res.ok, data: responseData });
+
       if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || 'Error al guardar.');
+        setError(responseData?.error || 'Error al guardar.');
         return;
       }
 
-      const data = await res.json();
-      setProfile(data.profile);
+      setProfile(responseData.profile);
       setPendingPhotoURL(null);
       setIsEditing(false);
       setSuccess(true);
