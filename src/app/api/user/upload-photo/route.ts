@@ -1,7 +1,6 @@
 // ============================================================
 // POST /api/user/upload-photo
 // Sube una foto de perfil a Supabase Storage (bucket: fotos-perfil).
-// Crea el bucket y políticas RLS automáticamente si no existen.
 // Auth: requiere idToken de Firebase en header Authorization.
 // ============================================================
 
@@ -9,6 +8,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
 const FIREBASE_API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY || 'AIzaSyAeMHlQZtUwZqbH5o7nsb4eoUYXLM2y0PU';
+
+function getSupabaseConfig() {
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+  return { url: url.replace(/\/$/, ''), key, hasConfig: !!(url && key) };
+}
 
 // Verify Firebase token
 async function verifyToken(token: string): Promise<{ uid: string; email: string } | null> {
@@ -31,81 +36,40 @@ async function verifyToken(token: string): Promise<{ uid: string; email: string 
   }
 }
 
-// Ensure the bucket exists and has proper policies
-let _bucketReady = false;
-async function ensureBucket() {
-  if (_bucketReady) return true;
+// Try to create bucket via Storage REST API (needs service role key)
+let _bucketAttempted = false;
+async function tryCreateBucket() {
+  if (_bucketAttempted) return;
+  _bucketAttempted = true;
 
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseKey) {
-    console.error('[UploadPhoto] Missing SUPABASE_URL or SUPABASE_KEY env vars');
-    return false;
-  }
+  const { url, key } = getSupabaseConfig();
+  if (!url || !key) return;
 
   try {
-    // 1. Create bucket via SQL (works with existing DB connection)
-    await db.$executeRawUnsafe(`
-      INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-      VALUES ('fotos-perfil', 'fotos-perfil', true, 5242880, ARRAY['image/jpeg','image/png','image/webp'])
-      ON CONFLICT (id) DO NOTHING;
-    `);
-    console.log('[UploadPhoto] Bucket "fotos-perfil" ready.');
+    const res = await fetch(`${url}/storage/v1/bucket`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id: 'fotos-perfil',
+        name: 'fotos-perfil',
+        public: true,
+        fileSizeLimit: 5242880,
+        allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+      }),
+    });
 
-    // 2. Create RLS policies: anyone authenticated can read, user can upload to own folder
-    // First, check if policies already exist to avoid errors
-    const existingPolicies = await db.$queryRawUnsafe(`
-      SELECT policyname FROM pg_policies 
-      WHERE tablename = 'objects' AND schemaname = 'storage'
-    `) as any[];
-
-    const policyNames = (existingPolicies || []).map((p: any) => p.policyname);
-
-    if (!policyNames.includes('Public read fotos-perfil')) {
-      await db.$executeRawUnsafe(`
-        CREATE POLICY "Public read fotos-perfil" ON storage.objects
-        FOR SELECT USING (bucket_id = 'fotos-perfil');
-      `);
+    if (res.ok || res.status === 409) {
+      // 409 = bucket already exists, that's fine
+      console.log('[UploadPhoto] Bucket "fotos-perfil" is ready.');
+    } else {
+      const errText = await res.text();
+      console.warn('[UploadPhoto] Could not create bucket (may already exist):', res.status, errText);
     }
-
-    if (!policyNames.includes('Authenticated upload own fotos-perfil')) {
-      await db.$executeRawUnsafe(`
-        CREATE POLICY "Authenticated upload own fotos-perfil" ON storage.objects
-        FOR INSERT WITH CHECK (
-          bucket_id = 'fotos-perfil' 
-          AND (storage.foldername(name))[1] = auth.uid()
-        );
-      `);
-    }
-
-    if (!policyNames.includes('Authenticated update own fotos-perfil')) {
-      await db.$executeRawUnsafe(`
-        CREATE POLICY "Authenticated update own fotos-perfil" ON storage.objects
-        FOR UPDATE USING (
-          bucket_id = 'fotos-perfil' 
-          AND (storage.foldername(name))[1] = auth.uid()
-        );
-      `);
-    }
-
-    if (!policyNames.includes('Authenticated delete own fotos-perfil')) {
-      await db.$executeRawUnsafe(`
-        CREATE POLICY "Authenticated delete own fotos-perfil" ON storage.objects
-        FOR DELETE USING (
-          bucket_id = 'fotos-perfil' 
-          AND (storage.foldername(name))[1] = auth.uid()
-        );
-      `);
-    }
-
-    console.log('[UploadPhoto] RLS policies ready.');
-    _bucketReady = true;
-    return true;
   } catch (err) {
-    console.error('[UploadPhoto] Bucket/policy setup error:', err);
-    _bucketReady = true; // Don't retry every request
-    return false;
+    console.warn('[UploadPhoto] Bucket creation error (non-critical):', err);
   }
 }
 
@@ -126,10 +90,12 @@ export async function POST(request: NextRequest) {
     const uid = firebaseUser.uid;
     console.log('[UploadPhoto] User:', uid);
 
-    // Ensure bucket + policies
-    const bucketOk = await ensureBucket();
-    if (!bucketOk) {
-      return NextResponse.json({ error: 'Error de configuración de almacenamiento.' }, { status: 500 });
+    const { url: supabaseUrl, key: supabaseKey, hasConfig } = getSupabaseConfig();
+    if (!hasConfig) {
+      console.error('[UploadPhoto] Missing SUPABASE_URL or key env vars');
+      return NextResponse.json({ 
+        error: 'Configuración de Supabase incompleta. Agrega SUPABASE_URL y SUPABASE_ANON_KEY en Vercel.' 
+      }, { status: 500 });
     }
 
     // Parse multipart form data
@@ -151,21 +117,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'La imagen no debe superar los 5MB.' }, { status: 400 });
     }
 
-    // Get Supabase Storage URL
-    const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseKey) {
-      return NextResponse.json({ error: 'Configuración de Supabase incompleta.' }, { status: 500 });
-    }
+    // Try creating bucket (non-blocking, best-effort)
+    await tryCreateBucket();
 
     // Determine file extension
     const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
     const fileName = `${uid}/avatar.${ext}`;
 
     // Upload to Supabase Storage via REST API
-    // Using service role key for server-side upload (bypasses RLS)
-    const uploadUrl = `${supabaseUrl.replace(/\/$/, '')}/storage/v1/object/fotos-perfil/${fileName}`;
+    const uploadUrl = `${supabaseUrl}/storage/v1/object/fotos-perfil/${fileName}`;
 
     console.log('[UploadPhoto] Uploading to:', uploadUrl, 'Size:', file.size, 'Type:', file.type);
 
@@ -174,7 +134,7 @@ export async function POST(request: NextRequest) {
       headers: {
         'Authorization': `Bearer ${supabaseKey}`,
         'Content-Type': file.type,
-        'x-upsert': 'true', // Overwrite existing avatar
+        'x-upsert': 'true',
       },
       body: file,
     });
@@ -182,11 +142,20 @@ export async function POST(request: NextRequest) {
     if (!uploadRes.ok) {
       const errText = await uploadRes.text();
       console.error('[UploadPhoto] Upload failed:', uploadRes.status, errText);
+
+      // If bucket doesn't exist, give clear instructions
+      if (errText.includes('Bucket not found') || errText.includes('not found') || uploadRes.status === 404) {
+        return NextResponse.json({ 
+          error: 'El bucket "fotos-perfil" no existe. Ve a Supabase Dashboard → Storage → New Bucket → nombre: fotos-perfil → Public: ON. Luego intenta de nuevo.',
+          code: 'BUCKET_NOT_FOUND'
+        }, { status: 500 });
+      }
+
       return NextResponse.json({ error: 'Error al subir la imagen al almacenamiento.' }, { status: 500 });
     }
 
     // Get public URL
-    const publicUrl = `${supabaseUrl.replace(/\/$/, '')}/storage/v1/object/public/fotos-perfil/${fileName}`;
+    const publicUrl = `${supabaseUrl}/storage/v1/object/public/fotos-perfil/${fileName}`;
 
     console.log('[UploadPhoto] Uploaded successfully. Public URL:', publicUrl);
 
@@ -223,14 +192,13 @@ export async function DELETE(request: NextRequest) {
     }
 
     const uid = firebaseUser.uid;
-    const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const { url: supabaseUrl, key: supabaseKey } = getSupabaseConfig();
 
     // Try to delete from storage (best-effort)
     const exts = ['jpg', 'jpeg', 'png', 'webp'];
     for (const ext of exts) {
       const fileName = `${uid}/avatar.${ext}`;
-      const deleteUrl = `${supabaseUrl?.replace(/\/$/, '')}/storage/v1/object/fotos-perfil/${fileName}`;
+      const deleteUrl = `${supabaseUrl}/storage/v1/object/fotos-perfil/${fileName}`;
       try {
         await fetch(deleteUrl, {
           method: 'DELETE',
