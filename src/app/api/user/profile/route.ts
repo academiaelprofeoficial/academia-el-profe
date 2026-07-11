@@ -267,6 +267,13 @@ export async function PUT(request: NextRequest) {
       }, { status: 404 });
     }
 
+    // VERIFY: read back from DB immediately to confirm persistence
+    const verifyRows: any[] = await db.$queryRawUnsafe(
+      `SELECT phone, address, age, "birthDate", gender, university, career, biography FROM "User" WHERE id = $1`,
+      firebaseUser.uid
+    ) as any[];
+    console.log('[Profile PUT] VERIFY read-back:', JSON.stringify(verifyRows?.[0]));
+
     const u = updatedRows[0];
     console.log('[Profile PUT] Updated row:', JSON.stringify({
       id: u.id, name: u.name, phone: u.phone, address: u.address,
