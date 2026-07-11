@@ -157,7 +157,7 @@ const selectClass =
 /* ------------------------------------------------------------------ */
 
 export function PerfilClient() {
-  const { user, idToken, loading: authLoading, refreshIdToken } = useAuth();
+  const { user, idToken, loading: authLoading, refreshIdToken, updateProfileInfo } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Helper: fetch with automatic token refresh on 401
@@ -470,6 +470,9 @@ export function PerfilClient() {
       } else {
         setProfile(responseData.profile);
       }
+      // Update header avatar + name globally
+      const finalProfile = responseData.profile;
+      updateProfileInfo(finalProfile?.name || null, finalProfile?.photoURL || null);
       setPendingPhotoFile(null);
       setIsEditing(false);
       setSuccess(true);

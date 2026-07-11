@@ -158,11 +158,12 @@ function Logo({ className }: { readonly className?: string }) {
 /*  User Dropdown (desktop)                                            */
 /* ------------------------------------------------------------------ */
 
-function UserDropdown({ user, signOut }: { user: any; signOut: () => void }) {
+function UserDropdown({ user, signOut, profileName, profilePhoto }: { user: any; signOut: () => void; profileName: string | null; profilePhoto: string | null }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const initials = (user?.displayName || user?.email || 'U')[0].toUpperCase();
-  const name = user?.displayName || user?.email?.split('@')[0] || 'Usuario';
+  const displayName = profileName || user?.displayName || user?.email?.split('@')[0] || 'Usuario';
+  const initials = displayName[0].toUpperCase();
+  const photoSrc = profilePhoto || user?.photoURL || null;
 
   // Close on outside click
   useEffect(() => {
@@ -179,11 +180,15 @@ function UserDropdown({ user, signOut }: { user: any; signOut: () => void }) {
         onClick={() => setOpen(!open)}
         className="flex items-center gap-2 rounded-lg bg-slate-100 dark:bg-slate-800 pl-1.5 pr-3 py-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
       >
-        <div className="h-7 w-7 rounded-full bg-brand-primary flex items-center justify-center text-white text-xs font-bold">
-          {initials}
+        <div className={`h-7 w-7 rounded-full flex items-center justify-center text-white text-xs font-bold overflow-hidden ${photoSrc ? '' : 'bg-brand-primary'}`>
+          {photoSrc ? (
+            <img src={photoSrc} alt={displayName} className="h-full w-full object-cover" />
+          ) : (
+            initials
+          )}
         </div>
         <span className="text-sm font-medium text-brand-heading-secondary max-w-[120px] truncate hidden md:inline">
-          {name}
+          {displayName}
         </span>
         <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
@@ -199,7 +204,7 @@ function UserDropdown({ user, signOut }: { user: any; signOut: () => void }) {
           >
             {/* User info header */}
             <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700/50">
-              <p className="text-sm font-semibold text-brand-heading truncate">{name}</p>
+              <p className="text-sm font-semibold text-brand-heading truncate">{displayName}</p>
               <p className="text-xs text-slate-400 truncate">{user?.email || ''}</p>
             </div>
 
@@ -257,7 +262,7 @@ export function LandingHeader() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
   const pathname = usePathname();
-  const { user, signOut, loading } = useAuth();
+  const { user, signOut, loading, profileName, profilePhoto } = useAuth();
 
   const isLoggedIn = !!user && !loading;
 
@@ -339,7 +344,7 @@ export function LandingHeader() {
 
               {/* Autenticado: User Dropdown */}
               {isLoggedIn ? (
-                <UserDropdown user={user} signOut={signOut} />
+                <UserDropdown user={user} signOut={signOut} profileName={profileName} profilePhoto={profilePhoto} />
               ) : (
                 <Link href="/iniciar-sesion">
                   <Button className="bg-brand-primary hover:bg-brand-primary-hover text-white h-9 text-sm font-semibold gap-2 rounded-lg">
@@ -368,16 +373,24 @@ export function LandingHeader() {
             </Link>
 
             {/* Derecha: Avatar mini si logueado, botón login si no */}
-            {isLoggedIn ? (
-              <Link href="/dashboard/cursos" className="flex items-center gap-1.5">
-                <div className="h-6 w-6 rounded-full bg-brand-primary flex items-center justify-center text-white text-[10px] font-bold">
-                  {(user?.displayName || user?.email || 'U')[0].toUpperCase()}
-                </div>
-                <span className={`text-xs font-medium max-w-[80px] truncate ${scrolled ? 'text-brand-heading-secondary' : 'text-slate-800 dark:text-white/90'}`}>
-                  {user?.displayName || user?.email?.split('@')[0] || 'Usuario'}
-                </span>
-              </Link>
-            ) : (
+            {isLoggedIn ? (() => {
+              const mobileName = profileName || user?.displayName || user?.email?.split('@')[0] || 'Usuario';
+              const mobilePhoto = profilePhoto || user?.photoURL || null;
+              return (
+                <Link href="/dashboard/cursos" className="flex items-center gap-1.5">
+                  <div className={`h-6 w-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold overflow-hidden ${mobilePhoto ? '' : 'bg-brand-primary'}`}>
+                    {mobilePhoto ? (
+                      <img src={mobilePhoto} alt={mobileName} className="h-full w-full object-cover" />
+                    ) : (
+                      mobileName[0].toUpperCase()
+                    )}
+                  </div>
+                  <span className={`text-xs font-medium max-w-[80px] truncate ${scrolled ? 'text-brand-heading-secondary' : 'text-slate-800 dark:text-white/90'}`}>
+                    {mobileName}
+                  </span>
+                </Link>
+              );
+            })() : (
               <Link href="/iniciar-sesion" onClick={() => setMenuAbierto(false)}>
                 <Button className={`h-8 text-xs font-semibold gap-1.5 px-3 rounded-lg transition-all bg-brand-primary hover:bg-brand-primary-hover text-white`}>
                   <LogIn className="h-3.5 w-3.5" />
