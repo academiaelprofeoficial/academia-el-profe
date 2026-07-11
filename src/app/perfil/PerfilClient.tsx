@@ -335,7 +335,21 @@ export function PerfilClient() {
       });
 
       const responseData = await res.json().catch(() => null);
-      console.log('📥 [PERFIL] Respuesta del servidor:', { status: res.status, ok: res.ok, data: responseData });
+      console.log('📥 [PERFIL] Status:', res.status, res.ok);
+      console.log('📥 [PERFIL] Respuesta completa:', JSON.stringify(responseData, null, 2));
+      if (responseData?.profile) {
+        console.log('📥 [PERFIL] Campos guardados:', {
+          name: responseData.profile.name,
+          phone: responseData.profile.phone,
+          address: responseData.profile.address,
+          age: responseData.profile.age,
+          birthDate: responseData.profile.birthDate,
+          gender: responseData.profile.gender,
+          university: responseData.profile.university,
+          career: responseData.profile.career,
+          biography: responseData.profile.biography,
+        });
+      }
 
       if (!res.ok) {
         setError(responseData?.error || 'Error al guardar.');

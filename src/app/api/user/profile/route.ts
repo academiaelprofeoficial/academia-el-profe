@@ -57,6 +57,24 @@ async function verifyToken(token: string): Promise<{ uid: string; email: string 
   }
 }
 
+// Helper: fetch counts for a user (simple, no complex JOINs)
+async function fetchUserCounts(uid: string) {
+  try {
+    const countRows = await db.$queryRawUnsafe(
+      `SELECT
+        (SELECT COUNT(*)::int FROM "Purchase" WHERE "userId" = $1) AS purchases,
+        (SELECT COUNT(*)::int FROM "CourseProgress" WHERE "userId" = $1) AS progress,
+        (SELECT COUNT(*)::int FROM "Wishlist" WHERE "userId" = $1) AS wishlist,
+        (SELECT COUNT(*)::int FROM "Comment" WHERE "userId" = $1) AS comments`,
+      uid
+    ) as any[];
+    if (countRows?.[0]) return countRows[0];
+  } catch (err) {
+    console.warn('[Profile] Count query failed:', err);
+  }
+  return { purchases: 0, progress: 0, wishlist: 0, comments: 0 };
+}
+
 // ---- GET: obtener perfil (raw SQL — immune to schema mismatch) ----
 export async function GET(request: NextRequest) {
   try {
@@ -81,42 +99,18 @@ export async function GET(request: NextRequest) {
       `SELECT 
         u.id, u.email, u.name, u."photoURL", u.role,
         u.phone, u.address, u.age, u."birthDate", u.gender,
-        u.university, u.career, u.biography, u."createdAt",
-        COALESCE(purchase_count.count, 0)::int AS "purchaseCount",
-        COALESCE(progress_count.count, 0)::int AS "progressCount",
-        COALESCE(wishlist_count.count, 0)::int AS "wishlistCount",
-        COALESCE(comment_count.count, 0)::int AS "commentCount"
+        u.university, u.career, u.biography, u."createdAt"
       FROM "User" u
-      LEFT JOIN (SELECT "userId", COUNT(*) as count FROM "Purchase" GROUP BY "userId") purchase_count ON purchase_count."userId" = u.id
-      LEFT JOIN (SELECT "userId", COUNT(*) as count FROM "CourseProgress" GROUP BY "userId") progress_count ON progress_count."userId" = u.id
-      LEFT JOIN (SELECT "userId", COUNT(*) as count FROM "Wishlist" GROUP BY "userId") wishlist_count ON wishlist_count."userId" = u.id
-      LEFT JOIN (SELECT "userId", COUNT(*) as count FROM "Comment" GROUP BY "userId") comment_count ON comment_count."userId" = u.id
       WHERE u.id = $1
       LIMIT 1`,
       uid
     ) as Promise<any[]>).catch(async (_err: any) => {
-      console.warn('[Profile] Full SQL query failed, trying basic query:', _err);
-      // Fallback: query only the core columns that definitely exist
+      console.warn('[Profile GET] Main query failed, trying fallback:', _err);
+      // Fallback: ultra-minimal
       return (db.$queryRawUnsafe(
-        `SELECT 
-          u.id, u.email, u.name, u."photoURL", u.role,
-          u.age, u.university, u.career, u."createdAt",
-          0::int AS "purchaseCount",
-          0::int AS "progressCount",
-          0::int AS "wishlistCount",
-          0::int AS "commentCount"
-        FROM "User" u
-        WHERE u.id = $1
-        LIMIT 1`,
+        `SELECT id, email, name, role, "createdAt" FROM "User" WHERE id = $1 LIMIT 1`,
         uid
-      ) as Promise<any[]>).catch(async (_err2: any) => {
-        console.warn('[Profile] Basic SQL also failed, minimal query:', _err2);
-        // Ultra-minimal fallback
-        return (db.$queryRawUnsafe(
-          `SELECT id, email, name, role, "createdAt" FROM "User" WHERE id = $1 LIMIT 1`,
-          uid
-        ) as Promise<any[]>);
-      });
+      ) as Promise<any[]>);
     });
 
     if (!rows || rows.length === 0) {
@@ -124,6 +118,7 @@ export async function GET(request: NextRequest) {
     }
 
     const u = rows[0];
+    const counts = await fetchUserCounts(uid);
 
     const profile = {
       id: u.id,
@@ -140,12 +135,7 @@ export async function GET(request: NextRequest) {
       career: u.career ?? null,
       biography: u.biography ?? null,
       createdAt: u.createdAt,
-      _count: {
-        purchases: Number(u.purchaseCount) || 0,
-        progress: Number(u.progressCount) || 0,
-        wishlist: Number(u.wishlistCount) || 0,
-        comments: Number(u.commentCount) || 0,
-      },
+      _count: counts,
     };
 
     return NextResponse.json({ profile });
@@ -155,7 +145,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// ---- PUT: actualizar perfil (raw SQL) ----
+// ---- PUT: actualizar perfil (raw SQL con UPDATE ... RETURNING) ----
 export async function PUT(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization');
@@ -168,9 +158,13 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Token invalido.' }, { status: 401 });
     }
 
+    console.log('[Profile PUT] Firebase user:', firebaseUser.uid, firebaseUser.email);
+
     await ensureColumns();
 
     const body = await request.json();
+    console.log('[Profile PUT] Body recibido:', JSON.stringify(body, null, 2));
+
     const { name, phone, address, age, birthDate, gender, university, career, biography, photoURL } = body;
 
     // Validate
@@ -196,6 +190,7 @@ export async function PUT(request: NextRequest) {
 
     // Build SET clauses with parameterized queries
     const setClauses: string[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const params: any[] = [];
     let idx = 1;
 
@@ -245,40 +240,41 @@ export async function PUT(request: NextRequest) {
     }
 
     setClauses.push(`"updatedAt" = NOW()`);
+
+    // The UID parameter for WHERE clause
+    const uidParamIdx = idx;
     params.push(firebaseUser.uid);
 
-    await db.$executeRawUnsafe(
-      `UPDATE "User" SET ${setClauses.join(', ')} WHERE id = $${idx}`,
-      ...params
-    );
+    const sql = `UPDATE "User" SET ${setClauses.join(', ')} WHERE id = $${uidParamIdx} RETURNING 
+      id, email, name, "photoURL", role,
+      phone, address, age, "birthDate", gender,
+      university, career, biography, "createdAt"`;
 
-    // Re-fetch the updated user using raw SQL
-    const rows: any[] = await (db.$queryRawUnsafe(
-      `SELECT 
-        u.id, u.email, u.name, u."photoURL", u.role,
-        u.phone, u.address, u.age, u."birthDate", u.gender,
-        u.university, u.career, u.biography, u."createdAt",
-        COALESCE(purchase_count.count, 0)::int AS "purchaseCount",
-        COALESCE(progress_count.count, 0)::int AS "progressCount",
-        COALESCE(wishlist_count.count, 0)::int AS "wishlistCount",
-        COALESCE(comment_count.count, 0)::int AS "commentCount"
-      FROM "User" u
-      LEFT JOIN (SELECT "userId", COUNT(*) as count FROM "Purchase" GROUP BY "userId") purchase_count ON purchase_count."userId" = u.id
-      LEFT JOIN (SELECT "userId", COUNT(*) as count FROM "CourseProgress" GROUP BY "userId") progress_count ON progress_count."userId" = u.id
-      LEFT JOIN (SELECT "userId", COUNT(*) as count FROM "Wishlist" GROUP BY "userId") wishlist_count ON wishlist_count."userId" = u.id
-      LEFT JOIN (SELECT "userId", COUNT(*) as count FROM "Comment" GROUP BY "userId") comment_count ON comment_count."userId" = u.id
-      WHERE u.id = $1
-      LIMIT 1`,
-      firebaseUser.uid
-    ) as Promise<any[]>).catch(() => {
-      // If full re-fetch fails, return a simple confirmation
-      return [{ id: firebaseUser.uid, email: firebaseUser.email, createdAt: new Date() }];
-    });
+    console.log('[Profile PUT] SQL:', sql);
+    console.log('[Profile PUT] Params:', params.map((p, i) => `$${i + 1}=${typeof p === 'string' && p.length > 50 ? p.substring(0, 50) + '...' : p}`).join(', '));
 
-    const u = rows?.[0];
-    if (!u) {
-      return NextResponse.json({ success: true, message: 'Perfil actualizado.' });
+    // Execute UPDATE ... RETURNING — atomic: update + get result in one query
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updatedRows: any[] = await db.$queryRawUnsafe(sql, ...params) as any[];
+
+    console.log('[Profile PUT] Rows returned:', updatedRows?.length);
+
+    if (!updatedRows || updatedRows.length === 0) {
+      console.error('[Profile PUT] UPDATE returned 0 rows! UID:', firebaseUser.uid);
+      return NextResponse.json({ 
+        error: 'No se pudo actualizar el perfil. Usuario no encontrado en la base de datos.',
+        debug: { uid: firebaseUser.uid, clauses: setClauses.length }
+      }, { status: 404 });
     }
+
+    const u = updatedRows[0];
+    console.log('[Profile PUT] Updated row:', JSON.stringify({
+      id: u.id, name: u.name, phone: u.phone, address: u.address,
+      age: u.age, birthDate: u.birthDate, gender: u.gender,
+      university: u.university, career: u.career, biography: u.biography ? '...' + u.biography.slice(-20) : null,
+    }));
+
+    const counts = await fetchUserCounts(firebaseUser.uid);
 
     const profile = {
       id: u.id,
@@ -295,13 +291,13 @@ export async function PUT(request: NextRequest) {
       career: u.career ?? null,
       biography: u.biography ?? null,
       createdAt: u.createdAt,
-      _count: {
-        purchases: Number(u.purchaseCount) || 0,
-        progress: Number(u.progressCount) || 0,
-        wishlist: Number(u.wishlistCount) || 0,
-        comments: Number(u.commentCount) || 0,
-      },
+      _count: counts,
     };
+
+    console.log('[Profile PUT] Profile devuelto:', JSON.stringify({
+      name: profile.name, phone: profile.phone, address: profile.address,
+      age: profile.age, birthDate: profile.birthDate, gender: profile.gender,
+    }));
 
     return NextResponse.json({ profile });
   } catch (error) {
