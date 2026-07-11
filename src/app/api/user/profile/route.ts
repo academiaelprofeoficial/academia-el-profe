@@ -267,19 +267,7 @@ export async function PUT(request: NextRequest) {
       }, { status: 404 });
     }
 
-    // VERIFY: read back from DB immediately to confirm persistence
-    const verifyRows: any[] = await db.$queryRawUnsafe(
-      `SELECT phone, address, age, "birthDate", gender, university, career, biography FROM "User" WHERE id = $1`,
-      firebaseUser.uid
-    ) as any[];
-    console.log('[Profile PUT] VERIFY read-back:', JSON.stringify(verifyRows?.[0]));
-
     const u = updatedRows[0];
-    console.log('[Profile PUT] Updated row:', JSON.stringify({
-      id: u.id, name: u.name, phone: u.phone, address: u.address,
-      age: u.age, birthDate: u.birthDate, gender: u.gender,
-      university: u.university, career: u.career, biography: u.biography ? '...' + u.biography.slice(-20) : null,
-    }));
 
     const counts = await fetchUserCounts(firebaseUser.uid);
 
@@ -300,11 +288,6 @@ export async function PUT(request: NextRequest) {
       createdAt: u.createdAt,
       _count: counts,
     };
-
-    console.log('[Profile PUT] Profile devuelto:', JSON.stringify({
-      name: profile.name, phone: profile.phone, address: profile.address,
-      age: profile.age, birthDate: profile.birthDate, gender: profile.gender,
-    }));
 
     return NextResponse.json({ profile });
   } catch (error) {
