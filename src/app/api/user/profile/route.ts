@@ -1,14 +1,13 @@
 // ============================================================
 // GET/PUT /api/user/profile
 // Obtiene y actualiza el perfil del estudiante.
-// Auto-migración: asegura que las columnas existan en la DB.
-// Fallback: si las columnas nuevas no existen, usa query básico.
+// Usa SQL puro para ser inmune a columnas faltantes en la DB.
+// Auto-migración: crea columnas nuevas si no existen.
 // Auth: requiere idToken de Firebase en header Authorization.
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { Prisma } from '@prisma/client';
 
 const FIREBASE_API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY || 'AIzaSyAeMHlQZtUwZqbH5o7nsb4eoUYXLM2y0PU';
 
@@ -17,24 +16,22 @@ let _migrated = false;
 async function ensureColumns() {
   if (_migrated) return;
   try {
-    const isPg = process.env.DATABASE_URL?.startsWith('postgres');
-    if (isPg) {
-      await db.$executeRawUnsafe(`
-        DO $$ BEGIN
-          ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "phone" TEXT;
-          ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "address" TEXT;
-          ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "age" INTEGER;
-          ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "birthDate" TEXT;
-          ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "gender" TEXT;
-          ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "university" TEXT;
-          ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "career" TEXT;
-          ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "biography" TEXT;
-        EXCEPTION WHEN OTHERS THEN NULL;
-        END $$;
-      `);
-    }
+    await db.$executeRawUnsafe(`
+      DO $$ BEGIN
+        ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "phone" TEXT;
+        ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "address" TEXT;
+        ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "age" INTEGER;
+        ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "birthDate" TEXT;
+        ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "gender" TEXT;
+        ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "university" TEXT;
+        ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "career" TEXT;
+        ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "biography" TEXT;
+      EXCEPTION WHEN OTHERS THEN NULL;
+      END $$;
+    `);
+    console.log('[Profile] Auto-migration completed.');
   } catch (err) {
-    console.error('[Profile] Auto-migration warning:', err);
+    console.error('[Profile] Auto-migration error:', err);
   }
   _migrated = true;
 }
@@ -60,7 +57,7 @@ async function verifyToken(token: string): Promise<{ uid: string; email: string 
   }
 }
 
-// ---- GET: obtener perfil ----
+// ---- GET: obtener perfil (raw SQL — immune to schema mismatch) ----
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization');
@@ -73,110 +70,82 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Token invalido.' }, { status: 401 });
     }
 
-    // Step 1: Try full query with all columns
+    const uid = firebaseUser.uid;
+
+    // Run auto-migration
     await ensureColumns();
 
-    let user: any = null;
-    try {
-      user = await db.user.findUnique({
-        where: { id: firebaseUser.uid },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          photoURL: true,
-          role: true,
-          phone: true,
-          address: true,
-          age: true,
-          birthDate: true,
-          gender: true,
-          university: true,
-          career: true,
-          biography: true,
-          createdAt: true,
-          _count: {
-            select: { purchases: true, progress: true, wishlist: true, comments: true },
-          },
-        },
+    // Use raw SQL to fetch user — this works even if Prisma schema is out of sync
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rows: any[] = await (db.$queryRawUnsafe(
+      `SELECT 
+        u.id, u.email, u.name, u."photoURL", u.role,
+        u.phone, u.address, u.age, u."birthDate", u.gender,
+        u.university, u.career, u.biography, u."createdAt",
+        COALESCE(purchase_count.count, 0)::int AS "purchaseCount",
+        COALESCE(progress_count.count, 0)::int AS "progressCount",
+        COALESCE(wishlist_count.count, 0)::int AS "wishlistCount",
+        COALESCE(comment_count.count, 0)::int AS "commentCount"
+      FROM "User" u
+      LEFT JOIN (SELECT "userId", COUNT(*) as count FROM "Purchase" GROUP BY "userId") purchase_count ON purchase_count."userId" = u.id
+      LEFT JOIN (SELECT "userId", COUNT(*) as count FROM "CourseProgress" GROUP BY "userId") progress_count ON progress_count."userId" = u.id
+      LEFT JOIN (SELECT "userId", COUNT(*) as count FROM "Wishlist" GROUP BY "userId") wishlist_count ON wishlist_count."userId" = u.id
+      LEFT JOIN (SELECT "userId", COUNT(*) as count FROM "Comment" GROUP BY "userId") comment_count ON comment_count."userId" = u.id
+      WHERE u.id = $1
+      LIMIT 1`,
+      uid
+    ) as Promise<any[]>).catch(async (_err: any) => {
+      console.warn('[Profile] Full SQL query failed, trying basic query:', _err);
+      // Fallback: query only the core columns that definitely exist
+      return (db.$queryRawUnsafe(
+        `SELECT 
+          u.id, u.email, u.name, u."photoURL", u.role,
+          u.age, u.university, u.career, u."createdAt",
+          0::int AS "purchaseCount",
+          0::int AS "progressCount",
+          0::int AS "wishlistCount",
+          0::int AS "commentCount"
+        FROM "User" u
+        WHERE u.id = $1
+        LIMIT 1`,
+        uid
+      ) as Promise<any[]>).catch(async (_err2: any) => {
+        console.warn('[Profile] Basic SQL also failed, minimal query:', _err2);
+        // Ultra-minimal fallback
+        return (db.$queryRawUnsafe(
+          `SELECT id, email, name, role, "createdAt" FROM "User" WHERE id = $1 LIMIT 1`,
+          uid
+        ) as Promise<any[]>);
       });
-    } catch (queryErr) {
-      // Columns might not exist yet — run migration again and retry once
-      console.warn('[Profile] Full query failed, re-running migration:', queryErr);
-      _migrated = false;
-      await ensureColumns();
-      try {
-        user = await db.user.findUnique({
-          where: { id: firebaseUser.uid },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            photoURL: true,
-            role: true,
-            phone: true,
-            address: true,
-            age: true,
-            birthDate: true,
-            gender: true,
-            university: true,
-            career: true,
-            biography: true,
-            createdAt: true,
-            _count: {
-              select: { purchases: true, progress: true, wishlist: true, comments: true },
-            },
-          },
-        });
-      } catch (retryErr) {
-        // Final fallback: query only the original columns that definitely exist
-        console.warn('[Profile] Retry failed, using fallback query:', retryErr);
-        try {
-          user = await db.user.findUnique({
-            where: { id: firebaseUser.uid },
-            select: {
-              id: true,
-              email: true,
-              name: true,
-              photoURL: true,
-              role: true,
-              age: true,
-              university: true,
-              career: true,
-              createdAt: true,
-              _count: {
-                select: { purchases: true, progress: true, wishlist: true, comments: true },
-              },
-            },
-          });
-        } catch (finalErr) {
-          console.error('[Profile] All queries failed:', finalErr);
-          return NextResponse.json({ error: 'Error al consultar la base de datos.' }, { status: 500 });
-        }
-      }
-    }
+    });
 
-    if (!user) {
+    if (!rows || rows.length === 0) {
       return NextResponse.json({ error: 'Usuario no encontrado.' }, { status: 404 });
     }
 
-    // Ensure all fields exist (fill defaults for missing ones from fallback)
+    const u = rows[0];
+
     const profile = {
-      id: user.id,
-      email: user.email,
-      name: user.name ?? null,
-      photoURL: user.photoURL ?? null,
-      role: user.role ?? 'estudiante',
-      phone: user.phone ?? null,
-      address: user.address ?? null,
-      age: user.age ?? null,
-      birthDate: user.birthDate ?? null,
-      gender: user.gender ?? null,
-      university: user.university ?? null,
-      career: user.career ?? null,
-      biography: user.biography ?? null,
-      createdAt: user.createdAt,
-      _count: user._count ?? { purchases: 0, progress: 0, wishlist: 0, comments: 0 },
+      id: u.id,
+      email: u.email,
+      name: u.name ?? null,
+      photoURL: u.photoURL ?? null,
+      role: u.role ?? 'estudiante',
+      phone: u.phone ?? null,
+      address: u.address ?? null,
+      age: u.age ?? null,
+      birthDate: u.birthDate ?? null,
+      gender: u.gender ?? null,
+      university: u.university ?? null,
+      career: u.career ?? null,
+      biography: u.biography ?? null,
+      createdAt: u.createdAt,
+      _count: {
+        purchases: Number(u.purchaseCount) || 0,
+        progress: Number(u.progressCount) || 0,
+        wishlist: Number(u.wishlistCount) || 0,
+        comments: Number(u.commentCount) || 0,
+      },
     };
 
     return NextResponse.json({ profile });
@@ -186,7 +155,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// ---- PUT: actualizar perfil ----
+// ---- PUT: actualizar perfil (raw SQL) ----
 export async function PUT(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization');
@@ -208,12 +177,6 @@ export async function PUT(request: NextRequest) {
     if (name !== undefined && (typeof name !== 'string' || name.trim().length === 0 || name.length > 100)) {
       return NextResponse.json({ error: 'Nombre invalido (1-100 caracteres).' }, { status: 400 });
     }
-    if (phone !== undefined && phone !== null && typeof phone === 'string' && phone.length > 20) {
-      return NextResponse.json({ error: 'Telefono muy largo (max 20).' }, { status: 400 });
-    }
-    if (address !== undefined && address !== null && typeof address === 'string' && address.length > 200) {
-      return NextResponse.json({ error: 'Direccion muy larga (max 200).' }, { status: 400 });
-    }
     if (age !== undefined && age !== null) {
       const ageNum = Number(age);
       if (isNaN(ageNum) || ageNum < 10 || ageNum > 120) {
@@ -230,135 +193,114 @@ export async function PUT(request: NextRequest) {
         return NextResponse.json({ error: 'Genero invalido.' }, { status: 400 });
       }
     }
-    if (university !== undefined && university !== null && typeof university === 'string' && university.length > 100) {
-      return NextResponse.json({ error: 'Universidad muy larga (max 100).' }, { status: 400 });
+
+    // Build SET clauses with parameterized queries
+    const setClauses: string[] = [];
+    const params: any[] = [];
+    let idx = 1;
+
+    if (name !== undefined) {
+      setClauses.push(`name = $${idx++}`);
+      params.push(name.trim());
     }
-    if (career !== undefined && career !== null && typeof career === 'string' && career.length > 150) {
-      return NextResponse.json({ error: 'Carrera muy larga (max 150).' }, { status: 400 });
+    if (photoURL !== undefined) {
+      setClauses.push(`"photoURL" = $${idx++}`);
+      params.push(photoURL);
     }
-    if (biography !== undefined && biography !== null && typeof biography === 'string' && biography.length > 500) {
-      return NextResponse.json({ error: 'Biografia muy larga (max 500).' }, { status: 400 });
+    if (phone !== undefined) {
+      setClauses.push(`phone = $${idx++}`);
+      params.push(phone === '' ? null : phone);
     }
-
-    // Build update data — use $executeRaw for new columns to avoid Prisma schema mismatch
-    const updateData: Record<string, any> = {};
-    if (name !== undefined) updateData.name = name.trim();
-    if (photoURL !== undefined) updateData.photoURL = photoURL;
-
-    // Safe fields that exist in both old and new schema
-    const safeUpdate: Record<string, any> = {};
-    if (age !== undefined) safeUpdate.age = age === null ? null : Number(age);
-    if (university !== undefined) safeUpdate.university = university === '' ? null : university;
-    if (career !== undefined) safeUpdate.career = career === '' ? null : career;
-
-    // New fields — try raw SQL first, fall back to Prisma
-    const newFields: Record<string, any> = {};
-    if (phone !== undefined) newFields.phone = phone === '' ? null : phone;
-    if (address !== undefined) newFields.address = address === '' ? null : address;
-    if (birthDate !== undefined) newFields.birthDate = birthDate === '' ? null : birthDate;
-    if (gender !== undefined) newFields.gender = gender === '' ? null : gender;
-    if (biography !== undefined) newFields.biography = biography === '' ? null : biography;
-
-    // Try Prisma update with all fields first
-    let updated: any;
-    try {
-      const allData = { ...updateData, ...safeUpdate, ...newFields };
-      updated = await db.user.update({
-        where: { id: firebaseUser.uid },
-        data: allData,
-        select: {
-          id: true, email: true, name: true, photoURL: true, role: true,
-          phone: true, address: true, age: true, birthDate: true, gender: true,
-          university: true, career: true, biography: true, createdAt: true,
-          _count: { select: { purchases: true, progress: true, wishlist: true, comments: true } },
-        },
-      });
-    } catch (prismaErr) {
-      // If new columns don't exist in DB, update only safe fields via Prisma
-      console.warn('[Profile PUT] Full update failed, using safe fields only:', prismaErr);
-      
-      // Update safe fields via Prisma
-      updated = await db.user.update({
-        where: { id: firebaseUser.uid },
-        data: { ...updateData, ...safeUpdate },
-        select: {
-          id: true, email: true, name: true, photoURL: true, role: true,
-          age: true, university: true, career: true, createdAt: true,
-          _count: { select: { purchases: true, progress: true, wishlist: true, comments: true } },
-        },
-      });
-
-      // Try updating new fields via raw SQL
-      const setClauses: string[] = [];
-      const params: any[] = [];
-      let paramIndex = 1;
-
-      if (phone !== undefined) {
-        setClauses.push(`"phone" = $${paramIndex++}`);
-        params.push(phone === '' ? null : phone);
-      }
-      if (address !== undefined) {
-        setClauses.push(`"address" = $${paramIndex++}`);
-        params.push(address === '' ? null : address);
-      }
-      if (birthDate !== undefined) {
-        setClauses.push(`"birthDate" = $${paramIndex++}`);
-        params.push(birthDate === '' ? null : birthDate);
-      }
-      if (gender !== undefined) {
-        setClauses.push(`"gender" = $${paramIndex++}`);
-        params.push(gender === '' ? null : gender);
-      }
-      if (biography !== undefined) {
-        setClauses.push(`"biography" = $${paramIndex++}`);
-        params.push(biography === '' ? null : biography);
-      }
-
-      if (setClauses.length > 0) {
-        try {
-          await db.$executeRawUnsafe(
-            `UPDATE "User" SET ${setClauses.join(', ')}, "updatedAt" = NOW() WHERE id = $${paramIndex}`,
-            ...params,
-            firebaseUser.uid
-          );
-        } catch (sqlErr) {
-          console.warn('[Profile PUT] Raw SQL update also failed (columns may not exist):', sqlErr);
-        }
-      }
-
-      // Re-fetch with full query to get all fields
-      try {
-        updated = await db.user.findUnique({
-          where: { id: firebaseUser.uid },
-          select: {
-            id: true, email: true, name: true, photoURL: true, role: true,
-            phone: true, address: true, age: true, birthDate: true, gender: true,
-            university: true, career: true, biography: true, createdAt: true,
-            _count: { select: { purchases: true, progress: true, wishlist: true, comments: true } },
-          },
-        });
-      } catch {
-        // Return the safe update result
-      }
+    if (address !== undefined) {
+      setClauses.push(`address = $${idx++}`);
+      params.push(address === '' ? null : address);
+    }
+    if (age !== undefined) {
+      setClauses.push(`age = $${idx++}`);
+      params.push(age === null ? null : Number(age));
+    }
+    if (birthDate !== undefined) {
+      setClauses.push(`"birthDate" = $${idx++}`);
+      params.push(birthDate === '' ? null : birthDate);
+    }
+    if (gender !== undefined) {
+      setClauses.push(`gender = $${idx++}`);
+      params.push(gender === '' ? null : gender);
+    }
+    if (university !== undefined) {
+      setClauses.push(`university = $${idx++}`);
+      params.push(university === '' ? null : university);
+    }
+    if (career !== undefined) {
+      setClauses.push(`career = $${idx++}`);
+      params.push(career === '' ? null : career);
+    }
+    if (biography !== undefined) {
+      setClauses.push(`biography = $${idx++}`);
+      params.push(biography === '' ? null : biography);
     }
 
-    // Normalize response
+    if (setClauses.length === 0) {
+      return NextResponse.json({ error: 'No hay campos para actualizar.' }, { status: 400 });
+    }
+
+    setClauses.push(`"updatedAt" = NOW()`);
+    params.push(firebaseUser.uid);
+
+    await db.$executeRawUnsafe(
+      `UPDATE "User" SET ${setClauses.join(', ')} WHERE id = $${idx}`,
+      ...params
+    );
+
+    // Re-fetch the updated user using raw SQL
+    const rows: any[] = await (db.$queryRawUnsafe(
+      `SELECT 
+        u.id, u.email, u.name, u."photoURL", u.role,
+        u.phone, u.address, u.age, u."birthDate", u.gender,
+        u.university, u.career, u.biography, u."createdAt",
+        COALESCE(purchase_count.count, 0)::int AS "purchaseCount",
+        COALESCE(progress_count.count, 0)::int AS "progressCount",
+        COALESCE(wishlist_count.count, 0)::int AS "wishlistCount",
+        COALESCE(comment_count.count, 0)::int AS "commentCount"
+      FROM "User" u
+      LEFT JOIN (SELECT "userId", COUNT(*) as count FROM "Purchase" GROUP BY "userId") purchase_count ON purchase_count."userId" = u.id
+      LEFT JOIN (SELECT "userId", COUNT(*) as count FROM "CourseProgress" GROUP BY "userId") progress_count ON progress_count."userId" = u.id
+      LEFT JOIN (SELECT "userId", COUNT(*) as count FROM "Wishlist" GROUP BY "userId") wishlist_count ON wishlist_count."userId" = u.id
+      LEFT JOIN (SELECT "userId", COUNT(*) as count FROM "Comment" GROUP BY "userId") comment_count ON comment_count."userId" = u.id
+      WHERE u.id = $1
+      LIMIT 1`,
+      firebaseUser.uid
+    ) as Promise<any[]>).catch(() => {
+      // If full re-fetch fails, return a simple confirmation
+      return [{ id: firebaseUser.uid, email: firebaseUser.email, createdAt: new Date() }];
+    });
+
+    const u = rows?.[0];
+    if (!u) {
+      return NextResponse.json({ success: true, message: 'Perfil actualizado.' });
+    }
+
     const profile = {
-      id: updated.id,
-      email: updated.email,
-      name: updated.name ?? null,
-      photoURL: updated.photoURL ?? null,
-      role: updated.role ?? 'estudiante',
-      phone: updated.phone ?? null,
-      address: updated.address ?? null,
-      age: updated.age ?? null,
-      birthDate: updated.birthDate ?? null,
-      gender: updated.gender ?? null,
-      university: updated.university ?? null,
-      career: updated.career ?? null,
-      biography: updated.biography ?? null,
-      createdAt: updated.createdAt,
-      _count: updated._count ?? { purchases: 0, progress: 0, wishlist: 0, comments: 0 },
+      id: u.id,
+      email: u.email,
+      name: u.name ?? null,
+      photoURL: u.photoURL ?? null,
+      role: u.role ?? 'estudiante',
+      phone: u.phone ?? null,
+      address: u.address ?? null,
+      age: u.age ?? null,
+      birthDate: u.birthDate ?? null,
+      gender: u.gender ?? null,
+      university: u.university ?? null,
+      career: u.career ?? null,
+      biography: u.biography ?? null,
+      createdAt: u.createdAt,
+      _count: {
+        purchases: Number(u.purchaseCount) || 0,
+        progress: Number(u.progressCount) || 0,
+        wishlist: Number(u.wishlistCount) || 0,
+        comments: Number(u.commentCount) || 0,
+      },
     };
 
     return NextResponse.json({ profile });
