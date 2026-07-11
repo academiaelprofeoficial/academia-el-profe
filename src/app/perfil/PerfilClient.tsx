@@ -3,9 +3,9 @@
 // ============================================================
 // /perfil — Página de Perfil Completa del Estudiante
 // Tabs: Información Personal + Seguridad
-// Foto: comprime client-side y guarda como base64 data URI
+// Foto: sube a Supabase Storage (bucket: fotos-perfil)
 // Diseño: adaptado al proyecto (dark/light, brand-primary, CSS vars)
-// Auth: Firebase + Prisma via /api/user/profile
+// Auth: Firebase + Prisma/Supabase PostgreSQL via /api/user/profile
 // ============================================================
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -33,6 +33,8 @@ import {
   Heart,
   Clock,
   FileText,
+  Trash2,
+  Upload,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
@@ -91,10 +93,10 @@ interface ProfileData {
 type TabId = 'personal' | 'seguridad';
 
 /* ------------------------------------------------------------------ */
-/*  Image compression helper                                            */
+/*  Image compression helper (canvas -> Blob)                           */
 /* ------------------------------------------------------------------ */
 
-function compressImage(file: File, maxWidth = 400, quality = 0.8): Promise<string> {
+function compressImageToBlob(file: File, maxWidth = 600, quality = 0.85): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -106,8 +108,11 @@ function compressImage(file: File, maxWidth = 400, quality = 0.8): Promise<strin
         canvas.height = img.height * scale;
         const ctx = canvas.getContext('2d')!;
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL('image/jpeg', quality);
-        resolve(dataUrl);
+        canvas.toBlob(
+          (blob) => blob ? resolve(blob) : reject(new Error('Canvas toBlob failed')),
+          'image/jpeg',
+          quality
+        );
       };
       img.onerror = reject;
       img.src = e.target?.result as string;
@@ -176,7 +181,8 @@ export function PerfilClient() {
     biography: '',
   });
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [pendingPhotoURL, setPendingPhotoURL] = useState<string | null>(null);
+  const [pendingPhotoFile, setPendingPhotoFile] = useState<File | null>(null);
+  const [photoUploading, setPhotoUploading] = useState(false);
 
   // Password state
   const [passwordData, setPasswordData] = useState({
@@ -279,24 +285,88 @@ export function PerfilClient() {
     return () => clearTimeout(timer);
   }, [authLoading, user, fetchProfile]);
 
-  // Handle file change
+  // Handle file change — validate and create local preview
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (!file.type.match(/^image\/(jpeg|png|webp)$/)) {
+      setError('Solo se permiten imágenes JPG, PNG o WEBP.');
+      return;
+    }
     if (file.size > 5 * 1024 * 1024) {
-      setError('La imagen debe ser menor a 5 MB.');
+      setError('La imagen no debe superar los 5 MB.');
       return;
     }
 
     try {
-      const compressed = await compressImage(file);
-      setPendingPhotoURL(compressed);
-      setPhotoPreview(compressed);
+      // Create local preview
+      const previewUrl = URL.createObjectURL(file);
+      setPhotoPreview(previewUrl);
+      setPendingPhotoFile(file);
+      setError(null);
     } catch {
       setError('Error al procesar la imagen.');
     }
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  // Upload photo to Supabase Storage
+  const uploadPhoto = async (): Promise<string | null> => {
+    if (!pendingPhotoFile || !idToken) return null;
+    setPhotoUploading(true);
+    try {
+      const compressed = await compressImageToBlob(pendingPhotoFile);
+      const formData = new FormData();
+      // Give it a proper name with extension
+      const ext = compressed.type === 'image/png' ? 'png' : compressed.type === 'image/webp' ? 'webp' : 'jpg';
+      const namedFile = new File([compressed], `avatar.${ext}`, { type: compressed.type });
+      formData.append('file', namedFile);
+
+      const res = await fetch('/api/user/upload-photo', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${idToken}` },
+        body: formData,
+      });
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data?.photoURL) {
+        console.error('[PERFIL] Upload failed:', data);
+        setError(data?.error || 'Error al subir la foto.');
+        return null;
+      }
+
+      console.log('[PERFIL] Foto subida:', data.photoURL);
+      return data.photoURL;
+    } catch (err) {
+      console.error('[PERFIL] Upload error:', err);
+      setError('Error de conexión al subir la foto.');
+      return null;
+    } finally {
+      setPhotoUploading(false);
+    }
+  };
+
+  // Delete photo
+  const deletePhoto = async () => {
+    if (!idToken) return;
+    setPhotoUploading(true);
+    try {
+      const res = await fetch('/api/user/upload-photo', {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${idToken}` },
+      });
+      if (res.ok) {
+        setPhotoPreview(null);
+        setProfile((prev) => prev ? { ...prev, photoURL: null } : prev);
+        setSuccess(true);
+        setTimeout(() => setSuccess(false), 3000);
+      }
+    } catch {
+      setError('Error al eliminar la foto.');
+    } finally {
+      setPhotoUploading(false);
+    }
   };
 
   // Save profile
@@ -319,8 +389,14 @@ export function PerfilClient() {
         biography: formData.biography || null,
       };
 
-      if (pendingPhotoURL) {
-        body.photoURL = pendingPhotoURL;
+      // Upload photo to Supabase Storage if a new one was selected
+      if (pendingPhotoFile) {
+        const uploadedUrl = await uploadPhoto();
+        if (!uploadedUrl) {
+          // uploadPhoto already set the error
+          return;
+        }
+        // Don't include photoURL in body — it's already saved by upload endpoint
       }
 
       console.log('📤 [PERFIL] Datos a enviar:', body);
@@ -356,8 +432,23 @@ export function PerfilClient() {
         return;
       }
 
-      setProfile(responseData.profile);
-      setPendingPhotoURL(null);
+      // Merge: if photo was uploaded, use the storage URL
+      if (pendingPhotoFile && responseData.profile) {
+        // Re-fetch to get the updated photoURL from DB
+        const freshRes = await fetch('/api/user/profile', {
+          headers: { Authorization: `Bearer ${idToken}` },
+        });
+        const freshData = await freshRes.json().catch(() => null);
+        if (freshData?.profile) {
+          setProfile(freshData.profile);
+          setPhotoPreview(freshData.profile.photoURL || null);
+        } else {
+          setProfile(responseData.profile);
+        }
+      } else {
+        setProfile(responseData.profile);
+      }
+      setPendingPhotoFile(null);
       setIsEditing(false);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
@@ -370,7 +461,6 @@ export function PerfilClient() {
 
   const cancelEdit = () => {
     setIsEditing(false);
-    setPendingPhotoURL(null);
     setError(null);
     if (profile) {
       setFormData({
@@ -386,6 +476,7 @@ export function PerfilClient() {
       });
       setPhotoPreview(profile.photoURL || null);
     }
+    setPendingPhotoFile(null);
   };
 
   // Change password
@@ -579,7 +670,12 @@ export function PerfilClient() {
                     <div className="bg-brand-primary px-6 py-8 flex flex-col items-center relative">
                       {/* Avatar */}
                       <div className="relative">
-                        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-4 border-white/30 shadow-lg">
+                        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-4 border-white/30 shadow-lg relative">
+                          {photoUploading ? (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10">
+                              <Loader2 className="h-8 w-8 animate-spin text-white" />
+                            </div>
+                          ) : null}
                           {photoPreview ? (
                             <img
                               src={photoPreview}
@@ -595,18 +691,38 @@ export function PerfilClient() {
                           )}
                         </div>
 
-                        {isEditing && (
+                        {/* Camera button — upload new photo */}
+                        {isEditing && !photoUploading && (
                           <button
+                            type="button"
                             onClick={() => fileInputRef.current?.click()}
                             className="absolute bottom-1 right-1 h-9 w-9 rounded-full bg-white dark:bg-slate-800 shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
+                            title="Cambiar foto"
                           >
-                            <Camera className="h-4 w-4 text-brand-primary" />
+                            {pendingPhotoFile ? (
+                              <Upload className="h-4 w-4 text-emerald-600" />
+                            ) : (
+                              <Camera className="h-4 w-4 text-brand-primary" />
+                            )}
                           </button>
                         )}
+
+                        {/* Delete photo button — only if has photo and is editing */}
+                        {isEditing && photoPreview && !pendingPhotoFile && !photoUploading && (
+                          <button
+                            type="button"
+                            onClick={deletePhoto}
+                            className="absolute top-0 right-0 h-7 w-7 rounded-full bg-red-500 shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
+                            title="Eliminar foto"
+                          >
+                            <Trash2 className="h-3.5 w-3.5 text-white" />
+                          </button>
+                        )}
+
                         <input
                           ref={fileInputRef}
                           type="file"
-                          accept="image/*"
+                          accept="image/jpeg,image/png,image/webp"
                           onChange={handleFileChange}
                           className="hidden"
                         />
@@ -791,15 +907,15 @@ export function PerfilClient() {
                           <div className="flex gap-3 pt-2">
                             <button
                               onClick={handleSave}
-                              disabled={saving}
+                              disabled={saving || photoUploading}
                               className="flex-1 h-11 rounded-lg bg-brand-primary hover:bg-brand-primary-hover text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-60"
                             >
-                              {saving ? (
+                              {photoUploading || saving ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
                               ) : (
                                 <Save className="h-4 w-4" />
                               )}
-                              {saving ? 'Guardando...' : 'Guardar Cambios'}
+                              {photoUploading ? 'Subiendo foto...' : saving ? 'Guardando...' : 'Guardar Cambios'}
                             </button>
                             <button
                               onClick={cancelEdit}
