@@ -185,6 +185,16 @@ export async function POST(request: NextRequest) {
       publicUrl, uid
     );
 
+    // Also update perfiles table (if it exists)
+    try {
+      await db.$executeRawUnsafe(
+        `UPDATE perfiles SET "foto_url" = $1, "updated_at" = NOW() WHERE email = (SELECT email FROM "User" WHERE id = $2)`,
+        publicUrl, uid
+      );
+    } catch (err) {
+      console.warn('[UploadPhoto] perfiles update skipped:', err);
+    }
+
     console.log('[UploadPhoto] Database updated.');
 
     return NextResponse.json({ 
@@ -229,11 +239,21 @@ export async function DELETE(request: NextRequest) {
       }
     }
 
-    // Clear photoURL in database
+    // Clear photoURL in both tables
     await db.$executeRawUnsafe(
       `UPDATE "User" SET "photoURL" = NULL, "updatedAt" = NOW() WHERE id = $1`,
       uid
     );
+
+    // Also clear perfiles table
+    try {
+      await db.$executeRawUnsafe(
+        `UPDATE perfiles SET "foto_url" = NULL, "updated_at" = NOW() WHERE email = (SELECT email FROM "User" WHERE id = $1)`,
+        uid
+      );
+    } catch (err) {
+      console.warn('[UploadPhoto] perfiles delete skipped:', err);
+    }
 
     console.log('[UploadPhoto] Photo deleted for user:', uid);
 
