@@ -160,6 +160,19 @@ export function PerfilClient() {
   const { user, idToken, loading: authLoading, refreshIdToken } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Helper: fetch with automatic token refresh on 401
+  const fetchWithAuth = useCallback(async (input: RequestInfo | URL, init?: RequestInit, _retried = false): Promise<Response> => {
+    const token = _retried ? (await refreshIdToken()) || idToken : idToken;
+    const headers = new Headers(init?.headers);
+    if (token) headers.set('Authorization', `Bearer ${token}`);
+    const res = await fetch(input, { ...init, headers });
+    if (res.status === 401 && !_retried) {
+      console.log('[PERFIL] 401 detected, refreshing token and retrying...');
+      return fetchWithAuth(input, init, true);
+    }
+    return res;
+  }, [idToken, refreshIdToken]);
+
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -329,14 +342,12 @@ export function PerfilClient() {
     try {
       const compressed = await compressImageToBlob(pendingPhotoFile);
       const formData = new FormData();
-      // Give it a proper name with extension
       const ext = compressed.type === 'image/png' ? 'png' : compressed.type === 'image/webp' ? 'webp' : 'jpg';
       const namedFile = new File([compressed], `avatar.${ext}`, { type: compressed.type });
       formData.append('file', namedFile);
 
-      const res = await fetch('/api/user/upload-photo', {
+      const res = await fetchWithAuth('/api/user/upload-photo', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${idToken}` },
         body: formData,
       });
       const data = await res.json().catch(() => null);
@@ -363,15 +374,17 @@ export function PerfilClient() {
     if (!idToken) return;
     setPhotoUploading(true);
     try {
-      const res = await fetch('/api/user/upload-photo', {
+      const res = await fetchWithAuth('/api/user/upload-photo', {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${idToken}` },
       });
       if (res.ok) {
         setPhotoPreview(null);
         setProfile((prev) => prev ? { ...prev, photoURL: null } : prev);
         setSuccess(true);
         setTimeout(() => setSuccess(false), 3000);
+      } else {
+        const data = await res.json().catch(() => null);
+        setError(data?.error || 'Error al eliminar la foto.');
       }
     } catch {
       setError('Error al eliminar la foto.');
@@ -412,11 +425,10 @@ export function PerfilClient() {
 
       console.log('📤 [PERFIL] Datos a enviar:', body);
 
-      const res = await fetch('/api/user/profile', {
+      const res = await fetchWithAuth('/api/user/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${idToken}`,
         },
         body: JSON.stringify(body),
       });
@@ -446,9 +458,7 @@ export function PerfilClient() {
       // Merge: if photo was uploaded, use the storage URL
       if (pendingPhotoFile && responseData.profile) {
         // Re-fetch to get the updated photoURL from DB
-        const freshRes = await fetch('/api/user/profile', {
-          headers: { Authorization: `Bearer ${idToken}` },
-        });
+        const freshRes = await fetchWithAuth('/api/user/profile');
         const freshData = await freshRes.json().catch(() => null);
         if (freshData?.profile) {
           setProfile(freshData.profile);
