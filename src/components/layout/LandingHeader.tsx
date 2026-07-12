@@ -180,12 +180,9 @@ function UserDropdown({ user, signOut, profileName, profilePhoto }: { user: any;
         onClick={() => setOpen(!open)}
         className="flex items-center gap-2 rounded-lg bg-slate-100 dark:bg-slate-800 pl-1.5 pr-3 py-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
       >
-        <div className={`h-7 w-7 rounded-full flex items-center justify-center text-white text-xs font-bold overflow-hidden ${photoSrc ? '' : 'bg-brand-primary'}`>
-          {photoSrc ? (
-            <img src={photoSrc} alt={displayName} className="h-full w-full object-cover" />
-          ) : (
-            initials
-          )}
+        <div className={`h-7 w-7 rounded-full flex items-center justify-center text-white text-xs font-bold overflow-hidden ${photoSrc ? '' : 'bg-brand-primary'}`}>
+          {photoSrc && <img src={photoSrc} alt={displayName} className="h-full w-full object-cover" />}
+          {!photoSrc && initials}
         </div>
         <span className="text-sm font-medium text-brand-heading-secondary max-w-[120px] truncate hidden md:inline">
           {displayName}
@@ -379,11 +376,8 @@ export function LandingHeader() {
               return (
                 <Link href="/dashboard/cursos" className="flex items-center gap-1.5">
                   <div className={`h-6 w-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold overflow-hidden ${mobilePhoto ? '' : 'bg-brand-primary'}`}>
-                    {mobilePhoto ? (
-                      <img src={mobilePhoto} alt={mobileName} className="h-full w-full object-cover" />
-                    ) : (
-                      mobileName[0].toUpperCase()
-                    )}
+                    {mobilePhoto && <img src={mobilePhoto} alt={mobileName} className="h-full w-full object-cover" />}
+                    {!mobilePhoto && mobileName[0].toUpperCase()}
                   </div>
                   <span className={`text-xs font-medium max-w-[80px] truncate ${scrolled ? 'text-brand-heading-secondary' : 'text-slate-800 dark:text-white/90'}`}>
                     {mobileName}
