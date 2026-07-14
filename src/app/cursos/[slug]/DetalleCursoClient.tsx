@@ -96,8 +96,6 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
   const pricePEN = course.pricePEN || 0;
   const priceUSD = course.priceUSD || 0;
   const totalClasses = course.totalClasses || 0;
-  // Use real video count from topics (matches temario page)
-  const realVideoCount = classVideos.length || totalClasses;
   const totalHours = course.totalHours || '0';
   const level = course.level || '';
   const courseType = course.courseType || 'paid';
@@ -105,6 +103,8 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
   const topics = course.topics || [];
   // Count all class videos across all topics
   const classVideos = topics.flatMap(t => t.classVideos || []);
+  // Use real video count from topics (matches temario page)
+  const realVideoCount = classVideos.length || totalClasses;
   const topicMaterials = topics.flatMap(t => t.materials || []);
   const coverImg = course.coverImage ? getImageUrl(course.coverImage, 800, 500) : null;
 
