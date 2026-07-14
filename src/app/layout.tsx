@@ -10,6 +10,7 @@ import { SiteSettingsProvider } from "@/components/SiteSettingsProvider";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { VisualEditing } from "@/components/VisualEditing";
 import { MobileBottomBar } from "@/components/MobileBottomBar";
+import { ScreenRecordButton } from "@/components/ScreenRecordButton";
 import { ParticlesBackground } from "@/components/ParticlesBackground";
 import { GlowingParticles } from "@/components/GlowingParticles";
 import { sanityClient } from "@/lib/sanity.client";
@@ -189,6 +190,7 @@ export default async function RootLayout({
                 <Toaster />
                 {!isDraftMode && <WhatsAppButton />}
                 {!isDraftMode && <MobileBottomBar />}
+                <ScreenRecordButton />
               </AuthProvider>
             </SiteSettingsProvider>
           </ThemeColorsProvider>

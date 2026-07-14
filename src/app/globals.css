@@ -497,3 +497,91 @@ html {
 .dark .border-slate-200 {
   border-color: var(--surface-border, hsl(216 34% 17%)) !important;
 }
+
+/* ============================================================
+   Screen Recording Protection — Anti-piracy overlay
+   Activa cuando body tiene .recording-active
+   (clase inyectada por el hook useScreenRecorder).
+   Solo el contenido de video se pone negro;
+   el resto de la UI permanece visible.
+   ============================================================ */
+
+/* Capa de filtro negro sobre videos e iframes de plataformas */
+body.recording-active video,
+body.recording-active iframe[src*="youtube.com"],
+body.recording-active iframe[src*="youtu.be"],
+body.recording-active iframe[src*="player.vimeo.com"] {
+  filter: brightness(0) !important;
+  -webkit-filter: brightness(0) !important;
+}
+
+/* Overlay inyectado dinámicamente por useScreenRecorder */
+.screen-recording-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  pointer-events: none;
+  border-radius: inherit;
+  animation: rec-overlay-in 0.3s ease-out;
+}
+
+.screen-recording-overlay-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  text-align: center;
+  padding: 1rem;
+}
+
+.screen-recording-overlay-inner svg {
+  opacity: 0.5;
+}
+
+/* Indicador REC fijo en esquina superior derecha */
+.screen-rec-indicator {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.9rem;
+  background: rgba(239, 68, 68, 0.9);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 9999px;
+  pointer-events: none;
+  letter-spacing: 0.05em;
+  animation: rec-overlay-in 0.3s ease-out;
+}
+
+.screen-rec-dot {
+  width: 8px;
+  height: 8px;
+  background: white;
+  border-radius: 50%;
+  animation: rec-dot-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes rec-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes rec-dot-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
