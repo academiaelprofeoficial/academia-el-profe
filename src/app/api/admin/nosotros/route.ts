@@ -33,7 +33,54 @@ export async function GET() {
     `);
 
     if (!rows || rows.length === 0) {
-      return NextResponse.json({ data: null });
+      // Seed inicial: insertar contenido por defecto
+      const caracteristicasDefault = JSON.stringify([
+        { icono: 'graduation-cap', titulo: 'Enfoque UTP', descripcion: 'Cada curso está diseñado específicamente para los ciclos, sílabos y exigencias de la Universidad Tecnológica del Perú. No es contenido genérico: es contenido que responde exactamente a lo que te examinan.' },
+        { icono: 'award', titulo: 'Experiencia Docente', descripcion: 'El Prof. Kall Bruno Díaz cuenta con más de 10 años de experiencia enseñando matemáticas y física a nivel universitario. Su metodología clara y directa ha ayudado a miles de estudiantes a aprobar sus cursos.' },
+        { icono: 'users', titulo: 'Comunidad Activa', descripcion: 'Más de 5,000 estudiantes confían en Academia El Profe Oficial. Cada curso cuenta con un sistema de preguntas y respuestas donde puedes resolver tus dudas con compañeros y el profesor.' },
+        { icono: 'shield-check', titulo: 'Garantía de Calidad', descripcion: 'Si el curso no cumple tus expectativas, ofrecemos una garantía de devolución de 7 días. Además, todos los cursos incluyen acceso de por vida y actualizaciones gratuitas del contenido.' },
+      ]);
+
+      await db.$executeRawUnsafe(
+        `INSERT INTO pagina_nosotros (titulo_principal, subtitulo_principal, texto_historia, prof_nombre, prof_titulo, prof_descripcion, caracteristicas)
+         VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)`,
+        'Conoce al Prof. Bruno Díaz',
+        'Profesor de ingeniería con años de experiencia ayudando a estudiantes.',
+        'Academia El Profe Oficial fue fundada por el Prof. Bruno Díaz, docente universitario con una pasión inquebrantable por la enseñanza de las ciencias básicas para ingeniería. Lo que comenzó como grabaciones compartidas por Drive se transformó en una plataforma educativa completa con videos y PDF para que los alumnos aprueben sus exámenes parciales y finales.',
+        'Prof. Bruno Díaz',
+        'Fundador de Academia El Profe',
+        'Profesor universitario con amplia experiencia en la enseñanza de Cálculo 1,2,3, Física, Ecuaciones Diferenciales, Estática, Termodinámica y otras asignaturas de ciencias e ingeniería.',
+        caracteristicasDefault
+      );
+
+      // Re-consultar
+      const newRows = await db.$queryRawUnsafe<any[]>(`
+        SELECT * FROM pagina_nosotros ORDER BY created_at ASC LIMIT 1
+      `);
+
+      if (!newRows || newRows.length === 0) {
+        return NextResponse.json({ data: null });
+      }
+
+      const newRow = newRows[0];
+      const newCaracteristicas = typeof newRow.caracteristicas === 'string'
+        ? JSON.parse(newRow.caracteristicas) : newRow.caracteristicas;
+
+      return NextResponse.json({
+        data: {
+          id: newRow.id,
+          titulo_principal: newRow.titulo_principal || '',
+          subtitulo_principal: newRow.subtitulo_principal || '',
+          texto_historia: newRow.texto_historia || '',
+          prof_nombre: newRow.prof_nombre || '',
+          prof_titulo: newRow.prof_titulo || '',
+          prof_descripcion: newRow.prof_descripcion || '',
+          prof_foto_url: newRow.prof_foto_url || '',
+          caracteristicas: newCaracteristicas || [],
+          updated_at: newRow.updated_at,
+          created_at: newRow.created_at,
+        },
+      });
     }
 
     const row = rows[0];
