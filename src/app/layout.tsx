@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     template: "%s | Academia El Profe",
   },
   description:
-    "ACADEMIA EL PROFE : CURSOS UNIVERSITARIOS. Plataforma educativa con cursos de Cálculo, Física, Estática, Química y más para estudiantes universitarios. Clases grabadas, material PDF y certificado.",
+    "Cursos universitarios de Cálculo 1,2,3, Física 1,2 , Estática, Termodinámica y más. Clases grabadas, material en PDF y acceso inmediato para estudiantes de universidades de todo el Perú.",
   keywords: [
     "Academia El Profe",
     "cursos universitarios",
