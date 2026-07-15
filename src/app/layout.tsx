@@ -84,6 +84,9 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  icons: {
+    icon: "/favicon.webp",
+  },
 };
 
 // Revalidation is handled by on-demand webhook (Sanity → /api/webhook/sanity)
