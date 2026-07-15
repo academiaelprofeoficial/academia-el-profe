@@ -35,6 +35,7 @@ import type { SanityCourse, SanityClassVideo, SanityTopic, PortableTextBlock } f
 import { getImageUrl } from '@/lib/sanity.client';
 import { PortableText } from '@portabletext/react';
 import { useAuth } from '@/lib/auth-context';
+import { useRecordingDetection } from '@/hooks/useRecordingDetection';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -133,6 +134,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }: TemarioPageClientProps) {
   const { user, purchasedCourseIds, isOwner } = useAuth();
+  const { isRecording } = useRecordingDetection();
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set());
   const [selectedVideo, setSelectedVideo] = useState<SelectedVideo | null>(null);
   const [activeTopicTitle, setActiveTopicTitle] = useState<string | null>(null);
@@ -570,7 +572,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
             <PlayCircle className="h-5 w-5 text-brand-primary" />
             Video de Presentacion
           </h2>
-          <div className="bg-black aspect-video sm:rounded-lg overflow-hidden" onContextMenu={(e) => e.preventDefault()}>
+          <div className="video-player-container relative bg-black aspect-video sm:rounded-lg overflow-hidden" onContextMenu={(e) => e.preventDefault()}>
             <video
               src={course.videoUrl || course.courseVideo?.asset?.url}
               controls
@@ -578,7 +580,20 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
               disablePictureInPicture
               className="w-full h-full"
               poster={coverImg || undefined}
+              playsInline
             />
+            {isRecording && (
+              <div className="absolute inset-0 bg-black flex items-center justify-center z-10 rounded-lg">
+                <div className="text-center text-white">
+                  <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                  <p className="text-sm font-semibold">Contenido protegido</p>
+                  <p className="text-xs text-gray-400 mt-1">Video no disponible durante la grabacion</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -755,8 +770,8 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                         {groupHasSelectedVideo && (
                           <div className="lg:hidden border-t border-border/10 my-1 pt-2 px-1">
                             {/* Video Player */}
-                            <div className="rounded-xl border border-border/40 bg-card overflow-hidden mb-3">
-                              <div className="bg-black aspect-video" onContextMenu={(e) => e.preventDefault()}>
+                            <div className="video-player-container relative rounded-xl border border-border/40 bg-card overflow-hidden mb-3">
+                              <div className="relative bg-black aspect-video" onContextMenu={(e) => e.preventDefault()}>
                                 <video
                                   key={`mobile-${selectedVideo.url}`}
                                   src={selectedVideo.url}
@@ -767,6 +782,17 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                                   poster={selectedVideo.poster}
                                   playsInline
                                 />
+                                {isRecording && (
+                                  <div className="absolute inset-0 bg-black flex items-center justify-center z-10">
+                                    <div className="text-center text-white">
+                                      <svg className="w-10 h-10 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                      </svg>
+                                      <p className="text-xs font-semibold">Contenido protegido</p>
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                               <div className="px-4 py-3">
                                 <h3 className="text-sm font-bold text-foreground">{selectedVideo.title}</h3>
@@ -938,8 +964,8 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
               {selectedVideo ? (
                 <div className="space-y-4">
                   {/* Video Player */}
-                  <div className="rounded-xl border border-border/40 bg-card overflow-hidden">
-                    <div className="bg-black aspect-video" onContextMenu={(e) => e.preventDefault()}>
+                  <div className="video-player-container relative rounded-xl border border-border/40 bg-card overflow-hidden">
+                    <div className="relative bg-black aspect-video" onContextMenu={(e) => e.preventDefault()}>
                       <video
                         ref={videoRef}
                         key={selectedVideo.url}
@@ -953,6 +979,18 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                         playsInline
                         onTimeUpdate={handleTimeUpdate}
                       />
+                      {isRecording && (
+                        <div className="absolute inset-0 bg-black flex items-center justify-center z-10 rounded-t-xl">
+                          <div className="text-center text-white">
+                            <svg className="w-14 h-14 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                              <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                            <p className="text-sm font-semibold">Contenido protegido</p>
+                            <p className="text-xs text-gray-400 mt-1">Video no disponible durante la grabacion</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <div className="px-5 py-4">
                       <h3 className="text-base font-bold text-foreground">{selectedVideo.title}</h3>
@@ -1104,9 +1142,9 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
             </div>
           </div>
         )}
-	      </div>
+              </div>
 
-	      {/* ===== CERTIFICATE SECTION ===== */}
+              {/* ===== CERTIFICATE SECTION ===== */}
       <div className="rounded-xl border border-border/40 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 p-6">
         <div className="flex items-start gap-4">
           <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-amber-100 dark:bg-amber-900/30 shrink-0">

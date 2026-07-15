@@ -500,8 +500,10 @@ html {
 
 /* ============================================================
    Screen Recording Protection — Anti-piracy overlay
-   Activa cuando body tiene .recording-active
-   (clase inyectada por el hook useScreenRecorder).
+   Activa SOLAMENTE cuando body tiene .recording-active
+   (clase inyectada por useScreenRecorder o useRecordingDetection
+   al detectar una grabación de pantalla vía getDisplayMedia).
+   NO afecta la reproducción normal de videos.
    Solo el contenido de video se pone negro;
    el resto de la UI permanece visible.
    ============================================================ */
