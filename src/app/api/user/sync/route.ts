@@ -62,6 +62,8 @@ export async function POST(request: NextRequest) {
       success: true,
       uid: firebaseUser.localId,
       email: firebaseUser.email,
+      name: user.name,
+      photoURL: user.photoURL,
       role: user.role,
     });
   } catch (error) {

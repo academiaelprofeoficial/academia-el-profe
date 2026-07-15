@@ -103,6 +103,8 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
   const topics = course.topics || [];
   // Count all class videos across all topics
   const classVideos = topics.flatMap(t => t.classVideos || []);
+  // Use real video count from topics (matches temario page)
+  const realVideoCount = classVideos.length || totalClasses;
   const topicMaterials = topics.flatMap(t => t.materials || []);
   const coverImg = course.coverImage ? getImageUrl(course.coverImage, 800, 500) : null;
 
@@ -155,10 +157,10 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
 
             {/* Stats */}
             <div className="flex flex-wrap gap-4 text-sm text-white/80">
-              {totalClasses > 0 && (
+              {realVideoCount > 0 && (
                 <span className="flex items-center gap-1.5">
                   <Video className="h-4 w-4" />
-                  {totalClasses} lecciones
+                  {realVideoCount} lecciones
                 </span>
               )}
               {topicMaterials.length > 0 && (
@@ -321,7 +323,7 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <CheckCircle2 className="h-3.5 w-3.5 text-brand-primary shrink-0" />
-                {totalClasses} lecciones en video
+                {realVideoCount} lecciones en video
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <CheckCircle2 className="h-3.5 w-3.5 text-brand-primary shrink-0" />

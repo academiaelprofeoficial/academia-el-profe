@@ -8,6 +8,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { Play, Pause, Maximize, Volume2, VolumeX } from 'lucide-react';
+import { useRecordingDetection } from '@/hooks/useRecordingDetection';
 
 interface VideoPlayerProps {
   readonly videoUrl?: string;
@@ -39,6 +40,7 @@ function formatTime(seconds: number): string {
 export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, onComplete }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { isRecording } = useRecordingDetection();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -122,7 +124,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, 
     return (
       <div
         ref={containerRef}
-        className="relative aspect-video bg-black rounded-xl overflow-hidden group"
+        className="video-player-container relative aspect-video bg-black rounded-xl overflow-hidden group"
         onMouseMove={handleMouseMove}
         onMouseLeave={() => { if (isPlaying) setShowControls(false); }}
       >
@@ -158,6 +160,20 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, 
           {webmUrl && <source src={webmUrl} type="video/webm" />}
           <source src={videoUrl} type={videoUrl?.endsWith('.webm') ? 'video/webm' : 'video/mp4'} />
         </video>
+
+        {/* Recording protection overlay */}
+        {isRecording && (
+          <div className="absolute inset-0 bg-black flex items-center justify-center z-30 rounded-xl">
+            <div className="text-center text-white">
+              <svg className="w-14 h-14 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <p className="text-sm font-semibold">Contenido protegido</p>
+              <p className="text-xs text-gray-400 mt-1">Video no disponible durante la grabacion</p>
+            </div>
+          </div>
+        )}
 
         {/* Gran botón de play inicial (solo cuando está pausado y al inicio) */}
         {!isPlaying && currentTime === 0 && (

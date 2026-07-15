@@ -10,6 +10,7 @@ import { SiteSettingsProvider } from "@/components/SiteSettingsProvider";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { VisualEditing } from "@/components/VisualEditing";
 import { MobileBottomBar } from "@/components/MobileBottomBar";
+import { ScreenRecordButton } from "@/components/ScreenRecordButton";
 import { ParticlesBackground } from "@/components/ParticlesBackground";
 import { GlowingParticles } from "@/components/GlowingParticles";
 import { sanityClient } from "@/lib/sanity.client";
@@ -89,6 +90,14 @@ export const metadata: Metadata = {
 // No timed revalidation — CMS changes appear immediately after publish.
 export const revalidate = false;
 
+// Viewport for iOS PWA safe area
+export const viewport = {
+  width: 'device-width' as const,
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: 'cover' as const,
+};
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -124,6 +133,12 @@ export default async function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <head>
+        {/* Preconnect for Core Web Vitals */}
+        <link rel="preconnect" href="https://cdn.sanity.io" />
+        <link rel="preconnect" href="https://firestore.googleapis.com" />
+        <link rel="preconnect" href="https://www.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#10B981" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -175,6 +190,7 @@ export default async function RootLayout({
                 <Toaster />
                 {!isDraftMode && <WhatsAppButton />}
                 {!isDraftMode && <MobileBottomBar />}
+                <ScreenRecordButton />
               </AuthProvider>
             </SiteSettingsProvider>
           </ThemeColorsProvider>

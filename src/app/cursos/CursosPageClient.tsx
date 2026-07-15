@@ -29,6 +29,7 @@ import {
   Headphones,
   Lock,
   Loader2,
+  LogIn,
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -57,7 +58,7 @@ const FORMULA_ICONS: Record<string, React.ComponentType<{ className?: string }>>
 };
 
 export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCourse[] | null }) {
-  const { user } = useAuth();
+  const { user, purchasedCourseIds } = useAuth();
   const [cursoCompra, setCursoCompra] = useState<Course | null>(null);
   const [compraAbierta, setCompraAbierta] = useState(false);
   const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>({});
@@ -66,7 +67,6 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
   const displayCourses = useMemo(() => {
     if (!sanityCourses || sanityCourses.length === 0) return [];
     return sanityCourses
-      .filter((sc) => sc.group === 'general' || sc.group === 'ambos' || !sc.group)
       .map((sc) => {
       const mock = CURSOS_LANDING.find((m) => m.id === sc.slug);
       return {
@@ -210,6 +210,7 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
               const FormulaIcon = FORMULA_ICONS[curso.formulaIcon] || BookOpen;
               const isLoadingMP = !!loadingMap[`${curso.id}-mp`];
               const isLoadingPP = !!loadingMap[`${curso.id}-pp`];
+              const isPurchased = purchasedCourseIds.includes(curso.id);
 
               return (
                 <AnimatedSection key={curso.id} delay={idx * 0.08} direction="up">
@@ -223,6 +224,12 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
                   {/* HEADER: colored background with formula + title + description */}
                   <div className={`${colors.bg} px-4 py-5 flex flex-col gap-2 min-h-[120px] relative`}>
                     <span className="absolute top-2 right-3 text-[10px] font-black tracking-[0.25em] text-white/20 select-none pointer-events-none uppercase">Premium</span>
+                    {isPurchased && (
+                      <span className="absolute top-2 left-3 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-sm text-[9px] font-bold text-white">
+                        <CheckCircle2 className="h-3 w-3" />
+                        Comprado
+                      </span>
+                    )}
                     <span className="text-2xl font-light text-white/90 leading-none">
                       {curso.formula || <FormulaIcon className="h-7 w-7 text-white/90" />}
                     </span>
@@ -248,57 +255,112 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
 
                   {/* FOOTER: price + payment buttons + temario — mt-auto para alinear abajo */}
                   <div className="bg-white dark:bg-[var(--surface-2)] px-4 py-4 flex flex-col gap-3 mt-auto">
-                    <div className="flex items-baseline gap-3">
-                      <span className="text-xl font-bold text-orange-500">{formatoSoles(curso.price)}</span>
-                      <span className="text-xs text-slate-400 font-medium">{formatoUSD(curso.priceUSD)}</span>
-                    </div>
+                    {isPurchased ? (
+                      <>
+                        {/* CURSO COMPRADO — Acceder directamente */}
+                        <Link
+                          href={`/cursos/${curso.id}/temario`}
+                          onClick={(e) => e.stopPropagation()}
+                          className={cn(
+                            'w-full h-10 text-xs font-bold tracking-wide gap-2 rounded-lg flex items-center justify-center transition-all text-white',
+                            colors.bg, colors.hover
+                          )}
+                        >
+                          <PlayCircle className="h-4 w-4" />
+                          ACCEDER AL CURSO
+                        </Link>
+                        <p className="text-[10px] text-center text-brand-primary font-medium">
+                          ✓ Comprado — Acceso de por vida
+                        </p>
+                      </>
+                    ) : user ? (
+                      /* ---- AUTENTICADO: botones de pago ---- */
+                      <>
+                        <div className="flex items-baseline gap-3">
+                          <span className="text-xl font-bold text-orange-500">{formatoSoles(curso.price)}</span>
+                          <span className="text-xs text-slate-400 font-medium">{formatoUSD(curso.priceUSD)}</span>
+                        </div>
 
-                    <div className="grid grid-cols-2 gap-2 w-full">
-                      <button
-                        disabled={isLoadingMP || isLoadingPP}
-                        onClick={(e) => { e.stopPropagation(); handleMercadoPagoDirect(curso); }}
-                        className={cn(
-                          'h-9 text-[11px] font-bold tracking-wide text-white gap-1 rounded-lg flex items-center justify-center transition-all disabled:opacity-70',
-                          colors.bg,
-                          colors.hover
-                        )}
-                      >
-                        {isLoadingMP ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <ShoppingCart className="h-3.5 w-3.5 shrink-0" />
-                        )}
-                        <span className="truncate">
-                          {isLoadingMP ? 'Procesando...' : `PEN ${formatoSoles(curso.price)}`}
-                        </span>
-                      </button>
-                      <button
-                        disabled={isLoadingMP || isLoadingPP}
-                        onClick={(e) => { e.stopPropagation(); handlePayPalDirect(curso); }}
-                        className="h-9 text-[11px] font-bold tracking-wide gap-1 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-[#ffc439] hover:bg-[#f2ba36] text-[#003087]"
-                      >
-                        {isLoadingPP ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <img src="/images/paypal-logo.png" alt="PP" className="h-3.5 w-3.5 object-contain shrink-0" />
-                        )}
-                        <span className="truncate">
-                          {isLoadingPP ? 'Procesando...' : `USD ${formatoUSD(curso.priceUSD)}`}
-                        </span>
-                      </button>
-                    </div>
+                        <div className="grid grid-cols-2 gap-2 w-full">
+                          <button
+                            disabled={isLoadingMP || isLoadingPP}
+                            onClick={(e) => { e.stopPropagation(); handleMercadoPagoDirect(curso); }}
+                            className={cn(
+                              'h-9 text-[11px] font-bold tracking-wide text-white gap-1 rounded-lg flex items-center justify-center transition-all disabled:opacity-70',
+                              colors.bg,
+                              colors.hover
+                            )}
+                          >
+                            {isLoadingMP ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <ShoppingCart className="h-3.5 w-3.5 shrink-0" />
+                            )}
+                            <span className="truncate">
+                              {isLoadingMP ? 'Procesando...' : `PEN ${formatoSoles(curso.price)}`}
+                            </span>
+                          </button>
+                          <button
+                            disabled={isLoadingMP || isLoadingPP}
+                            onClick={(e) => { e.stopPropagation(); handlePayPalDirect(curso); }}
+                            className="h-9 text-[11px] font-bold tracking-wide gap-1 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-[#ffc439] hover:bg-[#f2ba36] text-[#003087]"
+                          >
+                            {isLoadingPP ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <img src="/images/paypal-logo.png" alt="PP" className="h-3.5 w-3.5 object-contain shrink-0" />
+                            )}
+                            <span className="truncate">
+                              {isLoadingPP ? 'Procesando...' : `USD ${formatoUSD(curso.priceUSD)}`}
+                            </span>
+                          </button>
+                        </div>
 
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleVerTemario(curso); }}
-                      className="w-full h-9 text-xs font-bold tracking-wide gap-1.5 rounded-lg flex items-center justify-center border transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
-                      style={{
-                        borderColor: curso.colorKey === 'emerald' ? '#10B981' : curso.colorKey === 'blue' ? '#3B82F6' : curso.colorKey === 'orange' ? '#F97316' : curso.colorKey === 'purple' ? '#8B5CF6' : curso.colorKey === 'teal' ? '#14B8A6' : curso.colorKey === 'red' ? '#EF4444' : '#0EA5E9',
-                        color: curso.colorKey === 'emerald' ? '#059669' : curso.colorKey === 'blue' ? '#2563EB' : curso.colorKey === 'orange' ? '#EA580C' : curso.colorKey === 'purple' ? '#7C3AED' : curso.colorKey === 'teal' ? '#0D9488' : curso.colorKey === 'red' ? '#DC2626' : '#0284C7',
-                      }}
-                    >
-                      <ListChecks className="h-3.5 w-3.5" />
-                      TEMARIO
-                    </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleVerTemario(curso); }}
+                          className="w-full h-9 text-xs font-bold tracking-wide gap-1.5 rounded-lg flex items-center justify-center border transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                          style={{
+                            borderColor: curso.colorKey === 'emerald' ? '#10B981' : curso.colorKey === 'blue' ? '#3B82F6' : curso.colorKey === 'orange' ? '#F97316' : curso.colorKey === 'purple' ? '#8B5CF6' : curso.colorKey === 'teal' ? '#14B8A6' : curso.colorKey === 'red' ? '#EF4444' : '#0EA5E9',
+                            color: curso.colorKey === 'emerald' ? '#059669' : curso.colorKey === 'blue' ? '#2563EB' : curso.colorKey === 'orange' ? '#EA580C' : curso.colorKey === 'purple' ? '#7C3AED' : curso.colorKey === 'teal' ? '#0D9488' : curso.colorKey === 'red' ? '#DC2626' : '#0284C7',
+                          }}
+                        >
+                          <ListChecks className="h-3.5 w-3.5" />
+                          TEMARIO
+                        </button>
+                      </>
+                    ) : (
+                      /* ---- INVITADO: "Iniciar sesión para comprar" ---- */
+                      <>
+                        <div className="flex items-baseline gap-3">
+                          <span className="text-xl font-bold text-orange-500">{formatoSoles(curso.price)}</span>
+                          <span className="text-xs text-slate-400 font-medium">{formatoUSD(curso.priceUSD)}</span>
+                        </div>
+
+                        <Link
+                          href="/iniciar-sesion"
+                          onClick={(e) => e.stopPropagation()}
+                          className={cn(
+                            'w-full h-10 text-xs font-bold tracking-wide text-white gap-2 rounded-lg flex items-center justify-center transition-all',
+                            colors.bg, colors.hover
+                          )}
+                        >
+                          <LogIn className="h-4 w-4" />
+                          INICIAR SESIÓN PARA COMPRAR
+                        </Link>
+
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleVerTemario(curso); }}
+                          className="w-full h-9 text-xs font-bold tracking-wide gap-1.5 rounded-lg flex items-center justify-center border transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                          style={{
+                            borderColor: curso.colorKey === 'emerald' ? '#10B981' : curso.colorKey === 'blue' ? '#3B82F6' : curso.colorKey === 'orange' ? '#F97316' : curso.colorKey === 'purple' ? '#8B5CF6' : curso.colorKey === 'teal' ? '#14B8A6' : curso.colorKey === 'red' ? '#EF4444' : '#0EA5E9',
+                            color: curso.colorKey === 'emerald' ? '#059669' : curso.colorKey === 'blue' ? '#2563EB' : curso.colorKey === 'orange' ? '#EA580C' : curso.colorKey === 'purple' ? '#7C3AED' : curso.colorKey === 'teal' ? '#0D9488' : curso.colorKey === 'red' ? '#DC2626' : '#0284C7',
+                          }}
+                        >
+                          <ListChecks className="h-3.5 w-3.5" />
+                          VER TEMARIO
+                        </button>
+                      </>
+                    )}
                   </div>
                 </motion.div>
                 </AnimatedSection>

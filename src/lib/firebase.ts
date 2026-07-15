@@ -6,6 +6,9 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import {
   getAuth,
+  setPersistence,
+  browserLocalPersistence,
+  inMemoryPersistence,
   GoogleAuthProvider,
   signInWithPopup,
   signInWithEmailAndPassword,
@@ -13,6 +16,7 @@ import {
   sendPasswordResetEmail,
   signOut as firebaseSignOut,
   onAuthStateChanged,
+  onIdTokenChanged,
   updateProfile,
   type User,
   type Auth,
@@ -32,7 +36,20 @@ const firebaseConfig = {
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 // --- Servicios de Firebase ---
-export const auth: Auth = getAuth(app);
+const authInstance = getAuth(app);
+
+// Forzar persistencia en localStorage (sobrevive cierres de tab, reinicios de navegador)
+// Solo se ejecuta en el browser (no en SSR)
+if (typeof window !== 'undefined') {
+  setPersistence(authInstance, browserLocalPersistence).catch((err) => {
+    // browserLocalPersistence puede fallar en modo incógnito o si cookies bloqueadas
+    // En ese caso, fallback a inMemory (solo dura mientras la tab esté abierta)
+    console.warn('[Firebase] browserLocalPersistence falló, usando inMemory:', err.message);
+    setPersistence(authInstance, inMemoryPersistence).catch(() => {});
+  });
+}
+
+export const auth: Auth = authInstance;
 
 // --- Proveedor de Google ---
 export const googleProvider = new GoogleAuthProvider();
@@ -72,4 +89,4 @@ export async function signOut(): Promise<void> {
   await firebaseSignOut(auth);
 }
 
-export { onAuthStateChanged, type User as FirebaseUser };
+export { onAuthStateChanged, onIdTokenChanged, type User as FirebaseUser };

@@ -43,7 +43,14 @@ export default defineConfig({
             ]),
           ),
           S.listItem().title("Cursos").icon(BookIcon).id("courses-group").child(
-            S.documentTypeList("course").title("Cursos").defaultOrdering([{ field: "order", direction: "asc" }]),
+            S.list().title("Cursos").items([
+              S.listItem().title("Todos los Cursos").icon(BookIcon).id("courses-list").child(
+                S.documentTypeList("course").title("Cursos").defaultOrdering([{ field: "order", direction: "asc" }]),
+              ),
+              S.listItem().title("Biblioteca de Videos").icon(StackIcon).id("video-library-list").child(
+                S.documentTypeList("videoLibrary").title("Videos Reutilizables").defaultOrdering([{ field: "title", direction: "asc" }]),
+              ),
+            ]),
           ),
           S.listItem().title("Equipo").icon(StarIcon).id("team-group").child(
             S.list().title("Equipo").items([

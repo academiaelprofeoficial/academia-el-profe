@@ -17,6 +17,7 @@ import {
 } from 'react';
 import {
   onAuthStateChanged,
+  onIdTokenChanged,
   signOut as firebaseSignOut,
   type User,
 } from 'firebase/auth';
@@ -31,9 +32,13 @@ interface AuthContextType {
   isAdmin: boolean;
   isOwner: boolean;
   idToken: string | null;
+  profileName: string | null;
+  profilePhoto: string | null;
   signOut: () => Promise<void>;
   purchasedCourseIds: string[];
   refreshPurchases: () => Promise<void>;
+  refreshIdToken: () => Promise<string | null>;
+  updateProfileInfo: (name: string | null, photoURL: string | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -42,9 +47,13 @@ const AuthContext = createContext<AuthContextType>({
   isAdmin: false,
   isOwner: false,
   idToken: null,
+  profileName: null,
+  profilePhoto: null,
   signOut: async () => {},
   purchasedCourseIds: [],
   refreshPurchases: async () => {},
+  refreshIdToken: async () => null,
+  updateProfileInfo: () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -54,6 +63,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isOwner, setIsOwner] = useState(false);
   const [idToken, setIdToken] = useState<string | null>(null);
   const [purchasedCourseIds, setPurchasedCourseIds] = useState<string[]>([]);
+  const [profileName, setProfileName] = useState<string | null>(null);
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
 
   // Sincronizar usuario con DB y obtener sus compras + rol
   const syncAndLoadPurchases = useCallback(async (firebaseUser: User | null) => {
@@ -61,6 +72,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setPurchasedCourseIds([]);
       setIsAdmin(false);
       setIdToken(null);
+      setProfileName(null);
+      setProfilePhoto(null);
       return;
     }
 
@@ -86,6 +99,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const roleFromDB = syncData.role;
         setIsAdmin(roleFromDB === 'admin' || isAdminByEmail || isOwnerByEmail);
         setIsOwner(isOwnerByEmail);
+        // Update profile info from DB
+        setProfileName(syncData.name || null);
+        setProfilePhoto(syncData.photoURL || null);
       } else {
         setIsAdmin(isAdminByEmail || isOwnerByEmail);
         setIsOwner(isOwnerByEmail);
@@ -114,12 +130,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    // Also listen for token changes (auto-refresh every ~1h by Firebase)
+    const unsubscribeToken = onIdTokenChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        try {
+          const token = await firebaseUser.getIdToken();
+          setIdToken(token);
+        } catch (err) {
+          console.error('[Auth] Error en onIdTokenChanged:', err);
+        }
+      }
+    });
+
+    return () => {
+      unsubscribe();
+      unsubscribeToken();
+    };
   }, [syncAndLoadPurchases]);
+
+  // Refresh the idToken without full sync (lightweight)
+  const refreshIdToken = useCallback(async (): Promise<string | null> => {
+    if (!user) return null;
+    try {
+      const token = await user.getIdToken(true); // forceRefresh
+      setIdToken(token);
+      return token;
+    } catch (err) {
+      console.error('[Auth] Error refrescando token:', err);
+      return null;
+    }
+  }, [user]);
 
   const refreshPurchases = useCallback(async () => {
     await syncAndLoadPurchases(user);
   }, [user, syncAndLoadPurchases]);
+
+  const updateProfileInfo = useCallback((name: string | null, photoURL: string | null) => {
+    setProfileName(name);
+    setProfilePhoto(photoURL);
+  }, []);
 
   const signOut = useCallback(async () => {
     if (_signOutRedirecting) return;
@@ -131,6 +180,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsOwner(false);
       setIdToken(null);
       setPurchasedCourseIds([]);
+      setProfileName(null);
+      setProfilePhoto(null);
       if (typeof window !== 'undefined') {
         window.location.href = '/#hero';
       }
@@ -140,7 +191,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, isAdmin, isOwner, idToken, signOut, purchasedCourseIds, refreshPurchases }}>
+    <AuthContext.Provider value={{ user, loading, isAdmin, isOwner, idToken, profileName, profilePhoto, signOut, purchasedCourseIds, refreshPurchases, refreshIdToken, updateProfileInfo }}>
       {children}
     </AuthContext.Provider>
   );

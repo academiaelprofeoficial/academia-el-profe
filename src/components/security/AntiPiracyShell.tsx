@@ -3,9 +3,14 @@
 // ============================================================
 // Shell Anti-Piratería — Academia El Profe Oficial
 // 1. Banner de advertencia: SOLO UNA VEZ por sesión (sessionStorage)
-// 2. Anti-grabación de pantalla: pantalla negra al detectar blur
-//    (estilo Netflix) — se restaura al volver al sitio
-// 3. Clic derecho, selección y arrastre deshabilitados globalmente
+// 2. Clic derecho, selección y arrastre deshabilitados globalmente
+//
+// NOTA: La protección anti-grabación de pantalla se maneja
+// de forma condicional mediante el hook useRecordingDetection,
+// que SOLO activa el overlay negro sobre videos cuando
+// detecta una grabación activa vía getDisplayMedia.
+// Ya NO se usa el blackout agresivo por visibility/blur
+// porque eso bloqueaba la reproducción normal de videos.
 // ============================================================
 
 import { useEffect, useCallback, useState } from 'react';
@@ -14,7 +19,6 @@ const STORAGE_KEY = 'aep_welcome_shown';
 
 export function AntiPiracyShell() {
   const [showWelcome, setShowWelcome] = useState(false);
-  const [isBlackedOut, setIsBlackedOut] = useState(false);
 
   /* -------------------------------------------------------------- */
   /*  1. Banner de bienvenida — SOLO UNA VEZ por sesión          */
@@ -36,7 +40,7 @@ export function AntiPiracyShell() {
         try {
           sessionStorage.setItem(STORAGE_KEY, 'true');
         } catch {
-      // Ignorar error de almacenamiento en iOS
+          // Ignorar error de almacenamiento en iOS
         }
         // Auto-ocultar después de 4 segundos
         setTimeout(() => setShowWelcome(false), 4000);
@@ -50,76 +54,7 @@ export function AntiPiracyShell() {
   }, []);
 
   /* -------------------------------------------------------------- */
-  /*  2. Anti-grabación de pantalla — Pantalla negra estilo Netflix */
-  /* -------------------------------------------------------------- */
-  useEffect(() => {
-    let blurTimeout: ReturnType<typeof setTimeout> | null = null;
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        // El usuario salió de la pestaña — posible grabación de pantalla
-        // Activar pantalla negra después de un breve delay
-        blurTimeout = setTimeout(() => {
-          setIsBlackedOut(true);
-        }, 200);
-      } else {
-        // El usuario volvió — restaurar la vista
-        if (blurTimeout) {
-          clearTimeout(blurTimeout);
-          blurTimeout = null;
-        }
-        // Restaurar después de un momento para dar efecto
-        setTimeout(() => {
-          setIsBlackedOut(false);
-        }, 100);
-      }
-    };
-
-    const handleBlur = () => {
-      // Detectar cuando la ventana pierde foco (cambio de app, grabadora)
-      blurTimeout = setTimeout(() => {
-        if (document.visibilityState === 'hidden') {
-          setIsBlackedOut(true);
-        }
-      }, 300);
-    };
-
-    const handleFocus = () => {
-      if (blurTimeout) {
-        clearTimeout(blurTimeout);
-        blurTimeout = null;
-      }
-      setTimeout(() => {
-        setIsBlackedOut(false);
-      }, 100);
-    };
-
-    // Deshabilitar tecla Print Screen
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'PrintScreen') {
-        e.preventDefault();
-        // Poner negro brevemente para arruinar la captura
-        setIsBlackedOut(true);
-        setTimeout(() => setIsBlackedOut(false), 500);
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('blur', handleBlur);
-    window.addEventListener('focus', handleFocus);
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('blur', handleBlur);
-      window.removeEventListener('focus', handleFocus);
-      document.removeEventListener('keydown', handleKeyDown);
-      if (blurTimeout) clearTimeout(blurTimeout);
-    };
-  }, []);
-
-  /* -------------------------------------------------------------- */
-  /*  3. Clic derecho, selección y arrastre deshabilitados            */
+  /*  2. Clic derecho, selección y arrastre deshabilitados            */
   /* -------------------------------------------------------------- */
   useEffect(() => {
     const blockCtx = (e: MouseEvent) => e.preventDefault();
@@ -176,14 +111,6 @@ export function AntiPiracyShell() {
             </button>
           </div>
         </div>
-      )}
-
-      {/* Overlay negro anti-grabación — pantalla negra estilo Netflix */}
-      {isBlackedOut && (
-        <div
-          className="fixed inset-0 z-[100000] bg-black"
-          aria-hidden="true"
-        />
       )}
     </>
   );

@@ -25,11 +25,27 @@ export interface PurchaseRecord {
 /**
  * Sincroniza un usuario de Firebase Auth a la base de datos local.
  * Se llama cada vez que el usuario inicia sesión.
+ * NOTA: No sobrescribe photoURL si el usuario ya tiene una foto
+ * personalizada (subida a Supabase Storage).
  */
 export async function syncUser(firebaseUid: string, email: string, name?: string, photoURL?: string) {
+  // Check if user has a custom uploaded photo (Supabase Storage URL)
+  // If so, do NOT overwrite it with the Firebase/Google avatar
+  const existing = await db.user.findUnique({
+    where: { id: firebaseUid },
+    select: { photoURL: true },
+  }).catch(() => null);
+
+  const hasCustomPhoto = existing?.photoURL?.includes('supabase.co/storage');
+
   return db.user.upsert({
     where: { id: firebaseUid },
-    update: { email, name, photoURL },
+    update: {
+      email,
+      name,
+      // Only update photoURL if user doesn't have a custom uploaded photo
+      ...(hasCustomPhoto ? {} : { photoURL }),
+    },
     create: { id: firebaseUid, email, name, photoURL },
   });
 }
