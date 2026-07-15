@@ -12,26 +12,10 @@ interface NosotrosClientProps {
 }
 
 const PILARES_FALLBACK = [
-  {
-    icono: Target,
-    titulo: 'Enfoque UTP',
-    descripcion: 'Cada curso está diseñado específicamente para los ciclos, sílabos y exigencias de la Universidad Tecnológica del Perú. No es contenido genérico: es contenido que responde exactamente a lo que te examinan.',
-  },
-  {
-    icono: GraduationCap,
-    titulo: 'Experiencia Docente',
-    descripcion: 'El Prof. Kall Bruno Díaz cuenta con más de 10 años de experiencia enseñando matemáticas y física a nivel universitario. Su metodología clara y directa ha ayudado a miles de estudiantes a aprobar sus cursos.',
-  },
-  {
-    icono: Users,
-    titulo: 'Comunidad Activa',
-    descripcion: 'Más de 5,000 estudiantes confían en Academia El Profe Oficial. Cada curso cuenta con un sistema de preguntas y respuestas donde puedes resolver tus dudas con compañeros y el profesor.',
-  },
-  {
-    icono: ShieldCheck,
-    titulo: 'Garantía de Calidad',
-    descripcion: 'Si el curso no cumple tus expectativas, ofrecemos una garantía de devolución de 7 días. Además, todos los cursos incluyen acceso de por vida y actualizaciones gratuitas del contenido.',
-  },
+  { icono: Target, titulo: 'Enfoque UTP', descripcion: 'Cada curso está diseñado específicamente para los ciclos, sílabos y exigencias de la Universidad Tecnológica del Perú. No es contenido genérico: es contenido que responde exactamente a lo que te examinan.' },
+  { icono: GraduationCap, titulo: 'Experiencia Docente', descripcion: 'El Prof. Kall Bruno Díaz cuenta con más de 10 años de experiencia enseñando matemáticas y física a nivel universitario. Su metodología clara y directa ha ayudado a miles de estudiantes a aprobar sus cursos.' },
+  { icono: Users, titulo: 'Comunidad Activa', descripcion: 'Más de 5,000 estudiantes confían en Academia El Profe Oficial. Cada curso cuenta con un sistema de preguntas y respuestas donde puedes resolver tus dudas con compañeros y el profesor.' },
+  { icono: ShieldCheck, titulo: 'Garantía de Calidad', descripcion: 'Si el curso no cumples tus expectativas, ofrecemos una garantía de devolución de 7 días. Además, todos los cursos incluyen acceso de por vida y actualizaciones gratuitas del contenido.' },
 ] as const;
 
 const MAPA_ICONOS: Record<string, React.ComponentType<any>> = {
@@ -43,9 +27,7 @@ const MAPA_ICONOS: Record<string, React.ComponentType<any>> = {
   'play-circle': LucideIcons.PlayCircle, 'monitor-play': LucideIcons.MonitorPlay,
   'badge-check': LucideIcons.BadgeCheck, 'file-text': LucideIcons.FileText, 'video': LucideIcons.Video,
   'clock': LucideIcons.Clock, 'folder-open': LucideIcons.FolderOpen, 'shopping-cart': LucideIcons.ShoppingCart,
-  'phone': LucideIcons.Phone, 'mail': LucideIcons.Mail, 'map-pin': LucideIcons.MapPin,
-  'cake': LucideIcons.Cake, 'medal': LucideIcons.Medal, 'crown': LucideIcons.Crown,
-  'rocket': LucideIcons.Rocket, 'sparkles': LucideIcons.Sparkles,
+  'phone': LucideIcons.Phone,
 };
 
 function resolveIcon(nombre?: string): React.ComponentType<any> {
@@ -65,21 +47,33 @@ const ptComponents = {
   },
 };
 
+function renderPilarCard(Icono: React.ComponentType<any>, titulo: string, descripcion: string, extraProps?: Record<string, any>) {
+  return (
+    <div className="rounded-2xl border border-border/40 bg-card p-6" {...extraProps}>
+      <div className="flex items-center gap-3 mb-3">
+        <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/50">
+          <Icono className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+        </div>
+        <h3 className="font-bold text-foreground">{titulo}</h3>
+      </div>
+      <p className="text-sm text-muted-foreground leading-relaxed">{descripcion}</p>
+    </div>
+  );
+}
+
 export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps) {
   const hasHero = pageContent?.heroTitle || pageContent?.heroImage;
   const hasBody = pageContent?.bodyContent && pageContent.bodyContent.length > 0;
   const hasTeam = teamMembers && teamMembers.length > 0;
   const cmsId = pageContent?._id || '';
   const isCmsPresent = !!pageContent;
-
-  // Determinar qué pilares mostrar
   const cmsCaracteristicas = (pageContent?.caracteristicas && pageContent.caracteristicas.length > 0)
     ? pageContent.caracteristicas
     : null;
 
   return (
     <section>
-      {/* ===== HERO desde Sanity CMS ===== */}
+      {/* HERO */}
       {hasHero && (
         <div className="mb-8" data-sanity-edit={`pageContent.${cmsId}.heroTitle`}>
           {pageContent?.heroImage?.asset ? (
@@ -112,7 +106,7 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
         </div>
       )}
 
-      {/* ===== BODY desde Sanity CMS ===== */}
+      {/* BODY */}
       {hasBody && (
         <div className="rounded-2xl border border-border/40 bg-card p-6 lg:p-8 mb-8 prose prose-sm dark:prose-invert max-w-none" data-sanity-edit={`pageContent.${cmsId}.bodyContent`}>
           <PortableText value={pageContent!.bodyContent as any} components={{
@@ -129,10 +123,9 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
         </div>
       )}
 
-      {/* ===== FALLBACK / HISTORIA (siempre con data-sanity-edit si hay CMS) ===== */}
+      {/* FALLBACK / HISTORIA */}
       {!hasHero && !hasBody && (
         <>
-          {/* Header */}
           <div className="mb-8" data-sanity-edit={`pageContent.${cmsId}.pageTitle`}>
             {pageContent?.historiaTexto ? (
               <>
@@ -148,42 +141,37 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
                 )}
               </>
             ) : (
-              /* Fallback hardcodeado cuando no hay CMS ni hero */
               <>
                 <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-foreground mb-2">
                   Sobre <span className="text-emerald-500">Academia El Profe Oficial</span>
                 </h1>
                 <p className="text-muted-foreground text-sm lg:text-base max-w-2xl">
-                  Nace con la misión de brindar refuerzo académico de calidad a estudiantes de ingeniería en Perú. Creemos que ningún estudiante debería reprobar por falta de recursos educativos adecuados.
+                  Nace con la misión de brindar refuerzo académico de calidad a estudiantes de ingeniería en Perú.
                 </p>
               </>
             )}
           </div>
 
-          {/* Historia — SIEMPRE con data-sanity-edit cuando el documento CMS existe */}
-          <div id="historia" className="rounded-2xl border border-border/40 bg-card p-6 lg:p-8 mb-8 scroll-mt-16"
+          <div id="historia" className={`rounded-2xl border border-border/40 bg-card p-6 lg:p-8 mb-8 scroll-mt-16`}
             {...(isCmsPresent ? { 'data-sanity-edit': `pageContent.${cmsId}.historiaTexto` } : {})}>
             <h2 className="text-lg font-bold text-foreground mb-4">Nuestra Historia</h2>
             {pageContent?.historiaTexto ? (
-              <div className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
-                {pageContent.historiaTexto}
-              </div>
+              <div className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{pageContent.historiaTexto}</div>
             ) : (
               <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
-                <p>Academia El Profe Oficial fue fundada por el Prof. Kall Bruno Díaz, docente universitario con una pasión inquebrantable por la enseñanza de las ciencias básicas para ingeniería. Tras años de observar cómo cientos de estudiantes luchaban con cursos como Cálculo, Mecánica y Fluidos, decidió crear una plataforma que llevara sus clases de calidad directa al celular o computadora de cada estudiante.</p>
-                <p>Lo que comenzó como grabaciones compartidas por WhatsApp se transformó en una plataforma educativa completa con video-lecciones estructuradas, material de apoyo en PDF, sistemas de evaluación y certificados que respaldan el esfuerzo de cada estudiante. Hoy, Academia El Profe Oficial es la opción preferida por miles de estudiantes de la UTP y otras universidades de ingeniería en todo el Perú.</p>
+                <p>Academia El Profe Oficial fue fundada por el Prof. Kall Bruno Díaz, docente universitario con una pasión inquebrantable por la enseñanza de las ciencias básicas para ingeniería.</p>
+                <p>Lo que comenzó como grabaciones compartidas por WhatsApp se transformó en una plataforma educativa completa con video-lecciones estructuradas, material de apoyo en PDF, sistemas de evaluación y certificados.</p>
               </div>
             )}
           </div>
         </>
       )}
 
-      {/* ===== PROFESOR FUNDADOR — SIEMPRE con data-sanity-edit cuando el documento CMS existe ===== */}
+      {/* PROFESOR */}
       {isCmsPresent && (
         <div id="equipo" className="mb-8 scroll-mt-16">
           <h2 className="text-lg font-bold text-foreground mb-4">Nuestro Equipo</h2>
-          <div className="rounded-2xl border border-border/40 bg-card p-6 lg:p-8 text-center max-w-md mx-auto"
-            data-sanity-edit={`pageContent.${cmsId}.profesor`}>
+          <div className="rounded-2xl border border-border/40 bg-card p-6 lg:p-8 text-center max-w-md mx-auto" data-sanity-edit={`pageContent.${cmsId}.profesor`}>
             {pageContent?.profesor?.foto?.asset ? (
               <img src={getImageUrl(pageContent.profesor.foto as SanityImage, 200, 200) || ''} alt={pageContent.profesor.nombre || ''} className="w-24 h-24 rounded-full mx-auto mb-4 object-cover ring-2 ring-emerald-500/30" />
             ) : (
@@ -193,16 +181,12 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
             )}
             <h3 className="text-xl font-bold text-foreground mb-1">{pageContent?.profesor?.nombre || 'Prof. Kall Bruno Díaz'}</h3>
             {pageContent?.profesor?.titulo && <p className="text-emerald-500 text-sm font-medium mb-3">{pageContent.profesor.titulo}</p>}
-            {pageContent?.profesor?.descripcion ? (
-              <p className="text-sm text-muted-foreground leading-relaxed">{pageContent.profesor.descripcion}</p>
-            ) : (
-              <p className="text-sm text-muted-foreground leading-relaxed">Profesor universitario con amplia experiencia en la enseñanza de Cálculo 1,2,3, Física, Ecuaciones Diferenciales, Estática, Termodinámica y otras asignaturas de ciencias e ingeniería.</p>
-            )}
+            <p className="text-sm text-muted-foreground leading-relaxed">{pageContent?.profesor?.descripcion || 'Profesor universitario con amplia experiencia en la enseñanza de Cálculo, Física, Ecuaciones Diferenciales, Estática y Termodinámica.'}</p>
           </div>
         </div>
       )}
 
-      {/* ===== TEAM desde Sanity (solo si no hay CMS) ===== */}
+      {/* TEAM (solo si no hay CMS) */}
       {hasTeam && !isCmsPresent && (
         <div id="equipo" className="mb-8 scroll-mt-16">
           <h2 className="text-lg font-bold text-foreground mb-4">Nuestro Equipo</h2>
@@ -223,59 +207,20 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
         </div>
       )}
 
-      {/* ===== CARACTERÍSTICAS / PILARES ===== */}
+      {/* CARACTERISTICAS */}
       <div id="pilares" className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6 scroll-mt-16">
         {cmsCaracteristicas
-          ? /* Desde Sanity CMS — cada tarjeta con data-sanity-edit individual */
-            cmsCaracteristicas.map((item, idx) => {
+          ? cmsCaracteristicas.map((item, idx) => {
               const Icono = resolveIcon(item.icono);
-              const sanPath = item._key
-                ? `pageContent.${cmsId}.caracteristicas[_key=="${item._key}"]`
-                : `pageContent.${cmsId}.caracteristicas[${idx}]`;
-              return (
-                <div key={item._key || idx} className="rounded-2xl border border-border/40 bg-card p-6" data-sanity-edit={sanPath}>
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/50">
-                      <Icono className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                    </div>
-                    <h3 className="font-bold text-foreground">{item.titulo}</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{item.descripcion}</p>
-                </div>
-              );
+              const sanPath = item._key ? `pageContent.${cmsId}.caracteristicas[_key="${item._key}"]` : `pageContent.${cmsId}.caracteristicas[${idx}]`;
+              return renderPilarCard(Icono, item.titulo || '', item.descripcion || '', { key: item._key || idx, 'data-sanity-edit': sanPath });
             })
           : isCmsPresent
-            ? /* CMS existe pero las características están vacías — mostramos placeholders editables */
-              [0, 1, 2, 3].map((idx) => {
-                const pilar = PILARES_FALLBACK[idx];
-                const Icono = pilar.icono;
-                return (
-                  <div key={pilar.titulo} className="rounded-2xl border border-border/40 bg-card p-6" data-sanity-edit={`pageContent.${cmsId}.caracteristicas[${idx}]`}>
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/50">
-                        <Icono className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                      </div>
-                      <h3 className="font-bold text-foreground">{pilar.titulo}</h3>
-                    </div>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{pilar.descripcion}</p>
-                  </div>
-                );
+            ? [0, 1, 2, 3].map((idx) => {
+                const p = PILARES_FALLBACK[idx];
+                return renderPilarCard(p.icono, p.titulo, p.descripcion, { key: p.titulo, 'data-sanity-edit': `pageContent.${cmsId}.caracteristicas[${idx}]` });
               })
-            : /* Sin CMS — fallback hardcodeado sin overlay */
-              PILARES_FALLBACK.map((pilar) => {
-                const Icono = pilar.icono;
-                return (
-                  <div key={pilar.titulo} className="rounded-2xl border border-border/40 bg-card p-6">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/50">
-                        <Icono className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                      </div>
-                      <h3 className="font-bold text-foreground">{pilar.titulo}</h3>
-                    </div>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{pilar.descripcion}</p>
-                  </div>
-                );
-              )}
+            : PILARES_FALLBACK.map((p) => renderPilarCard(p.icono, p.titulo, p.descripcion, { key: p.titulo }))}
       </div>
     </section>
   );
