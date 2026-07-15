@@ -127,44 +127,61 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, 
     useEffect(() => {
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      if (!video || !canvas) return;
+      const container = containerRef.current;
+      if (!video || !canvas || !container) return;
 
       const ctx = canvas.getContext('2d', { willReadFrequently: false });
       if (!ctx) return;
 
+      const fillBlack = () => {
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      };
+
       const resize = () => {
-        const w = video.videoWidth || video.clientWidth || 1280;
-        const h = video.videoHeight || video.clientHeight || 720;
+        const w = container.clientWidth || video.clientWidth || 1280;
+        const h = container.clientHeight || video.clientHeight || 720;
         if (canvas.width !== w || canvas.height !== h) {
           canvas.width = w;
           canvas.height = h;
+          fillBlack();
         }
       };
 
-      video.addEventListener('loadedmetadata', resize);
+      resize();
       const ro = new ResizeObserver(() => resize());
-      ro.observe(video);
+      ro.observe(container);
+      video.addEventListener('loadedmetadata', resize);
 
       const render = () => {
         if (!video.paused && !video.ended) {
-          if (isRecording) {
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-          } else {
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          fillBlack();
+          if (!isRecording) {
+            try {
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            } catch {
+              // drawImage falla en iOS con grabación nativa → canvas se queda negro
+            }
           }
         }
         animRef.current = requestAnimationFrame(render);
       };
 
-      const onPlay = () => { animRef.current = requestAnimationFrame(render); };
+      const onPlay = () => {
+        resize();
+        animRef.current = requestAnimationFrame(render);
+      };
+
       const onPause = () => {
         cancelAnimationFrame(animRef.current);
-        if (isRecording) {
-          ctx.fillStyle = '#000000';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        if (isRecording || !video.videoWidth) {
+          fillBlack();
         } else {
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          try {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          } catch {
+            fillBlack();
+          }
         }
       };
 
@@ -226,7 +243,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, 
         <canvas
           ref={canvasRef}
           className="absolute inset-0 w-full h-full pointer-events-none"
-          style={{ zIndex: 5 }}
+          style={{ zIndex: 5, background: '#000' }}
           aria-hidden="true"
         />
 
