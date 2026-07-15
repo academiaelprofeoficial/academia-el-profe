@@ -373,12 +373,22 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
       title: video.title,
       poster: coverImg || undefined,
     });
-    // Scroll topic into view on mobile
-    const topicEl = document.getElementById(`topic-${video.title?.replace(/\s+/g, '-')}`);
-    if (topicEl && window.innerWidth < 1024) {
-      setTimeout(() => topicEl.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+    // Scroll topic into view on mobile (use topic title, not video title)
+    if (window.innerWidth < 1024) {
+      const matchingGroup = topicGroups.find((g) =>
+        g.videos.some((v) => {
+          const url = v.videoUrl || v.video?.asset?.url || v.sharedVideo?.videoFile?.asset?.url || v.sharedVideo?.videoUrl;
+          return url === videoUrl;
+        })
+      );
+      if (matchingGroup) {
+        const topicEl = document.getElementById(`topic-${matchingGroup.title?.replace(/\s+/g, '-')}`);
+        if (topicEl) {
+          setTimeout(() => topicEl.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+        }
+      }
     }
-  }, [coverImg]);
+  }, [coverImg, topicGroups]);
 
   // Expand all / collapse all
   const expandAll = useCallback(() => {
@@ -686,7 +696,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                         )}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           {group.videos.length > 0 && (
                             <span className="flex items-center gap-1"><Video className="h-3 w-3" />{group.videos.length}</span>
                           )}
@@ -778,6 +788,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                                   controls
                                   controlsList="nodownload"
                                   disablePictureInPicture
+                                  preload="metadata"
                                   className="w-full h-full"
                                   poster={selectedVideo.poster}
                                   playsInline
