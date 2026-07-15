@@ -42,6 +42,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, 
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef<number>(0);
+  const frameCountRef = useRef<number>(0);
   const { isRecording } = useGlobalRecordingDetection();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -156,13 +157,16 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, 
       const render = () => {
         if (!video.paused && !video.ended) {
           fillBlack();
-          if (!isRecording) {
+          // Frame-skip anti-grabación: 1 frame negro cada 90 (~1.5s a 60fps)
+          const skipFrame = frameCountRef.current % 90 === 0;
+          if (!isRecording && !skipFrame) {
             try {
               ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             } catch {
               // drawImage falla en iOS con grabación nativa → canvas se queda negro
             }
           }
+          frameCountRef.current++;
         }
         animRef.current = requestAnimationFrame(render);
       };

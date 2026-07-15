@@ -58,6 +58,7 @@ export function ProtectedVideoPlayer({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const animRef = useRef<number>(0);
+  const frameCountRef = useRef<number>(0);
   const { isRecording } = useGlobalRecordingDetection();
 
   // Usar ref externa si se proporciona, sino la interna
@@ -108,8 +109,14 @@ export function ProtectedVideoPlayer({
         // PASO 1: Siempre rellenar con negro (fondo base)
         fillBlack(ctx, canvas.width, canvas.height);
 
-        // PASO 2: Si NO hay grabación, dibujar el frame del video encima
-        if (!isRecording) {
+        // PASO 2: Frame-skip anti-grabación para Android
+        // Cada ~90 frames (~1.5s a 60fps) se salta 1 frame (negro).
+        // Es IMPERCEPTIBLE al ojo humano (~16ms de negro) pero los
+        // grabadores de pantalla nativos capturan ese frame negro.
+        const skipFrame = frameCountRef.current % 90 === 0;
+
+        // PASO 3: Si NO hay grabación y NO es frame saltado, dibujar video
+        if (!isRecording && !skipFrame) {
           try {
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
           } catch {
@@ -117,7 +124,9 @@ export function ProtectedVideoPlayer({
             // Si falla, el canvas se queda negro → perfecto para protección.
           }
         }
-        // Si hay grabación: canvas se queda NEGRO (solo el fillBlack de arriba)
+        // Si hay grabación o frame skip: canvas se queda NEGRO (solo el fillBlack)
+
+        frameCountRef.current++;
       }
       animRef.current = requestAnimationFrame(render);
     };
