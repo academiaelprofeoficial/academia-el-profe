@@ -6,9 +6,9 @@
 //          YouTube y Vimeo (iframe).
 // ============================================================
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Play, Pause, Maximize, Volume2, VolumeX } from 'lucide-react';
-import { useRecordingDetection } from '@/hooks/useRecordingDetection';
+import { useGlobalRecordingDetection } from '@/hooks/useGlobalRecordingDetection';
 
 interface VideoPlayerProps {
   readonly videoUrl?: string;
@@ -40,7 +40,9 @@ function formatTime(seconds: number): string {
 export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, onComplete }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { isRecording } = useRecordingDetection();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animRef = useRef<number>(0);
+  const { isRecording } = useGlobalRecordingDetection();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -121,6 +123,65 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, 
       }, 3000);
     }, [isPlaying]);
 
+    // ── Canvas overlay anti-grabación ──
+    useEffect(() => {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      if (!video || !canvas) return;
+
+      const ctx = canvas.getContext('2d', { willReadFrequently: false });
+      if (!ctx) return;
+
+      const resize = () => {
+        const w = video.videoWidth || video.clientWidth || 1280;
+        const h = video.videoHeight || video.clientHeight || 720;
+        if (canvas.width !== w || canvas.height !== h) {
+          canvas.width = w;
+          canvas.height = h;
+        }
+      };
+
+      video.addEventListener('loadedmetadata', resize);
+      const ro = new ResizeObserver(() => resize());
+      ro.observe(video);
+
+      const render = () => {
+        if (!video.paused && !video.ended) {
+          if (isRecording) {
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+          } else {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          }
+        }
+        animRef.current = requestAnimationFrame(render);
+      };
+
+      const onPlay = () => { animRef.current = requestAnimationFrame(render); };
+      const onPause = () => {
+        cancelAnimationFrame(animRef.current);
+        if (isRecording) {
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        } else {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        }
+      };
+
+      video.addEventListener('play', onPlay);
+      video.addEventListener('pause', onPause);
+      video.addEventListener('seeked', onPause);
+
+      return () => {
+        cancelAnimationFrame(animRef.current);
+        ro.disconnect();
+        video.removeEventListener('loadedmetadata', resize);
+        video.removeEventListener('play', onPlay);
+        video.removeEventListener('pause', onPause);
+        video.removeEventListener('seeked', onPause);
+      };
+    }, [isRecording]);
+
     return (
       <div
         ref={containerRef}
@@ -161,19 +222,13 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, 
           <source src={videoUrl} type={videoUrl?.endsWith('.webm') ? 'video/webm' : 'video/mp4'} />
         </video>
 
-        {/* Recording protection overlay */}
-        {isRecording && (
-          <div className="absolute inset-0 bg-black flex items-center justify-center z-30 rounded-xl">
-            <div className="text-center text-white">
-              <svg className="w-14 h-14 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
-              <p className="text-sm font-semibold">Contenido protegido</p>
-              <p className="text-xs text-gray-400 mt-1">Video no disponible durante la grabacion</p>
-            </div>
-          </div>
-        )}
+        {/* Canvas overlay anti-grabación: dibuja frames del video o negro si grabando */}
+        <canvas
+          ref={canvasRef}
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          style={{ zIndex: 5 }}
+          aria-hidden="true"
+        />
 
         {/* Gran botón de play inicial (solo cuando está pausado y al inicio) */}
         {!isPlaying && currentTime === 0 && (
