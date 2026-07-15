@@ -78,7 +78,10 @@ export function ProtectedVideoPlayer({
     const container = containerRef.current;
     if (!video || !canvas || !container) return;
 
-    const ctx = canvas.getContext('2d', { willReadFrequently: false });
+    const ctx = canvas.getContext('2d', {
+      alpha: false,
+      willReadFrequently: true,
+    });
     if (!ctx) return;
 
     // Ajustar tamaño del canvas al contenedor
