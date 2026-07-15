@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { PortableText } from '@portabletext/react';
 import * as LucideIcons from 'lucide-react';
-import { GraduationCap, Target, Users, ShieldCheck, Loader2 } from 'lucide-react';
+import { GraduationCap, Target, Users, ShieldCheck } from 'lucide-react';
 import type { SanityPageContent, SanityTeamMember, PortableTextBlock, SanityImage } from '@/lib/sanity.client';
 import { plainText, getImageUrl } from '@/lib/sanity.client';
 
@@ -12,24 +11,7 @@ interface NosotrosClientProps {
   teamMembers: SanityTeamMember[] | null;
 }
 
-interface CaracteristicaDinamica {
-  icono: string;
-  titulo: string;
-  descripcion: string;
-}
-
-interface ContenidoDinamico {
-  titulo_principal: string;
-  subtitulo_principal: string;
-  texto_historia: string;
-  prof_nombre: string;
-  prof_titulo: string;
-  prof_descripcion: string;
-  prof_foto_url: string;
-  caracteristicas: CaracteristicaDinamica[];
-}
-
-const PILARES = [
+const PILARES_FALLBACK = [
   {
     icono: Target,
     titulo: 'Enfoque UTP',
@@ -68,14 +50,33 @@ const MAPA_ICONOS: Record<string, React.ComponentType<any>> = {
   'lightbulb': LucideIcons.Lightbulb,
   'message-square': LucideIcons.MessageSquare,
   'play-circle': LucideIcons.PlayCircle,
+  'monitor-play': LucideIcons.MonitorPlay,
+  'badge-check': LucideIcons.BadgeCheck,
+  'graduation-cap': LucideIcons.GraduationCap,
+  'target': LucideIcons.Target,
+  'file-text': LucideIcons.FileText,
+  'video': LucideIcons.Video,
+  'clock': LucideIcons.Clock,
+  'folder-open': LucideIcons.FolderOpen,
+  'shopping-cart': LucideIcons.ShoppingCart,
+  'message-square': LucideIcons.MessageSquare,
+  'phone': LucideIcons.Phone,
+  'mail': LucideIcons.Mail,
+  'map-pin': LucideIcons.MapPin,
+  'cake': LucideIcons.Cake,
+  'medal': LucideIcons.Medal,
+  'crown': LucideIcons.Crown,
+  'rocket': LucideIcons.Rocket,
+  'sparkles': LucideIcons.Sparkles,
 };
 
-function resolveIcon(nombre: string): React.ComponentType<any> {
-  const icono = MAPA_ICONOS[nombre.toLowerCase().replace(/\s+/g, '-')];
-  if (icono) return icono;
-  // Intentar desde lucide-react directamente
-  const key = nombre.charAt(0).toUpperCase() + nombre.slice(1).replace(/-([a-z])/g, (_, c) => c.toUpperCase());
-  return (LucideIcons as any)[key] || GraduationCap;
+function resolveIcon(nombre?: string): React.ComponentType<any> {
+  if (!nombre) return GraduationCap;
+  const key = nombre.toLowerCase().replace(/\s+/g, '-');
+  if (MAPA_ICONOS[key]) return MAPA_ICONOS[key];
+  // Intentar con PascalCase desde lucide-react
+  const pascal = nombre.charAt(0).toUpperCase() + nombre.slice(1).replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+  return (LucideIcons as any)[pascal] || GraduationCap;
 }
 
 const ptComponents = {
@@ -88,47 +89,20 @@ const ptComponents = {
 };
 
 export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps) {
-  const [dinamico, setDinamico] = useState<ContenidoDinamico | null>(null);
-  const [cargandoDinamico, setCargandoDinamico] = useState(true);
-
-  // Cargar contenido dinámico desde Supabase
-  useEffect(() => {
-    let cancelled = false;
-    fetch('/api/admin/nosotros')
-      .then(r => r.json())
-      .then(json => {
-        if (!cancelled && json.data) {
-          setDinamico({
-            titulo_principal: json.data.titulo_principal || '',
-            subtitulo_principal: json.data.subtitulo_principal || '',
-            texto_historia: json.data.texto_historia || '',
-            prof_nombre: json.data.prof_nombre || '',
-            prof_titulo: json.data.prof_titulo || '',
-            prof_descripcion: json.data.prof_descripcion || '',
-            prof_foto_url: json.data.prof_foto_url || '',
-            caracteristicas: Array.isArray(json.data.caracteristicas) ? json.data.caracteristicas : [],
-          });
-        }
-      })
-      .catch(() => {})
-      .finally(() => { if (!cancelled) setCargandoDinamico(false); });
-    return () => { cancelled = true; };
-  }, []);
-
+  // Datos desde Sanity CMS
   const hasHero = pageContent?.heroTitle || pageContent?.heroImage;
   const hasBody = pageContent?.bodyContent && pageContent.bodyContent.length > 0;
   const hasTeam = teamMembers && teamMembers.length > 0;
-  const hasDinamico = dinamico && (dinamico.titulo_principal || dinamico.texto_historia);
-  const caracteristicas = (hasDinamico && dinamico!.caracteristicas.length >= 4)
-    ? dinamico!.caracteristicas
-    : null;
+  const hasHistoria = !!pageContent?.historiaTexto;
+  const hasProfesor = !!pageContent?.profesor?.nombre;
+  const hasCaracteristicas = pageContent?.caracteristicas && pageContent.caracteristicas.length >= 4;
 
   return (
     <section>
-      {/* Hero CMS (Sanity) */}
+      {/* HERO desde Sanity CMS */}
       {hasHero && (
         <div className="mb-8" data-sanity-edit={`pageContent.${pageContent?._id}.heroTitle`}>
-          {pageContent?.heroImage?.asset && (
+          {pageContent?.heroImage?.asset ? (
             <div className="relative rounded-2xl overflow-hidden mb-6 h-48 md:h-64">
               <img
                 src={getImageUrl(pageContent.heroImage as SanityImage, 1200, 400) || ''}
@@ -147,8 +121,7 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
                 )}
               </div>
             </div>
-          )}
-          {!pageContent?.heroImage?.asset && (
+          ) : (
             <div className="mb-8">
               <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-foreground mb-2">
                 {pageContent?.heroTitle?.split(' ').map((word, i, arr) =>
@@ -165,7 +138,7 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
         </div>
       )}
 
-      {/* CMS Body Content (Sanity) */}
+      {/* BODY desde Sanity CMS */}
       {hasBody && (
         <div
           className="rounded-2xl border border-border/40 bg-card p-6 lg:p-8 mb-8 prose prose-sm dark:prose-invert max-w-none"
@@ -196,39 +169,32 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
         </div>
       )}
 
-      {/* Fallback: Contenido desde DB o estático */}
+      {/* FALLBACK: cuando no hay Hero ni Body */}
       {!hasHero && !hasBody && (
         <>
-          {cargandoDinamico ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="h-6 w-6 animate-spin text-emerald-500" />
-            </div>
-          ) : hasDinamico ? (
+          {hasHistoria ? (
             <>
-              {/* Hero desde DB */}
               <div className="mb-8">
                 <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-foreground mb-2">
-                  {dinamico!.titulo_principal.split(' ').map((word, i, arr) =>
+                  {pageContent?.pageTitle?.split(' ').map((word, i, arr) =>
                     i === arr.length - 1 ? <span key={i} className="text-emerald-500">{word}</span> : <span key={i}>{word} </span>
-                  )}
+                  ) || 'Sobre <span className="text-emerald-500">Academia El Profe Oficial</span>'}
                 </h1>
-                {dinamico!.subtitulo_principal && (
-                  <p className="text-muted-foreground text-sm lg:text-base max-w-2xl">
-                    {dinamico!.subtitulo_principal}
-                  </p>
+                {pageContent?.heroSubtitle && (
+                  <div className="text-muted-foreground text-sm lg:text-base max-w-2xl">
+                    <PortableText value={pageContent.heroSubtitle as PortableTextBlock[]} components={ptComponents} />
+                  </div>
                 )}
               </div>
-
-              {/* Historia desde DB */}
               <div id="historia" className="rounded-2xl border border-border/40 bg-card p-6 lg:p-8 mb-8 scroll-mt-16">
                 <h2 className="text-lg font-bold text-foreground mb-4">Nuestra Historia</h2>
                 <div className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
-                  {dinamico!.texto_historia}
+                  {pageContent!.historiaTexto}
                 </div>
               </div>
             </>
           ) : (
-            /* Contenido estático original (fallback final) */
+            /* Fallback hardcodeado final */
             <>
               <div className="mb-8">
                 <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-foreground mb-2">
@@ -240,7 +206,6 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
                   por falta de recursos educativos adecuados.
                 </p>
               </div>
-
               <div id="historia" className="rounded-2xl border border-border/40 bg-card p-6 lg:p-8 mb-8 scroll-mt-16">
                 <h2 className="text-lg font-bold text-foreground mb-4">Nuestra Historia</h2>
                 <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
@@ -267,35 +232,35 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
         </>
       )}
 
-      {/* Profesor Fundador (solo cuando hay datos dinámicos) */}
-      {hasDinamico && dinamico!.prof_nombre && (
+      {/* PROFESOR FUNDADOR desde Sanity */}
+      {hasProfesor && (
         <div id="equipo" className="mb-8 scroll-mt-16">
           <h2 className="text-lg font-bold text-foreground mb-4">Nuestro Equipo</h2>
           <div className="rounded-2xl border border-border/40 bg-card p-6 lg:p-8 text-center max-w-md mx-auto">
-            {dinamico!.prof_foto_url ? (
+            {pageContent!.profesor!.foto?.asset ? (
               <img
-                src={dinamico!.prof_foto_url}
-                alt={dinamico!.prof_nombre}
+                src={getImageUrl(pageContent!.profesor!.foto as SanityImage, 200, 200) || ''}
+                alt={pageContent!.profesor!.nombre || ''}
                 className="w-24 h-24 rounded-full mx-auto mb-4 object-cover ring-2 ring-emerald-500/30"
               />
             ) : (
               <div className="w-24 h-24 rounded-full mx-auto mb-4 bg-emerald-100 dark:bg-emerald-950/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-3xl font-bold">
-                {dinamico!.prof_nombre.charAt(0)}
+                {pageContent!.profesor!.nombre?.charAt(0) || '?'}
               </div>
             )}
-            <h3 className="text-xl font-bold text-foreground mb-1">{dinamico!.prof_nombre}</h3>
-            {dinamico!.prof_titulo && (
-              <p className="text-emerald-500 text-sm font-medium mb-3">{dinamico!.prof_titulo}</p>
+            <h3 className="text-xl font-bold text-foreground mb-1">{pageContent!.profesor!.nombre}</h3>
+            {pageContent!.profesor!.titulo && (
+              <p className="text-emerald-500 text-sm font-medium mb-3">{pageContent!.profesor!.titulo}</p>
             )}
-            {dinamico!.prof_descripcion && (
-              <p className="text-sm text-muted-foreground leading-relaxed">{dinamico!.prof_descripcion}</p>
+            {pageContent!.profesor!.descripcion && (
+              <p className="text-sm text-muted-foreground leading-relaxed">{pageContent!.profesor!.descripcion}</p>
             )}
           </div>
         </div>
       )}
 
-      {/* Equipo desde CMS (Sanity) */}
-      {hasTeam && !hasDinamico && (
+      {/* TEAM desde Sanity (solo si no hay profesor individual) */}
+      {hasTeam && !hasProfesor && (
         <div id="equipo" className="mb-8 scroll-mt-16">
           <h2 className="text-lg font-bold text-foreground mb-4">Nuestro Equipo</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -327,14 +292,14 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
         </div>
       )}
 
-      {/* Pilares / Características */}
+      {/* CARACTERÍSTICAS / PILARES */}
       <div id="pilares" className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6 scroll-mt-16">
-        {caracteristicas
-          ? /* Características desde DB */
-            caracteristicas.map((caracteristica) => {
+        {hasCaracteristicas
+          ? /* Desde Sanity CMS */
+            pageContent!.caracteristicas!.map((caracteristica) => {
               const Icono = resolveIcon(caracteristica.icono);
               return (
-                <div key={caracteristica.titulo} className="rounded-2xl border border-border/40 bg-card p-6">
+                <div key={caracteristica.titulo || Math.random().toString()} className="rounded-2xl border border-border/40 bg-card p-6">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/50">
                       <Icono className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
@@ -345,8 +310,8 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
                 </div>
               );
             })
-          : /* Pilares estáticos (fallback) */
-            PILARES.map((pilar) => {
+          : /* Fallback hardcodeado */
+            PILARES_FALLBACK.map((pilar) => {
               const Icono = pilar.icono;
               return (
                 <div key={pilar.titulo} className="rounded-2xl border border-border/40 bg-card p-6">

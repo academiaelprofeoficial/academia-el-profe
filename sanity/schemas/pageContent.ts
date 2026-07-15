@@ -8,6 +8,7 @@ export default defineType({
   fieldsets: [
     { name: "hero", title: "🎯 Sección Superior (Hero)", options: { collapsible: true, collapsed: false } },
     { name: "body", title: "📝 Contenido Principal", options: { collapsible: true, collapsed: false } },
+    { name: "nosotros", title: "👥 Página Nosotros (campos extra)", options: { collapsible: true, collapsed: false } },
     { name: "seo", title: "🔍 SEO", options: { collapsible: true, collapsed: true } },
   ],
   fields: [
@@ -26,6 +27,47 @@ export default defineType({
       { type: "block" },
       { type: "image", options: { hotspot: true } },
     ], description: "Contenido principal editable con texto e imágenes." }),
+
+    // === CAMPOS ESPECÍFICOS PARA /NOSOTROS ===
+    defineField({
+      name: "historiaTexto",
+      title: "Historia de la Academia",
+      fieldset: "nosotros",
+      type: "text",
+      rows: 6,
+      description: "Texto de la sección 'Nuestra Historia' (página nosotros).",
+    }),
+    defineField({
+      name: "profesor",
+      title: "Profesor Fundador",
+      fieldset: "nosotros",
+      type: "object",
+      fields: [
+        { name: "nombre", title: "Nombre", type: "string" },
+        { name: "titulo", title: "Título / Cargo", type: "string" },
+        { name: "descripcion", title: "Descripción", type: "text", rows: 4 },
+        { name: "foto", title: "Foto", type: "image", options: { hotspot: true } },
+      ],
+      options: { collapsible: true, collapsed: false },
+    }),
+    defineField({
+      name: "caracteristicas",
+      title: "Tarjetas de Características",
+      fieldset: "nosotros",
+      type: "array",
+      of: [
+        {
+          type: "object",
+          fields: [
+            { name: "icono", title: "Icono (Lucide)", type: "string", description: "Ej: graduation-cap, award, users, shield-check" },
+            { name: "titulo", title: "Título", type: "string" },
+            { name: "descripcion", title: "Descripción", type: "text", rows: 3 },
+          ],
+          preview: { select: { titulo: "titulo", icono: "icono" }, prepare({ titulo, icono }) { return { title: titulo || "Sin título", subtitle: icono ? `Icono: ${icono}` : "Sin icono" }; } },
+        },
+      ],
+      options: { collapsible: true, collapsed: false },
+    }),
 
     // SEO
     defineField({ name: "seoTitle", title: "Título SEO", fieldset: "seo", type: "string", description: "Título para buscadores (máx 60 caracteres)", validation: (Rule: any) => Rule.max(60) }),

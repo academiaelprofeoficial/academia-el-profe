@@ -65,7 +65,9 @@ export interface SanityCourse { _id: string; title: string; slug: string; coverI
 export interface SanityTeamMember { _id: string; name: string; role: string; photo?: SanityImage | null; bio?: PortableTextBlock[]; email?: string; linkedinUrl?: string; order?: number; }
 export interface SanityTestimonial { _id: string; authorName: string; authorRole?: string; quote?: PortableTextBlock[]; photo?: SanityImage | null; rating?: number; featured?: boolean; order?: number; }
 export interface SanitySiteSettings { _id: string; companyName?: string; slogan?: string; tagline?: string; logo?: SanityImage | null; logoWhite?: SanityImage | null; ogImage?: SanityImage | null; heroVideo?: SanityVideoAsset; heroVideoUrl?: string; heroVideoOverlay?: number; whatsapp?: string; whatsappMessage?: string; whatsappVisible?: boolean; phone?: string; email?: string; tiktokUrl?: string; instagramUrl?: string; youtubeUrl?: string; facebookUrl?: string; seoTitle?: string; seoDescription?: string; }
-export interface SanityPageContent { _id: string; pageId: string; pageTitle?: string; heroTitle?: string; heroSubtitle?: PortableTextBlock[]; heroImage?: SanityImage | null; ctaLabel?: string; ctaLink?: string; bodyContent?: Array<PortableTextBlock | { _type: 'image'; asset?: { _ref: string; _type: string }; hotspot?: any; crop?: any }>; seoTitle?: string; seoDescription?: string; }
+export interface SanityProfesor { nombre?: string; titulo?: string; descripcion?: string; foto?: SanityImage | null; }
+export interface SanityCaracteristica { icono?: string; titulo?: string; descripcion?: string; }
+export interface SanityPageContent { _id: string; pageId: string; pageTitle?: string; heroTitle?: string; heroSubtitle?: PortableTextBlock[]; heroImage?: SanityImage | null; ctaLabel?: string; ctaLink?: string; bodyContent?: Array<PortableTextBlock | { _type: 'image'; asset?: { _ref: string; _type: string }; hotspot?: any; crop?: any }>; historiaTexto?: string; profesor?: SanityProfesor | null; caracteristicas?: SanityCaracteristica[]; seoTitle?: string; seoDescription?: string; }
 
 export interface SanityThemeColors {
   primaryColor?: string;
