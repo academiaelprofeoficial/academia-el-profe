@@ -96,6 +96,7 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
   const hasHistoria = !!pageContent?.historiaTexto;
   const hasProfesor = !!pageContent?.profesor?.nombre;
   const hasCaracteristicas = pageContent?.caracteristicas && pageContent.caracteristicas.length >= 4;
+  const cmsId = pageContent?._id || '';
 
   return (
     <section>
@@ -186,7 +187,7 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
                   </div>
                 )}
               </div>
-              <div id="historia" className="rounded-2xl border border-border/40 bg-card p-6 lg:p-8 mb-8 scroll-mt-16">
+              <div id="historia" className="rounded-2xl border border-border/40 bg-card p-6 lg:p-8 mb-8 scroll-mt-16" data-sanity-edit={`pageContent.${cmsId}.historiaTexto`}>
                 <h2 className="text-lg font-bold text-foreground mb-4">Nuestra Historia</h2>
                 <div className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
                   {pageContent!.historiaTexto}
@@ -236,7 +237,7 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
       {hasProfesor && (
         <div id="equipo" className="mb-8 scroll-mt-16">
           <h2 className="text-lg font-bold text-foreground mb-4">Nuestro Equipo</h2>
-          <div className="rounded-2xl border border-border/40 bg-card p-6 lg:p-8 text-center max-w-md mx-auto">
+          <div className="rounded-2xl border border-border/40 bg-card p-6 lg:p-8 text-center max-w-md mx-auto" data-sanity-edit={`pageContent.${cmsId}.profesor`}>
             {pageContent!.profesor!.foto?.asset ? (
               <img
                 src={getImageUrl(pageContent!.profesor!.foto as SanityImage, 200, 200) || ''}
@@ -298,8 +299,9 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
           ? /* Desde Sanity CMS */
             pageContent!.caracteristicas!.map((caracteristica) => {
               const Icono = resolveIcon(caracteristica.icono);
+              const sanKey = caracteristica._key ? `[_key=="${caracteristica._key}"]` : `[${pageContent!.caracteristicas!.indexOf(caracteristica)}]`;
               return (
-                <div key={caracteristica.titulo || Math.random().toString()} className="rounded-2xl border border-border/40 bg-card p-6">
+                <div key={caracteristica._key || Math.random().toString()} className="rounded-2xl border border-border/40 bg-card p-6" data-sanity-edit={`pageContent.${cmsId}.caracteristicas${sanKey}`}>
                   <div className="flex items-center gap-3 mb-3">
                     <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/50">
                       <Icono className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
