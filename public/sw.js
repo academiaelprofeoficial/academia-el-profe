@@ -67,22 +67,32 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // Navigation requests (HTML pages): network-first
-  // On success: cache the response for offline fallback
-  // On failure: try cache, then offline shell
+  // Navigation requests (HTML pages): network-only for course pages,
+  // network-first for everything else (with 1h cache limit).
+  // Course pages must always show fresh CMS data.
   if (e.request.mode === 'navigate') {
-    e.respondWith(
-      fetch(e.request)
-        .then((res) => {
-          if (res.status === 200) {
-            const clone = res.clone();
-            caches.open(CACHE).then((c) => c.put(e.request, clone));
-          }
-          return res;
-        })
-        .catch(() => caches.match(e.request).then((r) => r || caches.match('/')))
-        .catch(() => new Response('Offline', { status: 503 }))
-    );
+    const isCoursePage = url.includes('/cursos/');
+    if (isCoursePage) {
+      // Never cache course pages — always fetch from network
+      e.respondWith(
+        fetch(e.request).catch(() => caches.match(e.request))
+          .catch(() => caches.match('/'))
+          .catch(() => new Response('Offline', { status: 503 }))
+      );
+    } else {
+      e.respondWith(
+        fetch(e.request)
+          .then((res) => {
+            if (res.status === 200) {
+              const clone = res.clone();
+              caches.open(CACHE).then((c) => c.put(e.request, clone));
+            }
+            return res;
+          })
+          .catch(() => caches.match(e.request).then((r) => r || caches.match('/')))
+          .catch(() => new Response('Offline', { status: 503 }))
+      );
+    }
     return;
   }
 

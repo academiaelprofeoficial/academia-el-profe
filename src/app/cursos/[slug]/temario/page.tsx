@@ -12,7 +12,9 @@ import { formatoSoles, formatoUSD } from '@/lib/formato';
 // ============================================================
 // Temario del Curso — Server Component (100% CMS-driven)
 // Fetches course data from Sanity only. No mock fallbacks.
+// Dynamic rendering to always show fresh Sanity data.
 // ============================================================
+export const dynamic = 'force-dynamic';
 
 interface PageProps {
   readonly params: Promise<{ slug: string }>;

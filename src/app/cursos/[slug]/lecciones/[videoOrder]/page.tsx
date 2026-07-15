@@ -11,7 +11,9 @@ import type { SanityCourse } from '@/lib/sanity.client';
 // Lesson Page — Server Component (100% CMS-driven)
 // Shows a specific video lesson with its materials from CMS.
 // Route: /cursos/[slug]/lecciones/[videoOrder]
+// Dynamic rendering to always show fresh Sanity data.
 // ============================================================
+export const dynamic = 'force-dynamic';
 
 interface PageProps {
   readonly params: Promise<{ slug: string; videoOrder: string }>;
