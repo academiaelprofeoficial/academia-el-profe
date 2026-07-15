@@ -5,6 +5,7 @@ import * as LucideIcons from 'lucide-react';
 import { GraduationCap, Target, Users, ShieldCheck } from 'lucide-react';
 import type { SanityPageContent, SanityTeamMember, PortableTextBlock, SanityImage } from '@/lib/sanity.client';
 import { plainText, getImageUrl } from '@/lib/sanity.client';
+import { createDataAttribute } from 'next-sanity';
 
 interface NosotrosClientProps {
   pageContent: SanityPageContent | null;
@@ -71,11 +72,17 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
     ? pageContent.caracteristicas
     : null;
 
+  const sanityEditAttr = createDataAttribute({
+    projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || '',
+    dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
+    baseUrl: '/admin/cms',
+  });
+
   return (
     <section>
       {/* HERO */}
       {hasHero && (
-        <div className="mb-8" data-sanity-edit={`pageContent.${cmsId}.heroTitle`}>
+        <div className="mb-8" data-sanity={sanityEditAttr({ id: cmsId, type: 'pageContent', path: 'heroTitle' }).toString()}>
           {pageContent?.heroImage?.asset ? (
             <div className="relative rounded-2xl overflow-hidden mb-6 h-48 md:h-64">
               <img src={getImageUrl(pageContent.heroImage as SanityImage, 1200, 400) || ''} alt={pageContent.heroTitle || ''} className="w-full h-full object-cover" />
@@ -108,7 +115,7 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
 
       {/* BODY */}
       {hasBody && (
-        <div className="rounded-2xl border border-border/40 bg-card p-6 lg:p-8 mb-8 prose prose-sm dark:prose-invert max-w-none" data-sanity-edit={`pageContent.${cmsId}.bodyContent`}>
+        <div className="rounded-2xl border border-border/40 bg-card p-6 lg:p-8 mb-8 prose prose-sm dark:prose-invert max-w-none" data-sanity={sanityEditAttr({ id: cmsId, type: 'pageContent', path: 'bodyContent' }).toString()}>
           <PortableText value={pageContent!.bodyContent as any} components={{
             ...ptComponents,
             types: {
@@ -126,7 +133,7 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
       {/* FALLBACK / HISTORIA */}
       {!hasHero && !hasBody && (
         <>
-          <div className="mb-8" data-sanity-edit={`pageContent.${cmsId}.pageTitle`}>
+          <div className="mb-8" data-sanity={isCmsPresent ? sanityEditAttr({ id: cmsId, type: 'pageContent', path: 'pageTitle' }).toString() : ''}>
             {pageContent?.historiaTexto ? (
               <>
                 <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-foreground mb-2">
@@ -153,7 +160,7 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
           </div>
 
           <div id="historia" className={`rounded-2xl border border-border/40 bg-card p-6 lg:p-8 mb-8 scroll-mt-16`}
-            {...(isCmsPresent ? { 'data-sanity-edit': `pageContent.${cmsId}.historiaTexto` } : {})}>
+            {...(isCmsPresent ? { 'data-sanity': sanityEditAttr({ id: cmsId, type: 'pageContent', path: 'historiaTexto' }).toString() } : {})}>
             <h2 className="text-lg font-bold text-foreground mb-4">Nuestra Historia</h2>
             {pageContent?.historiaTexto ? (
               <div className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{pageContent.historiaTexto}</div>
@@ -171,7 +178,7 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
       {isCmsPresent && (
         <div id="equipo" className="mb-8 scroll-mt-16">
           <h2 className="text-lg font-bold text-foreground mb-4">Nuestro Equipo</h2>
-          <div className="rounded-2xl border border-border/40 bg-card p-6 lg:p-8 text-center max-w-md mx-auto" data-sanity-edit={`pageContent.${cmsId}.profesor`}>
+          <div className="rounded-2xl border border-border/40 bg-card p-6 lg:p-8 text-center max-w-md mx-auto" data-sanity={sanityEditAttr({ id: cmsId, type: 'pageContent', path: 'profesor' }).toString()}>
             {pageContent?.profesor?.foto?.asset ? (
               <img src={getImageUrl(pageContent.profesor.foto as SanityImage, 200, 200) || ''} alt={pageContent.profesor.nombre || ''} className="w-24 h-24 rounded-full mx-auto mb-4 object-cover ring-2 ring-emerald-500/30" />
             ) : (
@@ -192,7 +199,7 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
           <h2 className="text-lg font-bold text-foreground mb-4">Nuestro Equipo</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {teamMembers!.map((member) => (
-              <div key={member._id} className="rounded-2xl border border-border/40 bg-card p-5 text-center" data-sanity-edit={`teamMember.${member._id}.name`}>
+              <div key={member._id} className="rounded-2xl border border-border/40 bg-card p-5 text-center" data-sanity={sanityEditAttr({ id: member._id, type: 'teamMember', path: 'name' }).toString()}>
                 {member.photo?.asset ? (
                   <img src={getImageUrl(member.photo, 200, 200) || ''} alt={member.name} className="w-20 h-20 rounded-full mx-auto mb-3 object-cover" />
                 ) : (
@@ -212,13 +219,13 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
         {cmsCaracteristicas
           ? cmsCaracteristicas.map((item, idx) => {
               const Icono = resolveIcon(item.icono);
-              const sanPath = item._key ? `pageContent.${cmsId}.caracteristicas[_key="${item._key}"]` : `pageContent.${cmsId}.caracteristicas[${idx}]`;
-              return renderPilarCard(Icono, item.titulo || '', item.descripcion || '', { key: item._key || idx, 'data-sanity-edit': sanPath });
+              const sanPath = item._key ? `caracteristicas[_key="${item._key}"]` : `caracteristicas[${idx}]`;
+              return renderPilarCard(Icono, item.titulo || '', item.descripcion || '', { key: item._key || idx, 'data-sanity': sanityEditAttr({ id: cmsId, type: 'pageContent', path: sanPath }).toString() });
             })
           : isCmsPresent
             ? [0, 1, 2, 3].map((idx) => {
                 const p = PILARES_FALLBACK[idx];
-                return renderPilarCard(p.icono, p.titulo, p.descripcion, { key: p.titulo, 'data-sanity-edit': `pageContent.${cmsId}.caracteristicas[${idx}]` });
+                return renderPilarCard(p.icono, p.titulo, p.descripcion, { key: p.titulo, 'data-sanity': sanityEditAttr({ id: cmsId, type: 'pageContent', path: `caracteristicas[${idx}]` }).toString() });
               })
             : PILARES_FALLBACK.map((p) => renderPilarCard(p.icono, p.titulo, p.descripcion, { key: p.titulo }))}
       </div>

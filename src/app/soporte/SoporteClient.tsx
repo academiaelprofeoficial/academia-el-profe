@@ -7,6 +7,7 @@ import {
 import { SoporteForm } from '@/components/SoporteForm';
 import type { SanityPageContent, PortableTextBlock, SanityImage } from '@/lib/sanity.client';
 import { plainText, getImageUrl } from '@/lib/sanity.client';
+import { createDataAttribute } from 'next-sanity';
 
 interface SoporteClientProps {
   pageContent: SanityPageContent | null;
@@ -35,13 +36,21 @@ const ptComponents = {
 };
 
 export function SoporteClient({ pageContent }: SoporteClientProps) {
+  const cmsId = pageContent?._id || '';
+
+  const sanityEditAttr = createDataAttribute({
+    projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || '',
+    dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
+    baseUrl: '/admin/cms',
+  });
+
   const hasHero = pageContent?.heroTitle;
   const hasBody = pageContent?.bodyContent && pageContent.bodyContent.length > 0;
 
   return (
     <section>
       {/* Título / Hero CMS */}
-      <div className="mb-8" data-sanity-edit={pageContent ? `pageContent.${pageContent._id}.heroTitle` : undefined}>
+      <div className="mb-8" data-sanity={pageContent ? sanityEditAttr({ id: cmsId, type: 'pageContent', path: 'heroTitle' }).toString() : undefined}>
         <div className="flex items-center gap-2 mb-2">
           <Headphones className="h-5 w-5 text-emerald-500" />
           <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-foreground">
@@ -64,7 +73,7 @@ export function SoporteClient({ pageContent }: SoporteClientProps) {
       {hasBody && (
         <div
           className="rounded-2xl border border-border/40 bg-card p-6 lg:p-8 mb-8 prose prose-sm dark:prose-invert max-w-none"
-          data-sanity-edit={`pageContent.${pageContent!._id}.bodyContent`}
+          data-sanity={sanityEditAttr({ id: cmsId, type: 'pageContent', path: 'bodyContent' }).toString()}
         >
           <PortableText
             value={pageContent!.bodyContent as any}
