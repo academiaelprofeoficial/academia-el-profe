@@ -53,6 +53,9 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
   const [showControls, setShowControls] = useState(true);
   const hideControlsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [volume, setVolume] = useState(1);
+  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
+  const [showAdditionalMenu, setShowAdditionalMenu] = useState(false);
 
   const [playbackRate, setPlaybackRate] = useState(1);
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
@@ -204,11 +207,28 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
       if (v.paused) { v.play().catch(() => {}); } else { v.pause(); }
     }, []);
 
-    const toggleMuteHandler = useCallback(() => {
+    const toggleMuteHandler = useCallback((e?: React.MouseEvent) => {
+      if (e) e.stopPropagation();
       const v = videoRef.current;
       if (!v) return;
       v.muted = !v.muted;
-      setIsMuted(!v.muted);
+      setIsMuted(v.muted);
+      if (!v.muted && volume === 0) {
+        setVolume(1);
+        v.volume = 1;
+      }
+    }, [volume]);
+
+    const handleVolumeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+      e.stopPropagation();
+      const newVolume = parseFloat(e.target.value);
+      setVolume(newVolume);
+      const v = videoRef.current;
+      if (v) {
+        v.volume = newVolume;
+        v.muted = newVolume === 0;
+        setIsMuted(newVolume === 0);
+      }
     }, []);
 
     const toggleFullscreen = useCallback(() => {
@@ -232,8 +252,13 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
       setShowControls(true);
       if (hideControlsTimer.current) clearTimeout(hideControlsTimer.current);
       hideControlsTimer.current = setTimeout(() => {
-        if (isPlaying && !document.pictureInPictureElement) setShowControls(false);
-      }, 2500);
+        if (isPlaying && !document.pictureInPictureElement) {
+          setShowControls(false);
+          setShowVolumeSlider(false);
+          setShowAdditionalMenu(false);
+          setShowSpeedMenu(false);
+        }
+      }, 3000);
     }, [isPlaying]);
 
     // Seek forward (+10 segundos)
@@ -457,200 +482,227 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
           </button>
         )}
 
-        {/* Overlay de controles */}
+        {/* Controles Estilo Netflix */}
         <div
-          className={`absolute inset-0 z-10 flex flex-col justify-end transition-opacity duration-300 ${
+          className={`absolute inset-0 transition-opacity duration-300 z-40 ${
             showControls || !isPlaying ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
         >
-          {/* Controles Centrales sobre el video */}
+          {/* ESQUINA SUPERIOR IZQUIERDA - Fullscreen */}
+          <div className="absolute top-4 left-4 pointer-events-auto">
+            <button
+              onClick={(e) => { e.stopPropagation(); toggleFullscreen(); }}
+              className="w-10 h-10 sm:w-12 sm:h-12 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all"
+              title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
+            >
+              <Maximize className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
+          </div>
+
+          {/* ESQUINA SUPERIOR DERECHA - Volumen */}
+          <div className="absolute top-4 right-4 flex items-center gap-2 pointer-events-auto">
+            <div className="relative">
+              <button
+                onClick={toggleMuteHandler}
+                onMouseEnter={() => setShowVolumeSlider(true)}
+                className="w-10 h-10 sm:w-12 sm:h-12 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all"
+              >
+                {isMuted || volume === 0 ? (
+                  <VolumeX className="w-5 h-5 sm:w-6 sm:h-6" />
+                ) : (
+                  <Volume2 className="w-5 h-5 sm:w-6 sm:h-6" />
+                )}
+              </button>
+              
+              {/* Slider de volumen */}
+              {showVolumeSlider && (
+                <div 
+                  className="absolute top-full right-0 mt-2 bg-black/80 backdrop-blur-sm rounded-lg p-2"
+                  onMouseLeave={() => setShowVolumeSlider(false)}
+                >
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={isMuted ? 0 : volume}
+                    onChange={handleVolumeChange}
+                    className="w-24 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
+                    style={{ writingMode: 'vertical-lr', transform: 'rotate(180deg)' }}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* CENTRO - Controles principales */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-            {/* Seek, Play, Seek siempre visibles cuando showControls es true */}
-            <div className="flex items-center justify-center gap-6 sm:gap-12 pointer-events-auto w-full px-8">
-              <button onClick={(e) => { e.stopPropagation(); handleSeekBackward(); }} className="text-white hover:text-white/80 transition-transform active:scale-90 flex flex-col items-center justify-center drop-shadow-xl bg-black/20 rounded-full p-2 sm:p-3 backdrop-blur-sm">
+            <div className="flex items-center gap-4 sm:gap-6 pointer-events-auto">
+              {/* Seek -10s */}
+              <button
+                onClick={handleSeekBackward}
+                className="w-14 h-14 sm:w-16 sm:h-16 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all transform hover:scale-110"
+              >
                 <div className="relative flex items-center justify-center">
-                  <RotateCcw className="w-9 h-9 sm:w-12 sm:h-12" strokeWidth={1.5} />
+                  <RotateCcw className="w-8 h-8 sm:w-10 sm:h-10" strokeWidth={1.5} />
                   <span className="absolute text-[10px] sm:text-xs font-bold mt-0.5">10</span>
                 </div>
               </button>
-              
-              <button onClick={(e) => { e.stopPropagation(); togglePlay(); }} className="text-white hover:text-white/80 transition-transform active:scale-90 drop-shadow-xl bg-black/20 rounded-full p-4 sm:p-5 backdrop-blur-sm flex items-center justify-center">
+
+              {/* Play/Pause */}
+              <button
+                onClick={(e) => { e.stopPropagation(); togglePlay(e); }}
+                className="w-16 h-16 sm:w-20 sm:h-20 bg-white/90 hover:bg-white text-black rounded-full flex items-center justify-center backdrop-blur-sm transition-all transform hover:scale-110 shadow-2xl"
+              >
                 {isPlaying ? (
-                  <Pause className="w-12 h-12 sm:w-16 sm:h-16" fill="currentColor" stroke="none" />
+                  <Pause className="w-8 h-8 sm:w-10 sm:h-10" fill="currentColor" stroke="none" />
                 ) : (
-                  <Play className="w-12 h-12 sm:w-16 sm:h-16 ml-1 sm:ml-2" fill="currentColor" stroke="none" />
+                  <Play className="w-8 h-8 sm:w-10 sm:h-10 ml-1 sm:ml-2" fill="currentColor" stroke="none" />
                 )}
               </button>
 
-              <button onClick={(e) => { e.stopPropagation(); handleSeekForward(); }} className="text-white hover:text-white/80 transition-transform active:scale-90 flex flex-col items-center justify-center drop-shadow-xl bg-black/20 rounded-full p-2 sm:p-3 backdrop-blur-sm">
+              {/* Seek +10s */}
+              <button
+                onClick={handleSeekForward}
+                className="w-14 h-14 sm:w-16 sm:h-16 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all transform hover:scale-110"
+              >
                 <div className="relative flex items-center justify-center">
-                  <RotateCw className="w-9 h-9 sm:w-12 sm:h-12" strokeWidth={1.5} />
+                  <RotateCw className="w-8 h-8 sm:w-10 sm:h-10" strokeWidth={1.5} />
                   <span className="absolute text-[10px] sm:text-xs font-bold mt-0.5">10</span>
                 </div>
               </button>
             </div>
           </div>
 
-          {/* Barra de progreso */}
-          <div
-            className="group/progress w-full h-1.5 bg-white/20 cursor-pointer hover:h-2.5 transition-all relative z-10"
-            onClick={(e) => { e.stopPropagation(); handleSeek(e); }}
-          >
-            {/* Buffer */}
-            {duration > 0 && (
-              <div
-                className="absolute top-0 left-0 h-full bg-white/30 rounded-full"
-                style={{ width: `${(buffered / duration) * 100}%` }}
-              />
-            )}
-            {/* Progreso */}
-            {duration > 0 && (
-              <div
-                className="absolute top-0 left-0 h-full bg-emerald-500 rounded-full"
-                style={{ width: `${(currentTime / duration) * 100}%` }}
-              />
-            )}
-          </div>
-
-          {/* Controles inferiores - Mobile First Layout */}
-          <div 
-            className="bg-gradient-to-t from-black/95 via-black/80 to-transparent p-3 sm:p-4 rounded-b-lg relative z-10 backdrop-blur-sm"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Barra de controles principal - Mobile: vertical stack, Desktop: horizontal */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-              
-              {/* Fila 1: Seek backward + Play/Pause + Seek forward + Tiempo */}
-              <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-3 flex-1">
-                
-
-
-                {/* Tiempo y Barra (Desktop inline) */}
-                <div className={`flex-1 items-center justify-end sm:justify-start gap-2 ml-1 sm:ml-2 ${!isFullscreen ? 'hidden sm:flex' : 'flex'}`}>
-                  <div className="text-white/80 text-xs sm:text-sm font-mono select-none whitespace-nowrap">
-                    {formatTime(currentTime)} <span className="text-white/40">/</span> <span className="text-white/50">{formatTime(duration)}</span>
-                  </div>
-                  <div className="hidden sm:block flex-1 h-1 bg-white/20 rounded-full overflow-hidden cursor-pointer" onClick={handleSeek}>
-                    {duration > 0 && (
-                      <div
-                        className="h-full bg-emerald-500 rounded-full transition-[width] duration-150"
-                        style={{ width: `${(currentTime / duration) * 100}%` }}
-                      />
-                    )}
-                  </div>
-                </div>
-
-                {/* Fullscreen button (Visible solo en mobile minimal) */}
-                {!isFullscreen && (
-                  <button
-                    className="flex sm:hidden w-9 h-9 items-center justify-center text-white/70 hover:text-white bg-gray-800/90 hover:bg-gray-700 rounded-lg transition-colors touch-manipulation ml-auto"
-                    onClick={toggleFullscreen}
-                  >
-                    <Maximize className="w-4 h-4" />
-                  </button>
+          {/* BARRA INFERIOR - Progress + Controles adicionales */}
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-3 sm:p-4 pointer-events-auto">
+            {/* Barra de progreso */}
+            <div className="mb-3">
+              <div 
+                className="w-full h-1.5 bg-gray-600 rounded-full cursor-pointer group/progress relative"
+                onClick={handleSeek}
+              >
+                {/* Buffer */}
+                {duration > 0 && (
+                  <div
+                    className="absolute top-0 left-0 h-full bg-white/30 rounded-full"
+                    style={{ width: `${(buffered / duration) * 100}%` }}
+                  />
                 )}
+                {/* Progreso */}
+                <div 
+                  className="absolute top-0 left-0 h-full bg-emerald-500 rounded-full relative"
+                  style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
+                >
+                  <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-3 h-3 bg-emerald-500 rounded-full opacity-0 group-hover/progress:opacity-100 transition-opacity shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+                </div>
+              </div>
+              <div className="flex justify-between mt-1 text-xs text-gray-300 font-mono">
+                <span>{formatTime(currentTime)}</span>
+                <span>{formatTime(duration)}</span>
+              </div>
+            </div>
+
+            {/* Controles adicionales */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
               </div>
 
-              {/* Fila 2: Velocidad + Tamaño + PiP + Fullscreen */}
-              <div className={`items-center justify-between sm:justify-end gap-2 sm:gap-3 pt-2 sm:pt-0 mt-1 sm:mt-0 ${!isFullscreen ? 'hidden sm:flex' : 'flex'}`}>
+              {/* ESQUINA INFERIOR DERECHA - PiP + Menú */}
+              <div className="flex items-center gap-2">
                 
                 {/* Velocidad */}
                 <div className="relative">
                   <button
-                    onClick={() => setShowSpeedMenu(!showSpeedMenu)}
-                    className="flex-shrink-0 flex items-center justify-center gap-1 px-2 h-9 sm:px-3 sm:h-9 bg-gray-800/90 hover:bg-gray-700 text-white rounded-lg transition-all backdrop-blur-sm touch-manipulation"
+                    onClick={(e) => { e.stopPropagation(); setShowSpeedMenu(!showSpeedMenu); }}
+                    className="px-3 h-8 sm:h-9 bg-black/50 hover:bg-black/70 text-white text-xs sm:text-sm font-semibold rounded backdrop-blur-sm transition-all"
                   >
-                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    <span className="font-semibold text-xs sm:text-sm">{playbackRate}x</span>
+                    {playbackRate}x
                   </button>
                   {showSpeedMenu && (
-                    <>
-                      {/* Overlay para mobile */}
-                      <div 
-                        className="fixed inset-0 z-40 sm:hidden"
-                        onClick={() => setShowSpeedMenu(false)}
-                      />
-                      <div className="absolute bottom-full right-0 mb-2 w-28 sm:w-32 bg-gray-800/95 border border-gray-700 rounded-lg shadow-xl overflow-hidden z-50 backdrop-blur-md">
-                        {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
-                          <button
-                            key={rate}
-                            onClick={() => {
-                              if (videoRef.current) {
-                                videoRef.current.playbackRate = rate;
-                                setPlaybackRate(rate);
-                              }
-                              setShowSpeedMenu(false);
-                            }}
-                            className={`w-full px-3 py-2 sm:px-4 text-left text-xs sm:text-sm hover:bg-gray-700 transition-colors touch-manipulation ${
-                              playbackRate === rate ? 'bg-emerald-500 text-white' : 'text-white'
-                            }`}
-                          >
-                            {rate}x
-                          </button>
-                        ))}
-                      </div>
-                    </>
+                    <div className="absolute bottom-full right-0 mb-2 bg-black/90 rounded-lg shadow-xl border border-gray-700 overflow-hidden z-50 w-24">
+                      {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
+                        <button
+                          key={rate}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const v = videoRef.current;
+                            if (v) {
+                              v.playbackRate = rate;
+                              setPlaybackRate(rate);
+                            }
+                            setShowSpeedMenu(false);
+                          }}
+                          className={`w-full px-4 py-2 text-left text-xs sm:text-sm hover:bg-gray-700 ${
+                            playbackRate === rate ? 'bg-emerald-500 text-white' : 'text-white'
+                          }`}
+                        >
+                          {rate}x
+                        </button>
+                      ))}
+                    </div>
                   )}
                 </div>
 
-                {/* Sizing controls */}
-                <div className="hidden sm:flex items-center gap-1">
+                {/* Tamaño */}
+                <div className="hidden sm:flex gap-1">
                   {(['S', 'M', 'L'] as const).map((size) => (
                     <button
                       key={size}
-                      onClick={() => handleSizeChange(size)}
-                      className={`w-8 h-9 sm:w-9 sm:h-9 flex items-center justify-center text-xs sm:text-sm font-semibold rounded-lg transition-all touch-manipulation ${
-                        videoSize === size ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' : 'bg-gray-800/90 text-gray-300 hover:bg-gray-700'
+                      onClick={(e) => { e.stopPropagation(); setVideoSize(size); }}
+                      className={`w-8 h-8 sm:w-9 sm:h-9 text-xs sm:text-sm font-semibold rounded backdrop-blur-sm transition-all ${
+                        videoSize === size
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-black/50 text-gray-300 hover:bg-black/70'
                       }`}
-                      title={`Tamaño ${size}`}
                     >
                       {size}
                     </button>
                   ))}
                 </div>
 
-                {/* Mute (solo PC o tablet) */}
-                <button
-                  className="hidden sm:flex w-9 h-9 items-center justify-center text-white/70 hover:text-white bg-gray-800/90 hover:bg-gray-700 rounded-lg transition-colors touch-manipulation"
-                  onClick={toggleMuteHandler}
-                >
-                  {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                </button>
-
-                {/* PiP button */}
                 {pipEnabled && (
                   <button
                     onClick={togglePictureInPicture}
-                    className={`flex-shrink-0 flex items-center justify-center gap-1.5 px-3 h-9 text-xs sm:text-sm rounded-lg transition-all font-medium touch-manipulation ${
+                    className={`flex-shrink-0 flex items-center justify-center gap-1.5 px-3 h-8 sm:h-9 text-xs sm:text-sm rounded backdrop-blur-sm transition-all font-medium touch-manipulation ${
                       isPipActive 
                         ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' 
-                        : 'bg-blue-600/90 hover:bg-blue-700 text-white backdrop-blur-sm'
+                        : 'bg-blue-600/80 hover:bg-blue-700 text-white'
                     }`}
-                    title={isPipActive ? 'Salir de PiP' : 'Ver en segundo plano (PiP)'}
                   >
-                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                    <span className="hidden lg:inline font-semibold">{isPipActive ? 'PiP Activo' : 'PiP'}</span>
+                    <span className="font-semibold">PiP</span>
                   </button>
                 )}
 
-                {/* Fullscreen button */}
-                <button
-                  className="w-9 h-9 flex items-center justify-center text-white/70 hover:text-white bg-gray-800/90 hover:bg-gray-700 rounded-lg transition-colors touch-manipulation"
-                  onClick={toggleFullscreen}
-                >
-                  <Maximize className="w-4 h-4" />
-                </button>
+                {/* Menú adicional (Opcional, lo pidió el cliente) */}
+                <div className="relative">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowAdditionalMenu(!showAdditionalMenu); }}
+                    className="w-8 h-8 sm:w-9 sm:h-9 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all"
+                  >
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+                    </svg>
+                  </button>
+                  
+                  {showAdditionalMenu && (
+                    <div className="absolute bottom-full right-0 mb-2 bg-black/90 rounded-lg shadow-xl border border-gray-700 overflow-hidden z-50 w-40">
+                      <button className="w-full px-4 py-2 text-left text-xs sm:text-sm text-white hover:bg-gray-700" onClick={(e) => e.stopPropagation()}>
+                        Configuración
+                      </button>
+                      <button className="w-full px-4 py-2 text-left text-xs sm:text-sm text-white hover:bg-gray-700" onClick={(e) => e.stopPropagation()}>
+                        Reportar problema
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-          
-          {/* Indicador de PiP Activo */}
+
+          {/* Indicador de PiP */}
           {isPipActive && (
-            <div className="absolute top-4 right-4 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg animate-pulse z-50">
+            <div className="absolute top-20 right-4 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg animate-pulse z-30 pointer-events-none">
               🎬 PiP Activo
             </div>
           )}
