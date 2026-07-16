@@ -74,8 +74,9 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
   const sanityEditAttr = ({ id, type, path }: { id: string, type: string, path: string }) => {
     try {
       if (typeof btoa !== 'undefined') {
+        const base64 = btoa(encodeURIComponent(JSON.stringify({ projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || '', dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production', id, type, path, baseUrl: '/admin/cms' })));
         return {
-          toString: () => btoa(encodeURIComponent(JSON.stringify({ projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || '', dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production', id, type, path, baseUrl: '/admin/cms' })))
+          toString: () => base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
         };
       }
     } catch (e) {
