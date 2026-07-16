@@ -59,7 +59,32 @@ export default defineType({
         {
           type: "object",
           fields: [
-            { name: "icono", title: "Icono (Lucide)", type: "string", description: "Ej: graduation-cap, award, users, shield-check" },
+            { 
+              name: "icono", 
+              title: "Icono (Lucide)", 
+              type: "string", 
+              description: "Selecciona el icono que mejor represente la característica.",
+              options: {
+                list: [
+                  { title: '🎓 Graduación', value: 'graduation-cap' },
+                  { title: '🏆 Premio/Award', value: 'award' },
+                  { title: '👥 Usuarios', value: 'users' },
+                  { title: '🛡️ Escudo/Protección', value: 'shield-check' },
+                  { title: '📖 Libro', value: 'book-open' },
+                  { title: '🎯 Objetivo', value: 'target' },
+                  { title: '⚡ Rapidez', value: 'zap' },
+                  { title: '💡 Idea', value: 'lightbulb' },
+                  { title: '🔒 Seguridad', value: 'lock' },
+                  { title: '📊 Gráfico', value: 'bar-chart' },
+                  { title: '⭐ Estrella', value: 'star' },
+                  { title: '🚀 Cohete', value: 'rocket' },
+                  { title: '💬 Chat', value: 'message-circle' },
+                  { title: '👨‍🏫 Profesor', value: 'user-check' },
+                  { title: '✅ Check', value: 'check-circle' },
+                  { title: '❤️ Corazón', value: 'heart' }
+                ]
+              }
+            },
             { name: "titulo", title: "Título", type: "string" },
             { name: "descripcion", title: "Descripción", type: "text", rows: 3 },
           ],
