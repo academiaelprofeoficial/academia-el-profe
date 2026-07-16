@@ -417,17 +417,17 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
       if (isFreeCourse) return true;
       if (hasFullAccess) return true;
       if (video.isFree) return true;
-      return !!user;
+      return false;
     },
-    [isFreeCourse, hasFullAccess, user]
+    [isFreeCourse, hasFullAccess]
   );
 
   const canAccessMaterial = useCallback((material?: SanityTopicMaterial): boolean => {
     if (isFreeCourse) return true;
     if (hasFullAccess) return true;
     if (material?.isFree) return true;
-    return !!user;
-  }, [isFreeCourse, hasFullAccess, user]);
+    return false;
+  }, [isFreeCourse, hasFullAccess]);
 
   // Level label
   const levelLabel: Record<string, string> = {

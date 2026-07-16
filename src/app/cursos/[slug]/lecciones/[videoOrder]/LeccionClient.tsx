@@ -114,8 +114,8 @@ export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
   // Current video URL
   const videoUrl = currentVideo?.sharedVideo?.webmUrl || currentVideo?.sharedVideo?.videoUrl || currentVideo?.sharedVideo?.videoFile?.asset?.url || currentVideo?.videoUrl || currentVideo?.video?.asset?.url;
   const webmUrl = currentVideo?.sharedVideo?.webmUrl || (currentVideo?.video?.asset?.url?.endsWith('.webm') ? currentVideo?.video?.asset?.url : undefined);
-  const canAccessCurrentLesson = isFreeCourse || hasFullAccess || !!currentVideo?.isFree || !!user;
-  const canAccessMaterials = isFreeCourse || hasFullAccess || !!user;
+  const canAccessCurrentLesson = isFreeCourse || hasFullAccess || !!currentVideo?.isFree;
+  const canAccessMaterials = isFreeCourse || hasFullAccess;
   const isPremiumLocked = !canAccessCurrentLesson;
 
   // Group videos by topic for sidebar navigation — using nested structure
