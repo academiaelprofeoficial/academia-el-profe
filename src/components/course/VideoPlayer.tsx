@@ -57,6 +57,19 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [videoSize, setVideoSize] = useState<'S' | 'M' | 'L'>('M');
   const [isPipActive, setIsPipActive] = useState(false);
+  const [pipEnabled, setPipEnabled] = useState(false);
+
+  // Verificar soporte PiP al montar
+  useEffect(() => {
+    const checkPiPSupport = () => {
+      const isSupported = typeof document !== 'undefined' && 
+                          document.pictureInPictureEnabled && 
+                          !videoRef.current?.disablePictureInPicture;
+      setPipEnabled(isSupported);
+    };
+    
+    checkPiPSupport();
+  }, []);
 
   const togglePictureInPicture = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -98,7 +111,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
 
   // Picture-in-Picture Automático al cambiar de pestaña/minimizar
   useEffect(() => {
-    if (!isFree) return;
+    if (!isFree || !pipEnabled) return;
 
     const handleVisibilityChange = async () => {
       const video = videoRef.current;
@@ -445,11 +458,11 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
               </svg>
             </button>
 
-            <div className="flex-1 flex items-center gap-2">
-              <span className="text-white/80 text-xs font-mono select-none whitespace-nowrap">
-                {formatTime(currentTime)}
-              </span>
-              <div className="flex-1 h-1 bg-white/20 rounded-full overflow-hidden cursor-pointer" onClick={handleSeek}>
+            <div className="flex-1 flex items-center justify-end sm:justify-start gap-2">
+              <div className="text-white/80 text-xs font-mono select-none whitespace-nowrap">
+                {formatTime(currentTime)} <span className="text-white/40">/</span> <span className="text-white/50">{formatTime(duration)}</span>
+              </div>
+              <div className="hidden sm:block flex-1 h-1 bg-white/20 rounded-full overflow-hidden cursor-pointer" onClick={handleSeek}>
                 {duration > 0 && (
                   <div
                     className="h-full bg-emerald-500 rounded-full transition-[width] duration-150"
@@ -457,9 +470,6 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
                   />
                 )}
               </div>
-              <span className="text-white/50 text-xs font-mono select-none whitespace-nowrap">
-                {formatTime(duration)}
-              </span>
             </div>
 
             {/* Sizing controls */}
@@ -519,7 +529,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
             </button>
 
             {/* PiP button */}
-            {typeof document !== 'undefined' && document.pictureInPictureEnabled && (
+            {pipEnabled && (
               <button
                 onClick={togglePictureInPicture}
                 className={`flex items-center gap-1.5 px-2.5 py-1 text-xs rounded transition-all font-medium ${
@@ -544,6 +554,13 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
               <Maximize className="w-4 h-4" />
             </button>
           </div>
+          
+          {/* Indicador de PiP Activo */}
+          {isPipActive && (
+            <div className="absolute top-4 right-4 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg animate-pulse z-50">
+              🎬 PiP Activo
+            </div>
+          )}
         </div>
       </div>
     );
