@@ -7,7 +7,6 @@ import {
 import { SoporteForm } from '@/components/SoporteForm';
 import type { SanityPageContent, PortableTextBlock, SanityImage } from '@/lib/sanity.client';
 import { plainText, getImageUrl } from '@/lib/sanity.client';
-import { createDataAttribute } from 'next-sanity';
 
 interface SoporteClientProps {
   pageContent: SanityPageContent | null;
@@ -38,11 +37,18 @@ const ptComponents = {
 export function SoporteClient({ pageContent }: SoporteClientProps) {
   const cmsId = pageContent?._id || '';
 
-  const sanityEditAttr = createDataAttribute({
-    projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || '',
-    dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
-    baseUrl: '/admin/cms',
-  });
+  const sanityEditAttr = ({ id, type, path }: { id: string, type: string, path: string }) => {
+    try {
+      if (typeof btoa !== 'undefined') {
+        return {
+          toString: () => btoa(encodeURIComponent(JSON.stringify({ projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || '', dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production', id, type, path, baseUrl: '/admin/cms' })))
+        };
+      }
+    } catch (e) {
+      // ignore
+    }
+    return { toString: () => '' };
+  };
 
   const hasHero = pageContent?.heroTitle;
   const hasBody = pageContent?.bodyContent && pageContent.bodyContent.length > 0;

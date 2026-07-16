@@ -5,7 +5,6 @@ import * as LucideIcons from 'lucide-react';
 import { GraduationCap, Target, Users, ShieldCheck } from 'lucide-react';
 import type { SanityPageContent, SanityTeamMember, PortableTextBlock, SanityImage } from '@/lib/sanity.client';
 import { plainText, getImageUrl } from '@/lib/sanity.client';
-import { createDataAttribute } from 'next-sanity';
 
 interface NosotrosClientProps {
   pageContent: SanityPageContent | null;
@@ -72,11 +71,18 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
     ? pageContent.caracteristicas
     : null;
 
-  const sanityEditAttr = createDataAttribute({
-    projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || '',
-    dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
-    baseUrl: '/admin/cms',
-  });
+  const sanityEditAttr = ({ id, type, path }: { id: string, type: string, path: string }) => {
+    try {
+      if (typeof btoa !== 'undefined') {
+        return {
+          toString: () => btoa(encodeURIComponent(JSON.stringify({ projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || '', dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production', id, type, path, baseUrl: '/admin/cms' })))
+        };
+      }
+    } catch (e) {
+      // ignore
+    }
+    return { toString: () => '' };
+  };
 
   return (
     <section>
