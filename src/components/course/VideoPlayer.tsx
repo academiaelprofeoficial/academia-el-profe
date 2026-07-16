@@ -421,138 +421,161 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
             )}
           </div>
 
-          {/* Controles inferiores */}
+          {/* Controles inferiores - Mobile First Layout */}
           <div 
-            className="bg-gradient-to-t from-black/80 to-transparent px-3 sm:px-4 py-2.5 flex items-center gap-2 sm:gap-3 relative z-10"
+            className="bg-gradient-to-t from-black/95 via-black/80 to-transparent p-3 sm:p-4 rounded-b-lg relative z-10 backdrop-blur-sm"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Seek backward (-10s) */}
-            <button
-              onClick={handleSeekBackward}
-              className="text-white/85 hover:text-emerald-400 transition-colors p-1"
-              title="Retroceder 10 segundos"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z" />
-              </svg>
-            </button>
-
-            <button
-              className="text-white hover:text-emerald-400 transition-colors p-1"
-              onClick={togglePlay}
-            >
-              {isPlaying
-                ? <Pause className="w-5 h-5" />
-                : <Play className="w-5 h-5" />
-              }
-            </button>
-
-            {/* Seek forward (+10s) */}
-            <button
-              onClick={handleSeekForward}
-              className="text-white/85 hover:text-emerald-400 transition-colors p-1"
-              title="Adelantar 10 segundos"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z" />
-              </svg>
-            </button>
-
-            <div className="flex-1 flex items-center justify-end sm:justify-start gap-2">
-              <div className="text-white/80 text-xs font-mono select-none whitespace-nowrap">
-                {formatTime(currentTime)} <span className="text-white/40">/</span> <span className="text-white/50">{formatTime(duration)}</span>
-              </div>
-              <div className="hidden sm:block flex-1 h-1 bg-white/20 rounded-full overflow-hidden cursor-pointer" onClick={handleSeek}>
-                {duration > 0 && (
-                  <div
-                    className="h-full bg-emerald-500 rounded-full transition-[width] duration-150"
-                    style={{ width: `${(currentTime / duration) * 100}%` }}
-                  />
-                )}
-              </div>
-            </div>
-
-            {/* Sizing controls */}
-            <div className="hidden sm:flex items-center gap-1 bg-white/10 p-0.5 rounded-lg text-xs" onClick={(e) => e.stopPropagation()}>
-              {(['S', 'M', 'L'] as const).map((size) => (
+            {/* Barra de controles principal - Mobile: vertical stack, Desktop: horizontal */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+              
+              {/* Fila 1: Seek backward + Play/Pause + Seek forward + Tiempo */}
+              <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-3 flex-1">
+                
+                {/* Seek Backward (-10s) */}
                 <button
-                  key={size}
-                  onClick={() => setVideoSize(size)}
-                  className={`px-2 py-0.5 rounded transition-all font-medium ${
-                    videoSize === size ? 'bg-emerald-500 text-white shadow-sm' : 'text-white/70 hover:text-white'
-                  }`}
-                  title={`Tamaño ${size}`}
+                  onClick={handleSeekBackward}
+                  className="flex-shrink-0 w-11 h-11 sm:w-10 sm:h-10 flex items-center justify-center bg-gray-800/90 hover:bg-gray-700 text-white rounded-lg transition-all backdrop-blur-sm touch-manipulation"
+                  title="Retroceder 10 segundos"
                 >
-                  {size}
+                  <svg className="w-5 h-5 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z" />
+                  </svg>
                 </button>
-              ))}
-            </div>
 
-            {/* Speed control */}
-            <div className="relative" onClick={(e) => e.stopPropagation()}>
-              <button
-                onClick={() => setShowSpeedMenu(!showSpeedMenu)}
-                className="flex items-center gap-1 px-2.5 py-1 bg-white/10 hover:bg-white/20 text-white text-xs font-medium rounded transition-colors"
-                title="Velocidad de reproducción"
-              >
-                <span>{playbackRate}x</span>
-              </button>
-              {showSpeedMenu && (
-                <div className="absolute bottom-full right-0 mb-2 bg-slate-900 border border-white/10 rounded-lg shadow-xl overflow-hidden z-50 min-w-[80px]">
-                  {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
+                {/* Play/Pause */}
+                <button
+                  className="flex-shrink-0 w-11 h-11 sm:w-10 sm:h-10 flex items-center justify-center bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg transition-all touch-manipulation shadow-lg shadow-emerald-500/30"
+                  onClick={togglePlay}
+                >
+                  {isPlaying
+                    ? <Pause className="w-5 h-5" />
+                    : <Play className="w-5 h-5 ml-1" />
+                  }
+                </button>
+
+                {/* Seek Forward (+10s) */}
+                <button
+                  onClick={handleSeekForward}
+                  className="flex-shrink-0 w-11 h-11 sm:w-10 sm:h-10 flex items-center justify-center bg-gray-800/90 hover:bg-gray-700 text-white rounded-lg transition-all backdrop-blur-sm touch-manipulation"
+                  title="Adelantar 10 segundos"
+                >
+                  <svg className="w-5 h-5 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z" />
+                  </svg>
+                </button>
+
+                {/* Tiempo y Barra (Desktop inline) */}
+                <div className="flex-1 flex items-center justify-end sm:justify-start gap-2 ml-1 sm:ml-2">
+                  <div className="text-white/80 text-xs sm:text-sm font-mono select-none whitespace-nowrap">
+                    {formatTime(currentTime)} <span className="text-white/40">/</span> <span className="text-white/50">{formatTime(duration)}</span>
+                  </div>
+                  <div className="hidden sm:block flex-1 h-1 bg-white/20 rounded-full overflow-hidden cursor-pointer" onClick={handleSeek}>
+                    {duration > 0 && (
+                      <div
+                        className="h-full bg-emerald-500 rounded-full transition-[width] duration-150"
+                        style={{ width: `${(currentTime / duration) * 100}%` }}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Fila 2: Velocidad + Tamaño + PiP + Fullscreen */}
+              <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 pt-2 sm:pt-0 mt-1 sm:mt-0">
+                
+                {/* Velocidad */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+                    className="flex-shrink-0 flex items-center justify-center gap-1 px-3 h-10 sm:h-9 bg-gray-800/90 hover:bg-gray-700 text-white rounded-lg transition-all backdrop-blur-sm touch-manipulation"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span className="font-semibold text-sm">{playbackRate}x</span>
+                  </button>
+                  {showSpeedMenu && (
+                    <>
+                      {/* Overlay para mobile */}
+                      <div 
+                        className="fixed inset-0 z-40 sm:hidden"
+                        onClick={() => setShowSpeedMenu(false)}
+                      />
+                      <div className="absolute bottom-full right-0 mb-2 w-32 bg-gray-800/95 border border-gray-700 rounded-lg shadow-xl overflow-hidden z-50 backdrop-blur-md">
+                        {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
+                          <button
+                            key={rate}
+                            onClick={() => {
+                              if (videoRef.current) {
+                                videoRef.current.playbackRate = rate;
+                                setPlaybackRate(rate);
+                              }
+                              setShowSpeedMenu(false);
+                            }}
+                            className={`w-full px-4 py-3 sm:py-2 text-left text-sm hover:bg-gray-700 transition-colors touch-manipulation ${
+                              playbackRate === rate ? 'bg-emerald-500 text-white' : 'text-white'
+                            }`}
+                          >
+                            {rate}x
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Sizing controls */}
+                <div className="flex items-center gap-1">
+                  {(['S', 'M', 'L'] as const).map((size) => (
                     <button
-                      key={rate}
-                      onClick={() => {
-                        if (videoRef.current) {
-                          videoRef.current.playbackRate = rate;
-                          setPlaybackRate(rate);
-                        }
-                        setShowSpeedMenu(false);
-                      }}
-                      className={`w-full px-3 py-1.5 text-center text-xs hover:bg-white/10 transition-colors font-medium ${
-                        playbackRate === rate ? 'text-emerald-400 bg-white/5' : 'text-white'
+                      key={size}
+                      onClick={() => setVideoSize(size)}
+                      className={`w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center text-sm font-semibold rounded-lg transition-all touch-manipulation ${
+                        videoSize === size ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' : 'bg-gray-800/90 text-gray-300 hover:bg-gray-700'
                       }`}
+                      title={`Tamaño ${size}`}
                     >
-                      {rate}x
+                      {size}
                     </button>
                   ))}
                 </div>
-              )}
+
+                {/* Mute (solo PC o tablet) */}
+                <button
+                  className="hidden sm:flex w-10 h-10 sm:w-9 sm:h-9 items-center justify-center text-white/70 hover:text-white bg-gray-800/90 hover:bg-gray-700 rounded-lg transition-colors touch-manipulation"
+                  onClick={toggleMuteHandler}
+                >
+                  {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                </button>
+
+                {/* PiP button */}
+                {pipEnabled && (
+                  <button
+                    onClick={togglePictureInPicture}
+                    className={`flex-shrink-0 flex items-center justify-center gap-1.5 px-3 h-10 sm:h-9 text-sm rounded-lg transition-all font-medium touch-manipulation ${
+                      isPipActive 
+                        ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' 
+                        : 'bg-blue-600/90 hover:bg-blue-700 text-white backdrop-blur-sm'
+                    }`}
+                    title={isPipActive ? 'Salir de PiP' : 'Ver en segundo plano (PiP)'}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    <span className="hidden lg:inline font-semibold">{isPipActive ? 'PiP Activo' : 'PiP'}</span>
+                  </button>
+                )}
+
+                {/* Fullscreen button */}
+                <button
+                  className="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center text-white/70 hover:text-white bg-gray-800/90 hover:bg-gray-700 rounded-lg transition-colors touch-manipulation"
+                  onClick={toggleFullscreen}
+                >
+                  <Maximize className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-
-            {/* Mute button */}
-            <button
-              className="text-white/70 hover:text-white transition-colors hidden sm:block"
-              onClick={toggleMuteHandler}
-            >
-              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-            </button>
-
-            {/* PiP button */}
-            {pipEnabled && (
-              <button
-                onClick={togglePictureInPicture}
-                className={`flex items-center gap-1.5 px-2.5 py-1 text-xs rounded transition-all font-medium ${
-                  isPipActive 
-                    ? 'bg-emerald-500 text-white shadow-sm' 
-                    : 'bg-white/10 hover:bg-white/20 text-white'
-                }`}
-                title={isPipActive ? 'Salir de PiP' : 'Ver en segundo plano (PiP)'}
-              >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-                <span className="hidden lg:inline">{isPipActive ? 'PiP Activo' : 'PiP'}</span>
-              </button>
-            )}
-
-            {/* Fullscreen button */}
-            <button
-              className="text-white/70 hover:text-white transition-colors"
-              onClick={toggleFullscreen}
-            >
-              <Maximize className="w-4 h-4" />
-            </button>
           </div>
           
           {/* Indicador de PiP Activo */}
