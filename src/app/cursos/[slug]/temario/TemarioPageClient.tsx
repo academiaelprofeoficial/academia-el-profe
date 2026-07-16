@@ -950,20 +950,46 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                 <div className="space-y-4">
                   {/* Video Player */}
                   <div className="video-player-container relative rounded-xl border border-border/40 bg-card overflow-hidden">
-                    <div className="relative bg-black aspect-video" onContextMenu={(e) => e.preventDefault()}>
-                      <ProtectedVideoPlayer
-                        videoRef={videoRef}
-                        key={selectedVideo.url}
-                        src={selectedVideo.url}
-                        controls
-                        controlsList="nodownload"
-                        disablePictureInPicture
-                        preload="metadata"
-                        poster={selectedVideo.poster}
-                        className="w-full h-full"
-                        onTimeUpdate={handleTimeUpdate}
-                      />
-                    </div>
+                    {(() => {
+                      // Find the actual video object to check access
+                      let activeVideoObj: SanityClassVideo | undefined;
+                      for (const group of topicGroups) {
+                        const found = group.videos.find(v => (v.videoUrl || v.video?.asset?.url || v.sharedVideo?.videoFile?.asset?.url || v.sharedVideo?.videoUrl) === selectedVideo.url);
+                        if (found) {
+                          activeVideoObj = found;
+                          break;
+                        }
+                      }
+                      
+                      const isAccessible = activeVideoObj ? canAccessLesson(activeVideoObj) : false;
+                      
+                      if (!isAccessible) {
+                        return (
+                          <div className="flex flex-col items-center justify-center py-24 bg-black/5">
+                            <Lock className="h-12 w-12 text-muted-foreground/50 mb-3" />
+                            <p className="text-sm font-bold text-muted-foreground">Clase Bloqueada</p>
+                            <p className="text-xs text-muted-foreground mt-1">Adquiere el curso para ver esta clase.</p>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div className="relative bg-black aspect-video" onContextMenu={(e) => e.preventDefault()}>
+                          <ProtectedVideoPlayer
+                            videoRef={videoRef}
+                            key={selectedVideo.url}
+                            src={selectedVideo.url}
+                            controls
+                            controlsList="nodownload"
+                            disablePictureInPicture
+                            preload="metadata"
+                            poster={selectedVideo.poster}
+                            className="w-full h-full"
+                            onTimeUpdate={handleTimeUpdate}
+                          />
+                        </div>
+                      );
+                    })()}
                     <div className="px-5 py-4">
                       <h3 className="text-base font-bold text-foreground">{selectedVideo.title}</h3>
                       <p className="text-xs text-muted-foreground mt-1">{title} — Modulo: {activeTopicTitle}</p>
