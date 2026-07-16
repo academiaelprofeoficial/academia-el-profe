@@ -35,7 +35,7 @@ import type { SanityCourse, SanityClassVideo, SanityTopic, PortableTextBlock } f
 import { getImageUrl } from '@/lib/sanity.client';
 import { PortableText } from '@portabletext/react';
 import { useAuth } from '@/lib/auth-context';
-import { ProtectedVideoPlayer } from '@/components/course/ProtectedVideoPlayer';
+import { VideoPlayer } from '@/components/course/VideoPlayer';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -260,9 +260,12 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
     }
   }, [selectedVideo, slug]);
 
-  const handleTimeUpdate = useCallback(() => {
-    if (videoRef.current && selectedVideo) {
-      localStorage.setItem(`vid_progress_${slug}_${selectedVideo.url}`, String(videoRef.current.currentTime));
+  const handleTimeUpdate = useCallback((seconds?: number) => {
+    if (selectedVideo) {
+      const time = seconds !== undefined ? seconds : (videoRef.current?.currentTime || 0);
+      if (time > 0) {
+        localStorage.setItem(`vid_progress_${slug}_${selectedVideo.url}`, String(time));
+      }
     }
   }, [slug, selectedVideo]);
 
@@ -974,20 +977,13 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                       }
 
                       return (
-                        <div className="relative bg-black aspect-video" onContextMenu={(e) => e.preventDefault()}>
-                          <ProtectedVideoPlayer
-                            videoRef={videoRef}
-                            key={selectedVideo.url}
-                            src={selectedVideo.url}
-                            controls
-                            controlsList="nodownload"
-                            disablePictureInPicture
-                            preload="metadata"
-                            poster={selectedVideo.poster}
-                            className="w-full h-full"
-                            onTimeUpdate={handleTimeUpdate}
-                          />
-                        </div>
+                        <VideoPlayer
+                          key={selectedVideo.url}
+                          videoUrl={selectedVideo.url}
+                          titulo={selectedVideo.title}
+                          posterUrl={selectedVideo.poster}
+                          onProgress={(seconds) => handleTimeUpdate(seconds)}
+                        />
                       );
                     })()}
                     <div className="px-5 py-4">
