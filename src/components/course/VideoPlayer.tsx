@@ -7,7 +7,7 @@
 // ============================================================
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Play, Pause, Maximize, Volume2, VolumeX } from 'lucide-react';
+import { Play, Pause, Maximize, Volume2, VolumeX, RotateCcw, RotateCw } from 'lucide-react';
 import { useGlobalRecordingDetection } from '@/hooks/useGlobalRecordingDetection';
 
 interface VideoPlayerProps {
@@ -463,14 +463,40 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
             showControls || !isPlaying ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
         >
-          {/* Botón de play/pause central cuando está pausado */}
-          {!isPlaying && currentTime > 0 && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-              <button onClick={togglePlay} className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors pointer-events-auto">
+          {/* Controles Centrales sobre el video */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+            {/* Desktop: Solo botón Play central cuando está pausado */}
+            {!isPlaying && currentTime > 0 && (
+              <button onClick={togglePlay} className="hidden sm:flex w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm items-center justify-center hover:bg-white/30 transition-colors pointer-events-auto">
                 <Play className="w-6 h-6 text-white ml-0.5" />
               </button>
+            )}
+
+            {/* Mobile: Seek, Play, Seek siempre visibles cuando showControls es true */}
+            <div className="flex sm:hidden items-center justify-center gap-8 pointer-events-auto w-full px-8">
+              <button onClick={(e) => { e.stopPropagation(); handleSeekBackward(); }} className="text-white hover:text-white/80 transition-transform active:scale-90 flex flex-col items-center justify-center drop-shadow-xl bg-black/20 rounded-full p-2 backdrop-blur-sm">
+                <div className="relative flex items-center justify-center">
+                  <RotateCcw className="w-10 h-10" strokeWidth={1.5} />
+                  <span className="absolute text-[10px] font-bold mt-0.5">10</span>
+                </div>
+              </button>
+              
+              <button onClick={(e) => { e.stopPropagation(); togglePlay(); }} className="text-white hover:text-white/80 transition-transform active:scale-90 drop-shadow-xl bg-black/20 rounded-full p-4 backdrop-blur-sm flex items-center justify-center">
+                {isPlaying ? (
+                  <Pause className="w-14 h-14" fill="currentColor" stroke="none" />
+                ) : (
+                  <Play className="w-14 h-14 ml-2" fill="currentColor" stroke="none" />
+                )}
+              </button>
+
+              <button onClick={(e) => { e.stopPropagation(); handleSeekForward(); }} className="text-white hover:text-white/80 transition-transform active:scale-90 flex flex-col items-center justify-center drop-shadow-xl bg-black/20 rounded-full p-2 backdrop-blur-sm">
+                <div className="relative flex items-center justify-center">
+                  <RotateCw className="w-10 h-10" strokeWidth={1.5} />
+                  <span className="absolute text-[10px] font-bold mt-0.5">10</span>
+                </div>
+              </button>
             </div>
-          )}
+          </div>
 
           {/* Barra de progreso */}
           <div
@@ -504,38 +530,41 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
               {/* Fila 1: Seek backward + Play/Pause + Seek forward + Tiempo */}
               <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-3 flex-1">
                 
-                {/* Seek Backward (-10s) */}
-                <button
-                  onClick={handleSeekBackward}
-                  className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center bg-gray-800/90 hover:bg-gray-700 text-white rounded-lg transition-all backdrop-blur-sm touch-manipulation"
-                  title="Retroceder 10 segundos"
-                >
-                  <svg className="w-5 h-5 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z" />
-                  </svg>
-                </button>
+                {/* Controles de reproducción ocultos en mobile (movidos al centro) */}
+                <div className="hidden sm:flex items-center gap-2 sm:gap-3">
+                  {/* Seek Backward (-10s) */}
+                  <button
+                    onClick={handleSeekBackward}
+                    className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center bg-gray-800/90 hover:bg-gray-700 text-white rounded-lg transition-all backdrop-blur-sm touch-manipulation"
+                    title="Retroceder 10 segundos"
+                  >
+                    <svg className="w-5 h-5 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z" />
+                    </svg>
+                  </button>
 
-                {/* Play/Pause */}
-                <button
-                  className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg transition-all touch-manipulation shadow-lg shadow-emerald-500/30"
-                  onClick={togglePlay}
-                >
-                  {isPlaying
-                    ? <Pause className="w-4 h-4 sm:w-5 sm:h-5" />
-                    : <Play className="w-4 h-4 sm:w-5 sm:h-5 ml-1" />
-                  }
-                </button>
+                  {/* Play/Pause */}
+                  <button
+                    className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg transition-all touch-manipulation shadow-lg shadow-emerald-500/30"
+                    onClick={togglePlay}
+                  >
+                    {isPlaying
+                      ? <Pause className="w-4 h-4 sm:w-5 sm:h-5" />
+                      : <Play className="w-4 h-4 sm:w-5 sm:h-5 ml-1" />
+                    }
+                  </button>
 
-                {/* Seek Forward (+10s) */}
-                <button
-                  onClick={handleSeekForward}
-                  className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center bg-gray-800/90 hover:bg-gray-700 text-white rounded-lg transition-all backdrop-blur-sm touch-manipulation"
-                  title="Adelantar 10 segundos"
-                >
-                  <svg className="w-5 h-5 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z" />
-                  </svg>
-                </button>
+                  {/* Seek Forward (+10s) */}
+                  <button
+                    onClick={handleSeekForward}
+                    className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center bg-gray-800/90 hover:bg-gray-700 text-white rounded-lg transition-all backdrop-blur-sm touch-manipulation"
+                    title="Adelantar 10 segundos"
+                  >
+                    <svg className="w-5 h-5 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z" />
+                    </svg>
+                  </button>
+                </div>
 
                 {/* Tiempo y Barra (Desktop inline) */}
                 <div className={`flex-1 items-center justify-end sm:justify-start gap-2 ml-1 sm:ml-2 ${!isFullscreen ? 'hidden sm:flex' : 'flex'}`}>
