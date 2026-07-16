@@ -52,6 +52,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
   const [buffered, setBuffered] = useState(0);
   const [showControls, setShowControls] = useState(true);
   const hideControlsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const [playbackRate, setPlaybackRate] = useState(1);
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
@@ -160,6 +161,15 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
     };
   }, [isFree, isPlaying, isPipActive, pipEnabled]);
 
+  // Detectar fullscreen
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
   // ── YouTube ──
   const youtubeId = videoUrl ? extractYouTubeId(videoUrl) : null;
   if (youtubeId) {
@@ -225,12 +235,12 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
       v.currentTime = x * duration;
     }, [duration]);
 
-    const handleMouseMove = useCallback(() => {
+    const resetControlsTimer = useCallback(() => {
       setShowControls(true);
       if (hideControlsTimer.current) clearTimeout(hideControlsTimer.current);
       hideControlsTimer.current = setTimeout(() => {
-        if (isPlaying) setShowControls(false);
-      }, 3000);
+        if (isPlaying && !document.pictureInPictureElement) setShowControls(false);
+      }, 2500);
     }, [isPlaying]);
 
     // Seek forward (+10 segundos)
@@ -394,7 +404,9 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
         className={`video-player-container relative aspect-video bg-black rounded-xl overflow-hidden group mx-auto transition-all duration-300 ${
           videoSize === 'S' ? 'max-w-2xl' : videoSize === 'L' ? 'max-w-6xl' : 'max-w-4xl'
         }`}
-        onMouseMove={handleMouseMove}
+        onMouseMove={resetControlsTimer}
+        onTouchStart={resetControlsTimer}
+        onClick={resetControlsTimer}
         onMouseLeave={() => { if (isPlaying) setShowControls(false); }}
       >
         <video
@@ -536,7 +548,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
                 </button>
 
                 {/* Tiempo y Barra (Desktop inline) */}
-                <div className="flex-1 flex items-center justify-end sm:justify-start gap-2 ml-1 sm:ml-2">
+                <div className={`flex-1 items-center justify-end sm:justify-start gap-2 ml-1 sm:ml-2 ${!isFullscreen ? 'hidden sm:flex' : 'flex'}`}>
                   <div className="text-white/80 text-xs sm:text-sm font-mono select-none whitespace-nowrap">
                     {formatTime(currentTime)} <span className="text-white/40">/</span> <span className="text-white/50">{formatTime(duration)}</span>
                   </div>
@@ -549,10 +561,20 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
                     )}
                   </div>
                 </div>
+
+                {/* Fullscreen button (Visible solo en mobile minimal) */}
+                {!isFullscreen && (
+                  <button
+                    className="flex sm:hidden w-9 h-9 items-center justify-center text-white/70 hover:text-white bg-gray-800/90 hover:bg-gray-700 rounded-lg transition-colors touch-manipulation ml-auto"
+                    onClick={toggleFullscreen}
+                  >
+                    <Maximize className="w-4 h-4" />
+                  </button>
+                )}
               </div>
 
               {/* Fila 2: Velocidad + Tamaño + PiP + Fullscreen */}
-              <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 pt-2 sm:pt-0 mt-1 sm:mt-0">
+              <div className={`items-center justify-between sm:justify-end gap-2 sm:gap-3 pt-2 sm:pt-0 mt-1 sm:mt-0 ${!isFullscreen ? 'hidden sm:flex' : 'flex'}`}>
                 
                 {/* Velocidad */}
                 <div className="relative">
