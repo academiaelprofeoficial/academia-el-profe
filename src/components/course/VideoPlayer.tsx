@@ -625,7 +625,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
                 </div>
 
                 {/* Sizing controls */}
-                <div className="flex items-center gap-1">
+                <div className="hidden sm:flex items-center gap-1">
                   {(['S', 'M', 'L'] as const).map((size) => (
                     <button
                       key={size}
