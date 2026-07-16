@@ -651,10 +651,12 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                 const isExpanded = expandedTopics.has(group.title) || topicGroups.length === 1;
                 const isActive = activeTopicTitle === group.title;
                 const hasContent = group.videos.length > 0 || group.materials.length > 0;
-                const groupHasSelectedVideo = !!selectedVideo && group.videos.some((v) => {
+                const groupSelectedVideoObj = !!selectedVideo ? group.videos.find((v) => {
                   const url = v.videoUrl || v.video?.asset?.url || v.sharedVideo?.videoFile?.asset?.url || v.sharedVideo?.videoUrl;
                   return url === selectedVideo.url;
-                });
+                }) : undefined;
+                const groupHasSelectedVideo = !!groupSelectedVideoObj;
+                const isGroupVideoAccessible = groupSelectedVideoObj ? canAccessLesson(groupSelectedVideoObj) : false;
 
                 return (
                   <div
@@ -763,39 +765,30 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                         })}
 
                         {/* 📱 MOBILE: Inline video player + materials inside module */}
-                        {groupHasSelectedVideo && (() => {
-                          const activeVideoObj = classVideos.find(
-                            (v) =>
-                              (v.videoUrl || v.video?.asset?.url || v.sharedVideo?.videoFile?.asset?.url || v.sharedVideo?.videoUrl) === selectedVideo.url
-                          );
-                          const isAccessible = activeVideoObj ? canAccessLesson(activeVideoObj) : false;
-
-                          return (
-                            <div className="lg:hidden border-t border-border/10 my-1 pt-2 px-1">
-                              {/* Video Player */}
-                              <div className="video-player-container relative rounded-xl border border-border/40 bg-card overflow-hidden mb-3">
-                                <div className="relative bg-black aspect-video" onContextMenu={(e) => e.preventDefault()}>
-                                  {!isAccessible ? (
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 p-4 text-center">
-                                      <Lock className="h-10 w-10 text-amber-500 mb-2 shrink-0" />
-                                      <p className="text-sm font-bold text-white">Clase Bloqueada</p>
-                                      <p className="text-xs text-slate-400 mt-1">Adquiere el curso para ver esta clase.</p>
-                                    </div>
-                                  ) : (
-                                    <VideoPlayer
-                                      key={`mobile-${selectedVideo.url}`}
-                                      videoUrl={selectedVideo.url}
-                                      titulo={selectedVideo.title}
-                                      posterUrl={selectedVideo.poster}
-                                    />
-                                  )}
-                                </div>
-                                <div className="px-4 py-3">
-                                  <h3 className="text-sm font-bold text-foreground">{selectedVideo.title}</h3>
-                                </div>
+                        {groupHasSelectedVideo && (
+                          <div className="lg:hidden border-t border-border/10 my-1 pt-2 px-1">
+                            {/* Video Player */}
+                            <div className="video-player-container relative rounded-xl border border-border/40 bg-card overflow-hidden mb-3">
+                              <div className="relative bg-black aspect-video" onContextMenu={(e) => e.preventDefault()}>
+                                {!isGroupVideoAccessible ? (
+                                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 p-4 text-center">
+                                    <Lock className="h-10 w-10 text-amber-500 mb-2 shrink-0" />
+                                    <p className="text-sm font-bold text-white">Clase Bloqueada</p>
+                                    <p className="text-xs text-slate-400 mt-1">Adquiere el curso para ver esta clase.</p>
+                                  </div>
+                                ) : (
+                                  <VideoPlayer
+                                    key={`mobile-${selectedVideo.url}`}
+                                    videoUrl={selectedVideo.url}
+                                    titulo={selectedVideo.title}
+                                    posterUrl={selectedVideo.poster}
+                                  />
+                                )}
                               </div>
-                          );
-                        })()}
+                              <div className="px-4 py-3">
+                                <h3 className="text-sm font-bold text-foreground">{selectedVideo.title}</h3>
+                              </div>
+                            </div>
                             {/* Materials inline on mobile */}
                             {activeGroup && activeGroup.materials.length > 0 && (
                               <div className="rounded-xl border border-border/40 bg-card p-4">
