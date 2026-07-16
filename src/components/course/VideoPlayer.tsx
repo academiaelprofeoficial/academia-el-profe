@@ -52,6 +52,49 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, 
   const [showControls, setShowControls] = useState(true);
   const hideControlsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
+  const [videoSize, setVideoSize] = useState<'S' | 'M' | 'L'>('M');
+  const [isPipActive, setIsPipActive] = useState(false);
+
+  const togglePictureInPicture = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const video = videoRef.current;
+    if (!video) return;
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+        setIsPipActive(false);
+      } else if (video.requestPictureInPicture) {
+        await video.requestPictureInPicture();
+        setIsPipActive(true);
+      }
+    } catch (err) {
+      console.error('Error PiP:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const onEnter = () => setIsPipActive(true);
+    const onLeave = () => setIsPipActive(false);
+    video.addEventListener('enterpictureinpicture', onEnter);
+    video.addEventListener('leavepictureinpicture', onLeave);
+    return () => {
+      video.removeEventListener('enterpictureinpicture', onEnter);
+      video.removeEventListener('leavepictureinpicture', onLeave);
+    };
+  }, []);
+
+  // Close speed menu when clicking outside
+  useEffect(() => {
+    if (!showSpeedMenu) return;
+    const handleOutsideClick = () => setShowSpeedMenu(false);
+    document.addEventListener('click', handleOutsideClick);
+    return () => document.removeEventListener('click', handleOutsideClick);
+  }, [showSpeedMenu]);
+
   // ── YouTube ──
   const youtubeId = videoUrl ? extractYouTubeId(videoUrl) : null;
   if (youtubeId) {
@@ -210,7 +253,9 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, 
     return (
       <div
         ref={containerRef}
-        className="video-player-container relative aspect-video bg-black rounded-xl overflow-hidden group"
+        className={`video-player-container relative aspect-video bg-black rounded-xl overflow-hidden group mx-auto transition-all duration-300 ${
+          videoSize === 'S' ? 'max-w-2xl' : videoSize === 'L' ? 'max-w-6xl' : 'max-w-4xl'
+        }`}
         onMouseMove={handleMouseMove}
         onMouseLeave={() => { if (isPlaying) setShowControls(false); }}
       >
@@ -339,6 +384,55 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, 
               </span>
             </div>
 
+            {/* Sizing controls */}
+            <div className="hidden sm:flex items-center gap-1 bg-white/10 p-0.5 rounded-lg text-xs" onClick={(e) => e.stopPropagation()}>
+              {(['S', 'M', 'L'] as const).map((size) => (
+                <button
+                  key={size}
+                  onClick={() => setVideoSize(size)}
+                  className={`px-2 py-0.5 rounded transition-all font-medium ${
+                    videoSize === size ? 'bg-emerald-500 text-white shadow-sm' : 'text-white/70 hover:text-white'
+                  }`}
+                  title={`Tamaño ${size}`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+
+            {/* Speed control */}
+            <div className="relative" onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+                className="flex items-center gap-1 px-2.5 py-1 bg-white/10 hover:bg-white/20 text-white text-xs font-medium rounded transition-colors"
+                title="Velocidad de reproducción"
+              >
+                <span>{playbackRate}x</span>
+              </button>
+              {showSpeedMenu && (
+                <div className="absolute bottom-full right-0 mb-2 bg-slate-900 border border-white/10 rounded-lg shadow-xl overflow-hidden z-50 min-w-[80px]">
+                  {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
+                    <button
+                      key={rate}
+                      onClick={() => {
+                        if (videoRef.current) {
+                          videoRef.current.playbackRate = rate;
+                          setPlaybackRate(rate);
+                        }
+                        setShowSpeedMenu(false);
+                      }}
+                      className={`w-full px-3 py-1.5 text-center text-xs hover:bg-white/10 transition-colors font-medium ${
+                        playbackRate === rate ? 'text-emerald-400 bg-white/5' : 'text-white'
+                      }`}
+                    >
+                      {rate}x
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Mute button */}
             <button
               className="text-white/70 hover:text-white transition-colors hidden sm:block"
               onClick={toggleMuteHandler}
@@ -346,6 +440,20 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, 
               {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
             </button>
 
+            {/* PiP button */}
+            {typeof document !== 'undefined' && document.pictureInPictureEnabled && (
+              <button
+                className="text-white/70 hover:text-white transition-colors"
+                onClick={togglePictureInPicture}
+                title={isPipActive ? "Salir de PiP" : "Pantalla en segundo plano (PiP)"}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              </button>
+            )}
+
+            {/* Fullscreen button */}
             <button
               className="text-white/70 hover:text-white transition-colors"
               onClick={toggleFullscreen}
