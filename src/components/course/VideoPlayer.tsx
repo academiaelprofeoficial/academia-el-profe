@@ -62,9 +62,16 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
   // Verificar soporte PiP al montar
   useEffect(() => {
     const checkPiPSupport = () => {
-      const isSupported = typeof document !== 'undefined' && 
+      let isSupported = typeof document !== 'undefined' && 
                           document.pictureInPictureEnabled && 
                           !videoRef.current?.disablePictureInPicture;
+      
+      if (typeof window !== 'undefined') {
+        const isIOSSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        if (isIOSSafari) {
+          isSupported = false; // iOS Safari no soporta PiP estándar
+        }
+      }
       setPipEnabled(isSupported);
     };
     
@@ -111,24 +118,29 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
 
   // Picture-in-Picture Automático al cambiar de pestaña/minimizar
   useEffect(() => {
-    if (!isFree || !pipEnabled) return;
+    if (!isFree || !pipEnabled || !isPlaying) return;
+
+    let pipTimeout: ReturnType<typeof setTimeout>;
 
     const handleVisibilityChange = async () => {
       const video = videoRef.current;
-      if (!video || !isPlaying) return;
+      if (!video) return;
 
       if (document.hidden && !isPipActive) {
         // Usuario cambió de pestaña o minimizó - Activar PiP automáticamente
-        try {
-          if (document.pictureInPictureEnabled && video.readyState >= 2) {
-            await video.requestPictureInPicture();
-            setIsPipActive(true);
+        pipTimeout = setTimeout(async () => {
+          try {
+            if (video.readyState >= 2 && !video.paused && !isPipActive) {
+              await video.requestPictureInPicture();
+              setIsPipActive(true);
+            }
+          } catch (error) {
+            console.log('PiP automático no disponible:', error);
           }
-        } catch (error) {
-          console.log('PiP automático no disponible:', error);
-        }
+        }, 100);
       } else if (!document.hidden && isPipActive) {
         // Usuario regresó a la pestaña - Salir de PiP
+        if (pipTimeout) clearTimeout(pipTimeout);
         try {
           if (document.pictureInPictureElement) {
             await document.exitPictureInPicture();
@@ -144,8 +156,9 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
     
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (pipTimeout) clearTimeout(pipTimeout);
     };
-  }, [isFree, isPlaying, isPipActive]);
+  }, [isFree, isPlaying, isPipActive, pipEnabled]);
 
   // ── YouTube ──
   const youtubeId = videoUrl ? extractYouTubeId(videoUrl) : null;
@@ -237,6 +250,62 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
         video.currentTime = Math.max(video.currentTime - 10, 0);
       }
     }, []);
+
+    // Control de tamaño con forzado de DOM
+    const handleSizeChange = useCallback((size: 'S' | 'M' | 'L') => {
+      setVideoSize(size);
+      if (containerRef.current) {
+        containerRef.current.classList.remove('max-w-2xl', 'max-w-4xl', 'max-w-6xl');
+        containerRef.current.classList.add(size === 'S' ? 'max-w-2xl' : size === 'L' ? 'max-w-6xl' : 'max-w-4xl');
+      }
+    }, []);
+
+    // Click en el video - Play/Pause + Seek
+    const handleVideoClick = useCallback((e: React.MouseEvent<HTMLVideoElement>) => {
+      const video = videoRef.current;
+      if (!video) return;
+
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const percentage = x / rect.width;
+      const newTime = percentage * duration;
+
+      if (video.paused) {
+        video.play().catch(() => {});
+        setIsPlaying(true);
+      } else {
+        if (Math.abs((video.currentTime / duration) - percentage) > 0.05) {
+          video.currentTime = newTime;
+        } else {
+          video.pause();
+          setIsPlaying(false);
+        }
+      }
+    }, [duration]);
+
+    const handleVideoTouch = useCallback((e: React.TouchEvent<HTMLVideoElement>) => {
+      e.preventDefault(); // Prevent double triggering with click
+      const touch = e.changedTouches[0];
+      const video = videoRef.current;
+      if (!video) return;
+
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = touch.clientX - rect.left;
+      const percentage = x / rect.width;
+      const newTime = percentage * duration;
+
+      if (video.paused) {
+        video.play().catch(() => {});
+        setIsPlaying(true);
+      } else {
+        if (Math.abs((video.currentTime / duration) - percentage) > 0.05) {
+          video.currentTime = newTime;
+        } else {
+          video.pause();
+          setIsPlaying(false);
+        }
+      }
+    }, [duration]);
 
     // ── Canvas overlay anti-grabación ──
     useEffect(() => {
@@ -331,10 +400,11 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
         <video
           ref={videoRef}
           poster={posterUrl}
-          className="absolute inset-0 w-full h-full object-contain"
+          className="absolute inset-0 w-full h-full object-contain cursor-pointer"
           playsInline
           preload="metadata"
-          onClick={togglePlay}
+          onClick={handleVideoClick}
+          onTouchEnd={handleVideoTouch}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           onTimeUpdate={() => {
@@ -435,7 +505,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
                 {/* Seek Backward (-10s) */}
                 <button
                   onClick={handleSeekBackward}
-                  className="flex-shrink-0 w-11 h-11 sm:w-10 sm:h-10 flex items-center justify-center bg-gray-800/90 hover:bg-gray-700 text-white rounded-lg transition-all backdrop-blur-sm touch-manipulation"
+                  className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center bg-gray-800/90 hover:bg-gray-700 text-white rounded-lg transition-all backdrop-blur-sm touch-manipulation"
                   title="Retroceder 10 segundos"
                 >
                   <svg className="w-5 h-5 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -445,19 +515,19 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
 
                 {/* Play/Pause */}
                 <button
-                  className="flex-shrink-0 w-11 h-11 sm:w-10 sm:h-10 flex items-center justify-center bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg transition-all touch-manipulation shadow-lg shadow-emerald-500/30"
+                  className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg transition-all touch-manipulation shadow-lg shadow-emerald-500/30"
                   onClick={togglePlay}
                 >
                   {isPlaying
-                    ? <Pause className="w-5 h-5" />
-                    : <Play className="w-5 h-5 ml-1" />
+                    ? <Pause className="w-4 h-4 sm:w-5 sm:h-5" />
+                    : <Play className="w-4 h-4 sm:w-5 sm:h-5 ml-1" />
                   }
                 </button>
 
                 {/* Seek Forward (+10s) */}
                 <button
                   onClick={handleSeekForward}
-                  className="flex-shrink-0 w-11 h-11 sm:w-10 sm:h-10 flex items-center justify-center bg-gray-800/90 hover:bg-gray-700 text-white rounded-lg transition-all backdrop-blur-sm touch-manipulation"
+                  className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center bg-gray-800/90 hover:bg-gray-700 text-white rounded-lg transition-all backdrop-blur-sm touch-manipulation"
                   title="Adelantar 10 segundos"
                 >
                   <svg className="w-5 h-5 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -488,12 +558,12 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
                 <div className="relative">
                   <button
                     onClick={() => setShowSpeedMenu(!showSpeedMenu)}
-                    className="flex-shrink-0 flex items-center justify-center gap-1 px-3 h-10 sm:h-9 bg-gray-800/90 hover:bg-gray-700 text-white rounded-lg transition-all backdrop-blur-sm touch-manipulation"
+                    className="flex-shrink-0 flex items-center justify-center gap-1 px-2 h-9 sm:px-3 sm:h-9 bg-gray-800/90 hover:bg-gray-700 text-white rounded-lg transition-all backdrop-blur-sm touch-manipulation"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
-                    <span className="font-semibold text-sm">{playbackRate}x</span>
+                    <span className="font-semibold text-xs sm:text-sm">{playbackRate}x</span>
                   </button>
                   {showSpeedMenu && (
                     <>
@@ -502,7 +572,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
                         className="fixed inset-0 z-40 sm:hidden"
                         onClick={() => setShowSpeedMenu(false)}
                       />
-                      <div className="absolute bottom-full right-0 mb-2 w-32 bg-gray-800/95 border border-gray-700 rounded-lg shadow-xl overflow-hidden z-50 backdrop-blur-md">
+                      <div className="absolute bottom-full right-0 mb-2 w-28 sm:w-32 bg-gray-800/95 border border-gray-700 rounded-lg shadow-xl overflow-hidden z-50 backdrop-blur-md">
                         {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
                           <button
                             key={rate}
@@ -513,7 +583,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
                               }
                               setShowSpeedMenu(false);
                             }}
-                            className={`w-full px-4 py-3 sm:py-2 text-left text-sm hover:bg-gray-700 transition-colors touch-manipulation ${
+                            className={`w-full px-3 py-2 sm:px-4 text-left text-xs sm:text-sm hover:bg-gray-700 transition-colors touch-manipulation ${
                               playbackRate === rate ? 'bg-emerald-500 text-white' : 'text-white'
                             }`}
                           >
@@ -530,8 +600,8 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
                   {(['S', 'M', 'L'] as const).map((size) => (
                     <button
                       key={size}
-                      onClick={() => setVideoSize(size)}
-                      className={`w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center text-sm font-semibold rounded-lg transition-all touch-manipulation ${
+                      onClick={() => handleSizeChange(size)}
+                      className={`w-8 h-9 sm:w-9 sm:h-9 flex items-center justify-center text-xs sm:text-sm font-semibold rounded-lg transition-all touch-manipulation ${
                         videoSize === size ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' : 'bg-gray-800/90 text-gray-300 hover:bg-gray-700'
                       }`}
                       title={`Tamaño ${size}`}
@@ -543,7 +613,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
 
                 {/* Mute (solo PC o tablet) */}
                 <button
-                  className="hidden sm:flex w-10 h-10 sm:w-9 sm:h-9 items-center justify-center text-white/70 hover:text-white bg-gray-800/90 hover:bg-gray-700 rounded-lg transition-colors touch-manipulation"
+                  className="hidden sm:flex w-9 h-9 items-center justify-center text-white/70 hover:text-white bg-gray-800/90 hover:bg-gray-700 rounded-lg transition-colors touch-manipulation"
                   onClick={toggleMuteHandler}
                 >
                   {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
@@ -553,14 +623,14 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
                 {pipEnabled && (
                   <button
                     onClick={togglePictureInPicture}
-                    className={`flex-shrink-0 flex items-center justify-center gap-1.5 px-3 h-10 sm:h-9 text-sm rounded-lg transition-all font-medium touch-manipulation ${
+                    className={`flex-shrink-0 flex items-center justify-center gap-1.5 px-3 h-9 text-xs sm:text-sm rounded-lg transition-all font-medium touch-manipulation ${
                       isPipActive 
                         ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' 
                         : 'bg-blue-600/90 hover:bg-blue-700 text-white backdrop-blur-sm'
                     }`}
                     title={isPipActive ? 'Salir de PiP' : 'Ver en segundo plano (PiP)'}
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
                     <span className="hidden lg:inline font-semibold">{isPipActive ? 'PiP Activo' : 'PiP'}</span>
@@ -569,7 +639,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
 
                 {/* Fullscreen button */}
                 <button
-                  className="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center text-white/70 hover:text-white bg-gray-800/90 hover:bg-gray-700 rounded-lg transition-colors touch-manipulation"
+                  className="w-9 h-9 flex items-center justify-center text-white/70 hover:text-white bg-gray-800/90 hover:bg-gray-700 rounded-lg transition-colors touch-manipulation"
                   onClick={toggleFullscreen}
                 >
                   <Maximize className="w-4 h-4" />
