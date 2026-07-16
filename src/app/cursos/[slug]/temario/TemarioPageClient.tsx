@@ -585,13 +585,10 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
             Video de Presentacion
           </h2>
           <div className="video-player-container relative bg-black aspect-video sm:rounded-lg overflow-hidden" onContextMenu={(e) => e.preventDefault()}>
-            <ProtectedVideoPlayer
-              src={course.videoUrl || course.courseVideo?.asset?.url}
-              controls
-              controlsList="nodownload"
-              disablePictureInPicture
-              poster={coverImg || undefined}
-              className="w-full h-full"
+            <VideoPlayer
+              videoUrl={course.videoUrl || course.courseVideo?.asset?.url || ''}
+              titulo="Video de Presentacion"
+              posterUrl={coverImg || undefined}
             />
           </div>
         </div>
@@ -771,15 +768,11 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                             {/* Video Player */}
                             <div className="video-player-container relative rounded-xl border border-border/40 bg-card overflow-hidden mb-3">
                               <div className="relative bg-black aspect-video" onContextMenu={(e) => e.preventDefault()}>
-                            <ProtectedVideoPlayer
+                            <VideoPlayer
                               key={`mobile-${selectedVideo.url}`}
-                              src={selectedVideo.url}
-                              controls
-                              controlsList="nodownload"
-                              disablePictureInPicture
-                              preload="metadata"
-                              poster={selectedVideo.poster}
-                              className="w-full h-full"
+                              videoUrl={selectedVideo.url}
+                              titulo={selectedVideo.title}
+                              posterUrl={selectedVideo.poster}
                             />
                               </div>
                               <div className="px-4 py-3">
