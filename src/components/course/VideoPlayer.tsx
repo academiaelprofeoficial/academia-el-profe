@@ -86,7 +86,8 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, 
 
   // ── Archivo de video directo (Sanity upload: MP4, MOV, WebM) ──
   if (videoUrl) {
-    const togglePlay = useCallback(() => {
+    const togglePlay = useCallback((e?: React.MouseEvent) => {
+      if (e && e.stopPropagation) e.stopPropagation();
       const v = videoRef.current;
       if (!v) return;
       if (v.paused) { v.play().catch(() => {}); } else { v.pause(); }
@@ -219,6 +220,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, 
           className="absolute inset-0 w-full h-full object-contain"
           playsInline
           preload="metadata"
+          onClick={togglePlay}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           onTimeUpdate={() => {
@@ -272,10 +274,13 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, 
             showControls || !isPlaying ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
         >
+          {/* Área clickable invisible para pausar/reproducir cuando los controles están visibles */}
+          <div className="absolute inset-0 z-0 cursor-pointer" onClick={togglePlay} />
+
           {/* Botón de play/pause central cuando está pausado */}
           {!isPlaying && currentTime > 0 && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <button onClick={togglePlay} className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors">
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+              <button onClick={togglePlay} className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors pointer-events-auto">
                 <Play className="w-6 h-6 text-white ml-0.5" />
               </button>
             </div>
@@ -283,8 +288,8 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, 
 
           {/* Barra de progreso */}
           <div
-            className="group/progress w-full h-1.5 bg-white/20 cursor-pointer hover:h-2.5 transition-all relative"
-            onClick={handleSeek}
+            className="group/progress w-full h-1.5 bg-white/20 cursor-pointer hover:h-2.5 transition-all relative z-10"
+            onClick={(e) => { e.stopPropagation(); handleSeek(e); }}
           >
             {/* Buffer */}
             {duration > 0 && (
@@ -303,7 +308,10 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, 
           </div>
 
           {/* Controles inferiores */}
-          <div className="bg-gradient-to-t from-black/80 to-transparent px-3 sm:px-4 py-2.5 flex items-center gap-2 sm:gap-3">
+          <div 
+            className="bg-gradient-to-t from-black/80 to-transparent px-3 sm:px-4 py-2.5 flex items-center gap-2 sm:gap-3 relative z-10"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               className="text-white hover:text-emerald-400 transition-colors"
               onClick={togglePlay}
