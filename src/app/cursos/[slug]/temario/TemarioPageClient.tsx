@@ -53,6 +53,7 @@ interface SelectedVideo {
   readonly url: string;
   readonly title: string;
   readonly poster?: string;
+  readonly isFree?: boolean;
 }
 
 /* ------------------------------------------------------------------ */
@@ -351,6 +352,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
               url: videoUrl,
               title: firstVideo.title,
               poster: coverImg || undefined,
+              isFree: !!firstVideo.isFree,
             });
             // Scroll into view on mobile
             if (window.innerWidth < 1024) {
@@ -374,6 +376,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
       url: videoUrl,
       title: video.title,
       poster: coverImg || undefined,
+      isFree: !!video.isFree,
     });
     // Scroll topic into view on mobile (use topic title, not video title)
     if (window.innerWidth < 1024) {
@@ -403,7 +406,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
       const videoUrl = firstVideo.videoUrl || firstVideo.video?.asset?.url || firstVideo.sharedVideo?.videoFile?.asset?.url || firstVideo.sharedVideo?.videoUrl;
       if (videoUrl) {
         setActiveTopicTitle(firstGroup.title);
-        setSelectedVideo({ url: videoUrl, title: firstVideo.title, poster: coverImg || undefined });
+        setSelectedVideo({ url: videoUrl, title: firstVideo.title, poster: coverImg || undefined, isFree: !!firstVideo.isFree });
       }
     }
   }, [topicGroups, coverImg]);
@@ -589,6 +592,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
               videoUrl={course.videoUrl || course.courseVideo?.asset?.url || ''}
               titulo="Video de Presentacion"
               posterUrl={coverImg || undefined}
+              isFree={true}
             />
           </div>
         </div>
@@ -782,6 +786,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                                     videoUrl={selectedVideo.url}
                                     titulo={selectedVideo.title}
                                     posterUrl={selectedVideo.poster}
+                                    isFree={selectedVideo.isFree}
                                   />
                                 )}
                               </div>
@@ -985,6 +990,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                           videoUrl={selectedVideo.url}
                           titulo={selectedVideo.title}
                           posterUrl={selectedVideo.poster}
+                          isFree={selectedVideo.isFree}
                           onProgress={(seconds) => handleTimeUpdate(seconds)}
                         />
                       );

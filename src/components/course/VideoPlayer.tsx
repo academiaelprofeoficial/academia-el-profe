@@ -15,6 +15,7 @@ interface VideoPlayerProps {
   readonly webmUrl?: string;
   readonly titulo?: string;
   readonly posterUrl?: string;
+  readonly isFree?: boolean;
   readonly onProgress?: (seconds: number, duration: number) => void;
   readonly onComplete?: () => void;
 }
@@ -37,7 +38,7 @@ function formatTime(seconds: number): string {
   return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
-export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, onComplete }: VideoPlayerProps) {
+export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = false, onProgress, onComplete }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -94,6 +95,44 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, 
     document.addEventListener('click', handleOutsideClick);
     return () => document.removeEventListener('click', handleOutsideClick);
   }, [showSpeedMenu]);
+
+  // Picture-in-Picture Automático al cambiar de pestaña/minimizar
+  useEffect(() => {
+    if (!isFree) return;
+
+    const handleVisibilityChange = async () => {
+      const video = videoRef.current;
+      if (!video || !isPlaying) return;
+
+      if (document.hidden && !isPipActive) {
+        // Usuario cambió de pestaña o minimizó - Activar PiP automáticamente
+        try {
+          if (document.pictureInPictureEnabled && video.readyState >= 2) {
+            await video.requestPictureInPicture();
+            setIsPipActive(true);
+          }
+        } catch (error) {
+          console.log('PiP automático no disponible:', error);
+        }
+      } else if (!document.hidden && isPipActive) {
+        // Usuario regresó a la pestaña - Salir de PiP
+        try {
+          if (document.pictureInPictureElement) {
+            await document.exitPictureInPicture();
+            setIsPipActive(false);
+          }
+        } catch (error) {
+          console.log('Error saliendo de PiP:', error);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isFree, isPlaying, isPipActive]);
 
   // ── YouTube ──
   const youtubeId = videoUrl ? extractYouTubeId(videoUrl) : null;
@@ -168,6 +207,24 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, 
       }, 3000);
     }, [isPlaying]);
 
+    // Seek forward (+10 segundos)
+    const handleSeekForward = useCallback((e?: React.MouseEvent) => {
+      if (e) e.stopPropagation();
+      const video = videoRef.current;
+      if (video) {
+        video.currentTime = Math.min(video.currentTime + 10, duration);
+      }
+    }, [duration]);
+
+    // Seek backward (-10 segundos)
+    const handleSeekBackward = useCallback((e?: React.MouseEvent) => {
+      if (e) e.stopPropagation();
+      const video = videoRef.current;
+      if (video) {
+        video.currentTime = Math.max(video.currentTime - 10, 0);
+      }
+    }, []);
+
     // ── Canvas overlay anti-grabación ──
     useEffect(() => {
       const video = videoRef.current;
@@ -203,17 +260,16 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, 
 
       const render = () => {
         if (!video.paused && !video.ended) {
-          fillBlack();
-          // Frame-skip anti-grabación: 1 frame negro cada 90 (~1.5s a 60fps)
-          const skipFrame = frameCountRef.current % 90 === 0;
-          if (!isRecording && !skipFrame) {
+          if (!isRecording) {
             try {
               ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             } catch {
               // drawImage falla en iOS con grabación nativa → canvas se queda negro
+              fillBlack();
             }
+          } else {
+            fillBlack();
           }
-          frameCountRef.current++;
         }
         animRef.current = requestAnimationFrame(render);
       };
@@ -357,14 +413,36 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, 
             className="bg-gradient-to-t from-black/80 to-transparent px-3 sm:px-4 py-2.5 flex items-center gap-2 sm:gap-3 relative z-10"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Seek backward (-10s) */}
             <button
-              className="text-white hover:text-emerald-400 transition-colors"
+              onClick={handleSeekBackward}
+              className="text-white/85 hover:text-emerald-400 transition-colors p-1"
+              title="Retroceder 10 segundos"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z" />
+              </svg>
+            </button>
+
+            <button
+              className="text-white hover:text-emerald-400 transition-colors p-1"
               onClick={togglePlay}
             >
               {isPlaying
                 ? <Pause className="w-5 h-5" />
                 : <Play className="w-5 h-5" />
               }
+            </button>
+
+            {/* Seek forward (+10s) */}
+            <button
+              onClick={handleSeekForward}
+              className="text-white/85 hover:text-emerald-400 transition-colors p-1"
+              title="Adelantar 10 segundos"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z" />
+              </svg>
             </button>
 
             <div className="flex-1 flex items-center gap-2">
@@ -443,13 +521,18 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, onProgress, 
             {/* PiP button */}
             {typeof document !== 'undefined' && document.pictureInPictureEnabled && (
               <button
-                className="text-white/70 hover:text-white transition-colors"
                 onClick={togglePictureInPicture}
-                title={isPipActive ? "Salir de PiP" : "Pantalla en segundo plano (PiP)"}
+                className={`flex items-center gap-1.5 px-2.5 py-1 text-xs rounded transition-all font-medium ${
+                  isPipActive 
+                    ? 'bg-emerald-500 text-white shadow-sm' 
+                    : 'bg-white/10 hover:bg-white/20 text-white'
+                }`}
+                title={isPipActive ? 'Salir de PiP' : 'Ver en segundo plano (PiP)'}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
+                <span className="hidden lg:inline">{isPipActive ? 'PiP Activo' : 'PiP'}</span>
               </button>
             )}
 
