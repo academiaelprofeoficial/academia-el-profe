@@ -63,16 +63,9 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
   // Verificar soporte PiP al montar
   useEffect(() => {
     const checkPiPSupport = () => {
-      let isSupported = typeof document !== 'undefined' && 
+      const isSupported = typeof document !== 'undefined' && 
                           document.pictureInPictureEnabled && 
                           !videoRef.current?.disablePictureInPicture;
-      
-      if (typeof window !== 'undefined') {
-        const isIOSSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-        if (isIOSSafari) {
-          isSupported = false; // iOS Safari no soporta PiP estándar
-        }
-      }
       setPipEnabled(isSupported);
     };
     
@@ -265,15 +258,8 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
     const handleSizeChange = useCallback((size: 'S' | 'M' | 'L') => {
       setVideoSize(size);
       if (containerRef.current) {
-        containerRef.current.classList.remove('max-w-2xl', 'max-w-4xl', 'max-w-6xl', 'w-[85%]', 'w-[95%]', 'w-full', 'sm:w-full');
-        
-        if (size === 'S') {
-          containerRef.current.classList.add('w-[85%]', 'sm:w-full', 'max-w-2xl');
-        } else if (size === 'L') {
-          containerRef.current.classList.add('w-full', 'max-w-6xl');
-        } else {
-          containerRef.current.classList.add('w-[95%]', 'sm:w-full', 'max-w-4xl');
-        }
+        containerRef.current.classList.remove('max-w-2xl', 'max-w-4xl', 'max-w-6xl');
+        containerRef.current.classList.add(size === 'S' ? 'max-w-2xl' : size === 'L' ? 'max-w-6xl' : 'max-w-4xl');
       }
     }, []);
 
@@ -409,7 +395,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
       <div
         ref={containerRef}
         className={`video-player-container relative aspect-video bg-black rounded-xl overflow-hidden group mx-auto transition-all duration-300 ${
-          videoSize === 'S' ? 'w-[85%] sm:w-full max-w-2xl' : videoSize === 'L' ? 'w-full max-w-6xl' : 'w-[95%] sm:w-full max-w-4xl'
+          videoSize === 'S' ? 'max-w-2xl' : videoSize === 'L' ? 'max-w-6xl' : 'max-w-4xl'
         }`}
         onMouseMove={resetControlsTimer}
         onTouchStart={resetControlsTimer}
@@ -477,9 +463,6 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
             showControls || !isPlaying ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
         >
-          {/* Área clickable invisible para pausar/reproducir cuando los controles están visibles */}
-          <div className="absolute inset-0 z-0 cursor-pointer" onClick={togglePlay} />
-
           {/* Botón de play/pause central cuando está pausado */}
           {!isPlaying && currentTime > 0 && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
