@@ -7,7 +7,7 @@
 // ============================================================
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Play, Pause, Maximize, Minimize, Volume2, VolumeX, RotateCcw, RotateCw } from 'lucide-react';
+import { Play, Pause, Maximize, Minimize, Volume2, VolumeX, RotateCcw, RotateCw, PictureInPicture2 } from 'lucide-react';
 import { useGlobalRecordingDetection } from '@/hooks/useGlobalRecordingDetection';
 
 interface VideoPlayerProps {
@@ -553,12 +553,12 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
               {/* -10s */}
               <button
                 onClick={(e) => { e.stopPropagation(); handleSeekBackward(e); }}
-                className="w-11 h-11 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all"
+                className="flex items-center justify-center p-1 transition-all active:scale-90"
                 aria-label="Retroceder 10 segundos"
               >
-                <div className="relative flex items-center justify-center">
-                  <RotateCcw className="w-5 h-5" strokeWidth={1.5} />
-                  <span className="absolute text-[8px] font-bold">10</span>
+                <div className="relative flex flex-col items-center">
+                  <RotateCcw className="w-6 h-6 text-white drop-shadow-lg" strokeWidth={1.5} />
+                  <span className="text-[9px] font-bold text-white drop-shadow-lg -mt-0.5">10</span>
                 </div>
               </button>
               {/* Play/Pause — rounded rectangle Netflix style */}
@@ -576,12 +576,12 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
               {/* +10s */}
               <button
                 onClick={(e) => { e.stopPropagation(); handleSeekForward(e); }}
-                className="w-11 h-11 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all"
+                className="flex items-center justify-center p-1 transition-all active:scale-90"
                 aria-label="Adelantar 10 segundos"
               >
-                <div className="relative flex items-center justify-center">
-                  <RotateCw className="w-5 h-5" strokeWidth={1.5} />
-                  <span className="absolute text-[8px] font-bold">10</span>
+                <div className="relative flex flex-col items-center">
+                  <RotateCw className="w-6 h-6 text-white drop-shadow-lg" strokeWidth={1.5} />
+                  <span className="text-[9px] font-bold text-white drop-shadow-lg -mt-0.5">10</span>
                 </div>
               </button>
             </div>
@@ -591,22 +591,22 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
           <div className="absolute top-3 left-3 pointer-events-auto z-20">
             <button
               onClick={(e) => { e.stopPropagation(); toggleFullscreen(); }}
-              className="w-9 h-9 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all"
+              className="p-1.5 transition-all active:scale-90"
               aria-label="Pantalla completa"
             >
-              {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
+              {isFullscreen ? <Minimize className="w-5 h-5 text-white drop-shadow-lg" /> : <Maximize className="w-5 h-5 text-white drop-shadow-lg" />}
             </button>
           </div>
 
-          {/* Esquina superior derecha — Volumen + Menu */}
-          <div className="absolute top-3 right-3 flex items-center gap-2 pointer-events-auto z-20">
+          {/* Esquina superior derecha — Volumen + PiP */}
+          <div className="absolute top-3 right-3 flex items-center gap-3 pointer-events-auto z-20">
             <div className="relative">
               <button
                 onClick={(e) => { e.stopPropagation(); toggleMuteHandler(e); }}
-                className="w-9 h-9 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all"
+                className="p-1.5 transition-all active:scale-90"
                 aria-label="Volumen"
               >
-                {isMuted || volume === 0 ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                {isMuted || volume === 0 ? <VolumeX className="w-5 h-5 text-white drop-shadow-lg" /> : <Volume2 className="w-5 h-5 text-white drop-shadow-lg" />}
               </button>
               {showVolumeSlider && (
                 <div
@@ -634,53 +634,16 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
                 </div>
               )}
             </div>
-            {/* 3-dot menu */}
-            <div className="relative">
+            {/* PiP button — sin círculo */}
+            {pipEnabled && (
               <button
-                onClick={(e) => { e.stopPropagation(); setShowAdditionalMenu(!showAdditionalMenu); }}
-                className="w-9 h-9 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all"
+                onClick={(e) => { e.stopPropagation(); togglePictureInPicture(e); }}
+                className={`p-1.5 transition-all active:scale-90 ${isPipActive ? 'text-emerald-400' : 'text-white'}`}
+                aria-label="Picture in Picture"
               >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                  <circle cx="12" cy="5" r="1.5" />
-                  <circle cx="12" cy="12" r="1.5" />
-                  <circle cx="12" cy="19" r="1.5" />
-                </svg>
+                <PictureInPicture2 className="w-5 h-5 drop-shadow-lg" />
               </button>
-              {showAdditionalMenu && (
-                <div className="absolute top-full right-0 mt-2 bg-black/90 backdrop-blur-sm rounded-lg shadow-xl border border-white/10 overflow-hidden z-50 w-36" onClick={(e) => e.stopPropagation()}>
-                  {/* Speed header */}
-                  <div className="px-3 py-2 text-[10px] text-white/50 font-semibold uppercase tracking-wider">
-                    Velocidad
-                  </div>
-                  {/* Speed options — always visible inline */}
-                  <div className="pb-1">
-                    {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
-                      <button
-                        key={rate}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (videoRef.current) { videoRef.current.playbackRate = rate; setPlaybackRate(rate); }
-                          setShowAdditionalMenu(false);
-                        }}
-                        className={`w-full px-4 py-2 text-left text-xs transition-colors ${playbackRate === rate ? 'bg-emerald-600 text-white font-bold' : 'text-white/80 hover:bg-white/10'}`}
-                      >
-                        {rate}x
-                      </button>
-                    ))}
-                  </div>
-                  {pipEnabled && (
-                    <div className="border-t border-white/10">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); togglePictureInPicture(e); setShowAdditionalMenu(false); }}
-                        className={`w-full px-3 py-2.5 text-left text-xs hover:bg-white/10 flex items-center gap-2 ${isPipActive ? 'text-emerald-400' : 'text-white'}`}
-                      >
-                        {isPipActive ? 'Salir PiP' : 'Modo PiP'}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+            )}
           </div>
 
           {/* Barra inferior — Netflix style: progress + time */}
