@@ -288,52 +288,40 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
       }
     }, []);
 
-    // Click en el video - Play/Pause + Seek
-    const handleVideoClick = useCallback((e: React.MouseEvent<HTMLVideoElement>) => {
-      const video = videoRef.current;
-      if (!video) return;
+	    // Click en el video - Solo Play/Pause (sin seek)
+	    const handleVideoClick = useCallback(() => {
+	      const video = videoRef.current;
+	      if (!video) return;
+	      if (video.paused) {
+	        video.play().catch(() => {});
+	        setIsPlaying(true);
+	      } else {
+	        video.pause();
+	        setIsPlaying(false);
+	      }
+	    }, []);
 
-      const rect = e.currentTarget.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const percentage = x / rect.width;
-      const newTime = percentage * duration;
+	    // Doble clic en el video - Fullscreen
+	    const handleVideoDoubleClick = useCallback(() => {
+	      if (!containerRef.current) return;
+	      if (!document.fullscreenElement) {
+	        containerRef.current.requestFullscreen();
+	      } else {
+	        document.exitFullscreen();
+	      }
+	    }, []);
 
-      if (video.paused) {
-        video.play().catch(() => {});
-        setIsPlaying(true);
-      } else {
-        if (Math.abs((video.currentTime / duration) - percentage) > 0.05) {
-          video.currentTime = newTime;
-        } else {
-          video.pause();
-          setIsPlaying(false);
-        }
-      }
-    }, [duration]);
-
-    const handleVideoTouch = useCallback((e: React.TouchEvent<HTMLVideoElement>) => {
-      e.preventDefault(); // Prevent double triggering with click
-      const touch = e.changedTouches[0];
-      const video = videoRef.current;
-      if (!video) return;
-
-      const rect = e.currentTarget.getBoundingClientRect();
-      const x = touch.clientX - rect.left;
-      const percentage = x / rect.width;
-      const newTime = percentage * duration;
-
-      if (video.paused) {
-        video.play().catch(() => {});
-        setIsPlaying(true);
-      } else {
-        if (Math.abs((video.currentTime / duration) - percentage) > 0.05) {
-          video.currentTime = newTime;
-        } else {
-          video.pause();
-          setIsPlaying(false);
-        }
-      }
-    }, [duration]);
+	    const handleVideoTouch = useCallback(() => {
+	      const video = videoRef.current;
+	      if (!video) return;
+	      if (video.paused) {
+	        video.play().catch(() => {});
+	        setIsPlaying(true);
+	      } else {
+	        video.pause();
+	        setIsPlaying(false);
+	      }
+	    }, []);
 
     // ── Canvas overlay anti-grabación ──
     useEffect(() => {
@@ -434,6 +422,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
           playsInline
           preload="metadata"
           onClick={handleVideoClick}
+          onDoubleClick={handleVideoDoubleClick}
           onTouchEnd={handleVideoTouch}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
@@ -499,7 +488,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
             </button>
           </div>
 
-          {/* ESQUINA SUPERIOR DERECHA - Volumen */}
+          {/* ESQUINA SUPERIOR DERECHA - Volumen estilo Netflix */}
           <div className="absolute top-4 right-4 flex items-center gap-2 pointer-events-auto">
             <div className="relative">
               <button
@@ -514,22 +503,43 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
                 )}
               </button>
               
-              {/* Slider de volumen */}
+              {/* Slider de volumen horizontal Netflix-style */}
               {showVolumeSlider && (
                 <div 
-                  className="absolute top-full right-0 mt-2 bg-black/80 backdrop-blur-sm rounded-lg p-2"
+                  className="absolute top-full right-0 mt-3 bg-black/80 backdrop-blur-sm rounded-xl p-3 min-w-[200px] shadow-xl border border-white/10"
                   onMouseLeave={() => setShowVolumeSlider(false)}
                 >
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={isMuted ? 0 : volume}
-                    onChange={handleVolumeChange}
-                    className="w-24 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
-                    style={{ writingMode: 'vertical-lr', transform: 'rotate(180deg)' }}
-                  />
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={toggleMuteHandler}
+                      className="text-white/70 hover:text-white flex-shrink-0"
+                    >
+                      {isMuted || volume === 0 ? (
+                        <VolumeX className="w-4 h-4" />
+                      ) : (
+                        <Volume2 className="w-4 h-4" />
+                      )}
+                    </button>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.05"
+                      value={isMuted ? 0 : volume}
+                      onChange={handleVolumeChange}
+                      className="flex-1 h-1.5 bg-gray-600/50 rounded-full appearance-none cursor-pointer
+                        [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5
+                        [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg
+                        [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:bg-white
+                        [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0"
+                      style={{
+                        background: `linear-gradient(to right, #10B981 ${isMuted ? 0 : volume * 100}%, #4B5563 ${isMuted ? 0 : volume * 100}%)`
+                      }}
+                    />
+                    <span className="text-white/80 text-xs font-mono min-w-[32px] text-right">
+                      {Math.round((isMuted ? 0 : volume) * 100)}%
+                    </span>
+                  </div>
                 </div>
               )}
             </div>
@@ -537,38 +547,38 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
 
           {/* CENTRO - Controles principales */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-            <div className="flex items-center gap-4 sm:gap-6 pointer-events-auto">
+            <div className="flex items-center gap-3 sm:gap-4 pointer-events-auto">
               {/* Seek -10s */}
               <button
                 onClick={handleSeekBackward}
-                className="w-14 h-14 sm:w-16 sm:h-16 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all transform hover:scale-110"
+                className="w-10 h-10 sm:w-12 sm:h-12 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all transform hover:scale-110"
               >
                 <div className="relative flex items-center justify-center">
-                  <RotateCcw className="w-8 h-8 sm:w-10 sm:h-10" strokeWidth={1.5} />
-                  <span className="absolute text-[10px] sm:text-xs font-bold mt-0.5">10</span>
+                  <RotateCcw className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.5} />
+                  <span className="absolute text-[8px] sm:text-[10px] font-bold mt-0.5">10</span>
                 </div>
               </button>
 
               {/* Play/Pause */}
               <button
                 onClick={(e) => { e.stopPropagation(); togglePlay(e); }}
-                className="w-16 h-16 sm:w-20 sm:h-20 bg-white/90 hover:bg-white text-black rounded-full flex items-center justify-center backdrop-blur-sm transition-all transform hover:scale-110 shadow-2xl"
+                className="w-12 h-12 sm:w-14 sm:h-14 bg-white/90 hover:bg-white text-black rounded-full flex items-center justify-center backdrop-blur-sm transition-all transform hover:scale-110 shadow-2xl"
               >
                 {isPlaying ? (
-                  <Pause className="w-8 h-8 sm:w-10 sm:h-10" fill="currentColor" stroke="none" />
+                  <Pause className="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" stroke="none" />
                 ) : (
-                  <Play className="w-8 h-8 sm:w-10 sm:h-10 ml-1 sm:ml-2" fill="currentColor" stroke="none" />
+                  <Play className="w-5 h-5 sm:w-6 sm:h-6 ml-0.5 sm:ml-1" fill="currentColor" stroke="none" />
                 )}
               </button>
 
               {/* Seek +10s */}
               <button
                 onClick={handleSeekForward}
-                className="w-14 h-14 sm:w-16 sm:h-16 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all transform hover:scale-110"
+                className="w-10 h-10 sm:w-12 sm:h-12 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all transform hover:scale-110"
               >
                 <div className="relative flex items-center justify-center">
-                  <RotateCw className="w-8 h-8 sm:w-10 sm:h-10" strokeWidth={1.5} />
-                  <span className="absolute text-[10px] sm:text-xs font-bold mt-0.5">10</span>
+                  <RotateCw className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.5} />
+                  <span className="absolute text-[8px] sm:text-[10px] font-bold mt-0.5">10</span>
                 </div>
               </button>
             </div>
