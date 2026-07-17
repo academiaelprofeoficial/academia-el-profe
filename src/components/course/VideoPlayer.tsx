@@ -59,6 +59,8 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
   const [buffered, setBuffered] = useState(0);
   const [showControls, setShowControls] = useState(true);
   const hideControlsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isSeekingTouch = useRef(false);
+  const seekBarRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [volume, setVolume] = useState(1);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
@@ -350,10 +352,6 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
     const handleSeek = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
       seekToPosition(e.clientX, e.currentTarget);
     }, [seekToPosition]);
-
-    // Touch seek state refs
-    const isSeekingTouch = useRef(false);
-    const seekBarRef = useRef<HTMLDivElement>(null);
 
     const handleSeekTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
       e.stopPropagation();
