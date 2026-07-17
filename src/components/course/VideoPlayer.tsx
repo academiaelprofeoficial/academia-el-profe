@@ -66,6 +66,11 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const [showAdditionalMenu, setShowAdditionalMenu] = useState(false);
 
+  // ── iOS Detection (before any early returns) ──
+  const isIOS = typeof navigator !== 'undefined' &&
+    (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+
   const [playbackRate, setPlaybackRate] = useState(1);
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [videoSize, setVideoSize] = useState<'S' | 'M' | 'L'>('M');
@@ -272,13 +277,6 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
     );
   }
 
-  // ── iOS Detection ──
-  const isIOS = useCallback(() => {
-    if (typeof navigator === 'undefined') return false;
-    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  }, []);
-
   // ── Archivo de video directo (Sanity upload: MP4, MOV, WebM) ──
   if (videoUrl) {
     const togglePlay = useCallback((e?: React.MouseEvent) => {
@@ -317,7 +315,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
       if (!video) return;
 
       // iOS: use native video fullscreen (webkitEnterFullscreen) — auto landscape
-      if (isIOS() && (video as any).webkitEnterFullscreen) {
+      if (isIOS && (video as any).webkitEnterFullscreen) {
         try {
           (video as any).webkitEnterFullscreen();
           video.play().catch(() => {});
