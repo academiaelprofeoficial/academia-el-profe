@@ -61,6 +61,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
   const hideControlsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSeekingTouch = useRef(false);
   const seekBarRef = useRef<HTMLDivElement>(null);
+  const lastTouchTimeRef = useRef(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [volume, setVolume] = useState(1);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
@@ -348,12 +349,14 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
     }, [duration]);
 
     const handleSeek = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+      e.stopPropagation();
       seekToPosition(e.clientX, e.currentTarget);
     }, [seekToPosition]);
 
     const handleSeekTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
       e.stopPropagation();
       isSeekingTouch.current = true;
+      if (hideControlsTimer.current) clearTimeout(hideControlsTimer.current);
       const touch = e.touches[0];
       seekToPosition(touch.clientX, e.currentTarget);
     }, [seekToPosition]);
@@ -411,8 +414,9 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
       }
     }, []);
 
-            // Click en el video - Solo Play/Pause (sin seek)
+            // Click en el video - Desktop: Play/Pause, Mobile: skip (handled by touch)
             const handleVideoClick = useCallback(() => {
+              if (Date.now() - lastTouchTimeRef.current < 500) return;
               const video = videoRef.current;
               if (!video) return;
               if (video.paused) {
@@ -422,7 +426,8 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
                 video.pause();
                 setIsPlaying(false);
               }
-            }, []);
+              resetControlsTimer();
+            }, [resetControlsTimer]);
 
             // Doble clic en el video - Fullscreen
             const handleVideoDoubleClick = useCallback(() => {
@@ -444,16 +449,10 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
               }
             }, []);
 
-            const handleVideoTouch = useCallback(() => {
-              const video = videoRef.current;
-              if (!video) return;
-              if (video.paused) {
-                video.play().catch(() => {});
-                setIsPlaying(true);
-              } else {
-                video.pause();
-                setIsPlaying(false);
-              }
+            const handleVideoTouch = useCallback((e: React.TouchEvent<HTMLVideoElement>) => {
+              e.preventDefault();
+              lastTouchTimeRef.current = Date.now();
+              setShowControls(prev => !prev);
             }, []);
 
     // ── Canvas overlay anti-grabación ──
@@ -489,9 +488,12 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
       const resize = () => {
         const w = container.clientWidth || video.clientWidth || 1280;
         const h = container.clientHeight || video.clientHeight || 720;
-        if (canvas.width !== w || canvas.height !== h) {
-          canvas.width = w;
-          canvas.height = h;
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const bufferW = Math.round(w * dpr);
+        const bufferH = Math.round(h * dpr);
+        if (canvas.width !== bufferW || canvas.height !== bufferH) {
+          canvas.width = bufferW;
+          canvas.height = bufferH;
           drawVideoFrame();
         }
       };
@@ -548,8 +550,6 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
           videoSize === 'S' ? 'max-w-2xl' : videoSize === 'L' ? 'max-w-6xl' : 'max-w-4xl'
         }`}
         onMouseMove={resetControlsTimer}
-        onTouchStart={resetControlsTimer}
-        onClick={resetControlsTimer}
         onMouseLeave={() => { if (isPlaying) setShowControls(false); }}
       >
         <video
@@ -599,7 +599,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
         {/* Gran botón de play inicial (solo cuando está pausado y al inicio) — Netflix rounded rectangle */}
         {!isPlaying && currentTime === 0 && (
           <button
-            onClick={togglePlay}
+            onClick={(e) => { e.stopPropagation(); togglePlay(); }}
             className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 transition-opacity"
           >
             <div className="w-20 h-14 rounded-2xl bg-white/90 hover:bg-white flex items-center justify-center transition-all shadow-2xl">
@@ -613,6 +613,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
           className={`lg:hidden absolute inset-0 transition-opacity duration-300 z-40 ${
             showControls || !isPlaying ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
+          onClick={() => setShowControls(prev => !prev)}
         >
           {/* Centro: Skip -10s | Play/Pause | Skip +10s */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
@@ -748,6 +749,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
           className={`hidden lg:block absolute inset-0 transition-opacity duration-300 z-40 ${
             showControls || !isPlaying ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
+          onClick={() => setShowControls(prev => !prev)}
         >
           {/* ESQUINA SUPERIOR IZQUIERDA - Fullscreen */}
           <div className="absolute top-4 left-4 pointer-events-auto">
