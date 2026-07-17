@@ -173,13 +173,21 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
     };
   }, [isFree, isPlaying, isPipActive, pipEnabled]);
 
-  // Detectar fullscreen
+  // Detectar fullscreen (standard + iOS webkit)
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
     };
+    const handleWebkitFullscreenChange = () => {
+      const video = videoRef.current as any;
+      setIsFullscreen(!!(video && video.webkitDisplayingFullscreen));
+    };
     document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleWebkitFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleWebkitFullscreenChange);
+    };
   }, []);
 
   // ── Pinch-to-zoom → fullscreen landscape (like YouTube mobile) ──
@@ -205,9 +213,16 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
       // If pinching out (zoom in) beyond 30px threshold → go fullscreen
       if (currentDistance - initialPinchDistance > 30 && !document.fullscreenElement) {
         pinchActive = false;
-        container.requestFullscreen().then(async () => {
-          try { await (screen.orientation as any).lock('landscape'); } catch {}
-        }).catch(() => {});
+        const video = container.querySelector('video');
+        // iOS: use native video fullscreen
+        if (video && /iPad|iPhone|iPod/.test(navigator.userAgent) && (video as any).webkitEnterFullscreen) {
+          (video as any).webkitEnterFullscreen();
+          video.play().catch(() => {});
+        } else if (container.requestFullscreen) {
+          container.requestFullscreen().then(async () => {
+            try { await (screen.orientation as any).lock('landscape'); } catch {}
+          }).catch(() => {});
+        }
       }
     };
 
@@ -255,6 +270,13 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
     );
   }
 
+  // ── iOS Detection ──
+  const isIOS = useCallback(() => {
+    if (typeof navigator === 'undefined') return false;
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }, []);
+
   // ── Archivo de video directo (Sanity upload: MP4, MOV, WebM) ──
   if (videoUrl) {
     const togglePlay = useCallback((e?: React.MouseEvent) => {
@@ -289,30 +311,69 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
     }, []);
 
     const toggleFullscreen = useCallback(async () => {
+      const video = videoRef.current;
+      if (!video) return;
+
+      // iOS: use native video fullscreen (webkitEnterFullscreen) — auto landscape
+      if (isIOS() && (video as any).webkitEnterFullscreen) {
+        try {
+          (video as any).webkitEnterFullscreen();
+          video.play().catch(() => {});
+        } catch {}
+        return;
+      }
+
+      // Android / Desktop: use container fullscreen + orientation lock
       if (!containerRef.current) return;
       if (!document.fullscreenElement) {
         try {
           await containerRef.current.requestFullscreen();
-          // Lock to landscape on mobile (like YouTube)
           try {
             await (screen.orientation as any).lock('landscape');
-          } catch {
-            // orientation lock not supported (desktop, some browsers)
-          }
+          } catch {}
         } catch {}
       } else {
         try { await (screen.orientation as any).unlock(); } catch {}
         try { await document.exitFullscreen(); } catch {}
       }
-    }, []);
+    }, [isIOS]);
 
-    const handleSeek = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    // ── Seek helpers (shared by mouse + touch) ──
+    const seekToPosition = useCallback((clientX: number, element: HTMLElement) => {
       const v = videoRef.current;
       if (!v || !duration) return;
-      const rect = e.currentTarget.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width;
+      const rect = element.getBoundingClientRect();
+      const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
       v.currentTime = x * duration;
     }, [duration]);
+
+    const handleSeek = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+      seekToPosition(e.clientX, e.currentTarget);
+    }, [seekToPosition]);
+
+    // Touch seek state refs
+    const isSeekingTouch = useRef(false);
+    const seekBarRef = useRef<HTMLDivElement>(null);
+
+    const handleSeekTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+      e.stopPropagation();
+      isSeekingTouch.current = true;
+      const touch = e.touches[0];
+      seekToPosition(touch.clientX, e.currentTarget);
+    }, [seekToPosition]);
+
+    const handleSeekTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+      if (!isSeekingTouch.current) return;
+      e.stopPropagation();
+      const touch = e.touches[0];
+      if (seekBarRef.current) {
+        seekToPosition(touch.clientX, seekBarRef.current);
+      }
+    }, [seekToPosition]);
+
+    const handleSeekTouchEnd = useCallback(() => {
+      isSeekingTouch.current = false;
+    }, []);
 
     const resetControlsTimer = useCallback(() => {
       setShowControls(true);
@@ -369,6 +430,16 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
 
             // Doble clic en el video - Fullscreen
             const handleVideoDoubleClick = useCallback(() => {
+              const video = videoRef.current;
+              if (!video) return;
+
+              // iOS: use native video fullscreen
+              if (/iPad|iPhone|iPod/.test(navigator.userAgent) && (video as any).webkitEnterFullscreen) {
+                (video as any).webkitEnterFullscreen();
+                video.play().catch(() => {});
+                return;
+              }
+
               if (!containerRef.current) return;
               if (!document.fullscreenElement) {
                 containerRef.current.requestFullscreen();
@@ -648,14 +719,23 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
 
           {/* Barra inferior — Netflix style: progress + time */}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent px-3 pt-6 pb-3 pointer-events-auto z-20">
-            {/* Progress bar */}
+            {/* Progress bar — mobile: big touch target + drag seek */}
             <div className="mb-1.5">
-              <div className="w-full h-[3px] bg-white/20 rounded-full cursor-pointer group/progress relative" onClick={handleSeek}>
+              <div
+                ref={seekBarRef}
+                className="w-full h-[3px] bg-white/20 rounded-full cursor-pointer group/progress relative"
+                onClick={handleSeek}
+                onTouchStart={handleSeekTouchStart}
+                onTouchMove={handleSeekTouchMove}
+                onTouchEnd={handleSeekTouchEnd}
+                style={{ paddingBottom: '16px', marginBottom: '-16px' }}
+              >
                 {duration > 0 && (
-                  <div className="absolute top-0 left-0 h-full bg-white/30 rounded-full" style={{ width: `${(buffered / duration) * 100}%` }} />
+                  <div className="absolute top-0 left-0 h-[3px] bg-white/30 rounded-full" style={{ width: `${(buffered / duration) * 100}%` }} />
                 )}
-                <div className="absolute top-0 left-0 h-full bg-emerald-500 rounded-full" style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}>
-                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-emerald-400 rounded-full opacity-0 group-hover/progress:opacity-100 transition-opacity shadow-[0_0_6px_rgba(16,185,129,0.6)]" />
+                <div className="absolute top-0 left-0 h-[3px] bg-emerald-500 rounded-full" style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}>
+                  {/* Scrubber dot — always visible on mobile, hover on desktop */}
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-emerald-400 rounded-full shadow-[0_0_6px_rgba(16,185,129,0.6)] lg:opacity-0 lg:group-hover/progress:opacity-100 transition-opacity" />
                 </div>
               </div>
             </div>
