@@ -99,14 +99,18 @@ export default defineConfig({
           resolve: (doc) => ({ href: "/#clientes", label: doc?.authorName || "Testimonio" }),
         },
         course: {
-          select: { title: "title", slug: "slug.current" },
+          select: { title: "title", slug: "slug.current", group: "group" },
           resolve: (doc) => {
             const slug = doc?.slug?.current || "";
             const label = doc?.title || "Curso";
-            return [
+            const locations = [
               { href: `/cursos/${slug}`, label: `${label} — Detalle` },
               { href: `/cursos/${slug}/temario`, label: `${label} — Temario` },
             ];
+            if (doc?.group === "utp" || doc?.group === "ambos") {
+              locations.push({ href: "/cursos/utp", label: `${label}` });
+            }
+            return locations;
           },
         },
         teamMember: {
