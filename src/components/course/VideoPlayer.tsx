@@ -348,13 +348,25 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       };
 
+      const drawVideoFrame = () => {
+        if (isRecording || !video.videoWidth) {
+          fillBlack();
+        } else {
+          try {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          } catch {
+            fillBlack();
+          }
+        }
+      };
+
       const resize = () => {
         const w = container.clientWidth || video.clientWidth || 1280;
         const h = container.clientHeight || video.clientHeight || 720;
         if (canvas.width !== w || canvas.height !== h) {
           canvas.width = w;
           canvas.height = h;
-          fillBlack();
+          drawVideoFrame();
         }
       };
 
@@ -386,15 +398,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
 
       const onPause = () => {
         cancelAnimationFrame(animRef.current);
-        if (isRecording || !video.videoWidth) {
-          fillBlack();
-        } else {
-          try {
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          } catch {
-            fillBlack();
-          }
-        }
+        drawVideoFrame();
       };
 
       video.addEventListener('play', onPlay);
