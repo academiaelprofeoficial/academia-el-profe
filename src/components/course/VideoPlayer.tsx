@@ -7,7 +7,7 @@
 // ============================================================
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Play, Pause, Maximize, Minimize, Volume2, VolumeX, RotateCcw, RotateCw, Settings } from 'lucide-react';
+import { Play, Pause, Maximize, Minimize, Volume2, VolumeX, RotateCcw, RotateCw } from 'lucide-react';
 import { useGlobalRecordingDetection } from '@/hooks/useGlobalRecordingDetection';
 
 interface VideoPlayerProps {
@@ -112,13 +112,22 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
     };
   }, []);
 
-  // Close speed menu when clicking outside
+  // Close menus when clicking outside
   useEffect(() => {
-    if (!showSpeedMenu) return;
-    const handleOutsideClick = () => setShowSpeedMenu(false);
-    document.addEventListener('click', handleOutsideClick);
-    return () => document.removeEventListener('click', handleOutsideClick);
-  }, [showSpeedMenu]);
+    if (!showSpeedMenu && !showAdditionalMenu) return;
+    const handleOutsideClick = () => {
+      setShowSpeedMenu(false);
+      setShowAdditionalMenu(false);
+    };
+    // Delay to avoid closing immediately on the same click that opened the menu
+    const timer = setTimeout(() => {
+      document.addEventListener('click', handleOutsideClick);
+    }, 10);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('click', handleOutsideClick);
+    };
+  }, [showSpeedMenu, showAdditionalMenu]);
 
   // Picture-in-Picture Automático al cambiar de pestaña/minimizar
   useEffect(() => {
@@ -171,6 +180,47 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
     };
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  // ── Pinch-to-zoom → fullscreen landscape (like YouTube mobile) ──
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    let initialPinchDistance = 0;
+    let pinchActive = false;
+
+    const getDistance = (t1: React.Touch, t2: React.Touch) =>
+      Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        initialPinchDistance = getDistance(e.touches[0], e.touches[1]);
+        pinchActive = true;
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!pinchActive || e.touches.length < 2) return;
+      const currentDistance = getDistance(e.touches[0], e.touches[1]);
+      // If pinching out (zoom in) beyond 30px threshold → go fullscreen
+      if (currentDistance - initialPinchDistance > 30 && !document.fullscreenElement) {
+        pinchActive = false;
+        container.requestFullscreen().then(async () => {
+          try { await (screen.orientation as any).lock('landscape'); } catch {}
+        }).catch(() => {});
+      }
+    };
+
+    const onTouchEnd = () => { pinchActive = false; };
+
+    container.addEventListener('touchstart', onTouchStart, { passive: true });
+    container.addEventListener('touchmove', onTouchMove, { passive: true });
+    container.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      container.removeEventListener('touchstart', onTouchStart);
+      container.removeEventListener('touchmove', onTouchMove);
+      container.removeEventListener('touchend', onTouchEnd);
+    };
   }, []);
 
   // ── YouTube ──
@@ -238,12 +288,21 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
       }
     }, []);
 
-    const toggleFullscreen = useCallback(() => {
+    const toggleFullscreen = useCallback(async () => {
       if (!containerRef.current) return;
       if (!document.fullscreenElement) {
-        containerRef.current.requestFullscreen();
+        try {
+          await containerRef.current.requestFullscreen();
+          // Lock to landscape on mobile (like YouTube)
+          try {
+            await (screen.orientation as any).lock('landscape');
+          } catch {
+            // orientation lock not supported (desktop, some browsers)
+          }
+        } catch {}
       } else {
-        document.exitFullscreen();
+        try { await (screen.orientation as any).unlock(); } catch {}
+        try { await document.exitFullscreen(); } catch {}
       }
     }, []);
 
@@ -588,38 +647,36 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
                 </svg>
               </button>
               {showAdditionalMenu && (
-                <div className="absolute top-full right-0 mt-2 bg-black/90 backdrop-blur-sm rounded-lg shadow-xl border border-white/10 overflow-hidden z-50 w-36">
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setShowSpeedMenu(!showSpeedMenu); setShowAdditionalMenu(false); }}
-                    className="w-full px-3 py-2.5 text-left text-xs text-white hover:bg-white/10 flex items-center gap-2"
-                  >
-                    <Settings className="w-3.5 h-3.5 text-white/70" />
-                    Velocidad: {playbackRate}x
-                  </button>
-                  {showSpeedMenu && (
-                    <div className="border-t border-white/10">
-                      {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
-                        <button
-                          key={rate}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (videoRef.current) { videoRef.current.playbackRate = rate; setPlaybackRate(rate); }
-                            setShowSpeedMenu(false);
-                          }}
-                          className={`w-full px-4 py-2 text-left text-xs hover:bg-white/10 ${playbackRate === rate ? 'bg-emerald-600 text-white font-semibold' : 'text-white/80'}`}
-                        >
-                          {rate}x
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                <div className="absolute top-full right-0 mt-2 bg-black/90 backdrop-blur-sm rounded-lg shadow-xl border border-white/10 overflow-hidden z-50 w-36" onClick={(e) => e.stopPropagation()}>
+                  {/* Speed header */}
+                  <div className="px-3 py-2 text-[10px] text-white/50 font-semibold uppercase tracking-wider">
+                    Velocidad
+                  </div>
+                  {/* Speed options — always visible inline */}
+                  <div className="pb-1">
+                    {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
+                      <button
+                        key={rate}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (videoRef.current) { videoRef.current.playbackRate = rate; setPlaybackRate(rate); }
+                          setShowAdditionalMenu(false);
+                        }}
+                        className={`w-full px-4 py-2 text-left text-xs transition-colors ${playbackRate === rate ? 'bg-emerald-600 text-white font-bold' : 'text-white/80 hover:bg-white/10'}`}
+                      >
+                        {rate}x
+                      </button>
+                    ))}
+                  </div>
                   {pipEnabled && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); togglePictureInPicture(e); setShowAdditionalMenu(false); }}
-                      className={`w-full px-3 py-2.5 text-left text-xs hover:bg-white/10 flex items-center gap-2 ${isPipActive ? 'text-emerald-400' : 'text-white'}`}
-                    >
-                      {isPipActive ? 'Salir PiP' : 'Modo PiP'}
-                    </button>
+                    <div className="border-t border-white/10">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); togglePictureInPicture(e); setShowAdditionalMenu(false); }}
+                        className={`w-full px-3 py-2.5 text-left text-xs hover:bg-white/10 flex items-center gap-2 ${isPipActive ? 'text-emerald-400' : 'text-white'}`}
+                      >
+                        {isPipActive ? 'Salir PiP' : 'Modo PiP'}
+                      </button>
+                    </div>
                   )}
                 </div>
               )}
