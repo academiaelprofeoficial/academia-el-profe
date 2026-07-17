@@ -165,10 +165,17 @@ export default defineType({
     }),
     defineField({
       name: "cardColor",
-      title: "Color de la Tarjeta",
+      title: "🎨 Color de la Tarjeta",
       type: "string",
       initialValue: "#10B981",
-      description: "Elige el color hexadecimal para la tarjeta del curso (ej: #10B981 para verde, #3B82F6 para azul).",
+      description: "Elige el color del curso. Selecciona un color predefinido o personaliza con los controles RGB.",
+      components: {
+        input: (() => {
+          // Dynamic import to avoid SSR issues with Sanity plugins
+          const mod = require("../components/ColorPickerInput");
+          return mod.ColorPickerInput;
+        })(),
+      },
     }),
     defineField({
       name: "hidden",

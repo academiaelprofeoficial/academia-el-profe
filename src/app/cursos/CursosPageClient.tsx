@@ -76,6 +76,7 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
         modules: sc.topics?.length || 0,
         price: sc.pricePEN || 0,
         priceUSD: sc.priceUSD || 0,
+        cardColor: sc.cardColor || '#10B981',
         colorKey: mock?.colorKey || 'emerald',
         formulaIcon: mock?.formulaIcon || 'BookOpen',
         formula: mock?.formula || '',
@@ -206,6 +207,18 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
           {/* Grid PC: 3 cols. Móvil: 1 col */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
             {displayCourses.map((curso, idx) => {
+              // Use cardColor hex from Sanity for all styling
+              const hex = curso.cardColor || '#10B981';
+              const darken = (h: string, amt: number) => {
+                const num = parseInt(h.replace('#',''), 16);
+                const r = Math.max(0, (num >> 16) - amt);
+                const g = Math.max(0, ((num >> 8) & 0xff) - amt);
+                const b = Math.max(0, (num & 0xff) - amt);
+                return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`;
+              };
+              const bgColor = hex;
+              const hoverBg = darken(hex, 30);
+              const textColor = darken(hex, 40);
               const colors = COLOR_MAP[curso.colorKey] || COLOR_MAP.emerald;
               const FormulaIcon = FORMULA_ICONS[curso.formulaIcon] || BookOpen;
               const isLoadingMP = !!loadingMap[`${curso.id}-mp`];
@@ -222,7 +235,7 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
                   onClick={() => handleVerTemario(curso)}
                 >
                   {/* HEADER: colored background with formula + title + description */}
-                  <div className={`${colors.bg} px-4 py-5 flex flex-col gap-2 min-h-[120px] relative`}>
+                  <div className="px-4 py-5 flex flex-col gap-2 min-h-[120px] relative" style={{ backgroundColor: bgColor }}>
                     <span className="absolute top-2 right-3 text-[10px] font-black tracking-[0.25em] text-white/20 select-none pointer-events-none uppercase">Premium</span>
                     {isPurchased && (
                       <span className="absolute top-2 left-3 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-sm text-[9px] font-bold text-white">
@@ -240,7 +253,7 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
                   {/* BODY: features list — flex-1 para igualar alturas */}
                   <div className="bg-white dark:bg-[var(--surface-2)] px-4 py-3 flex flex-col gap-2 border-b border-slate-100 dark:border-[var(--surface-border)] flex-1">
                     <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs">
-                      <CheckCircle2 className={cn('h-3.5 w-3.5 shrink-0', colors.text)} />
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0" style={{ color: textColor }} />
                       <span>{curso.modules} temas</span>
                     </div>
                     <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs">
@@ -285,11 +298,10 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
                           <button
                             disabled={isLoadingMP || isLoadingPP}
                             onClick={(e) => { e.stopPropagation(); handleMercadoPagoDirect(curso); }}
-                            className={cn(
-                              'h-9 text-[11px] font-bold tracking-wide text-white gap-1 rounded-lg flex items-center justify-center transition-all disabled:opacity-70',
-                              colors.bg,
-                              colors.hover
-                            )}
+                            className="h-9 text-[11px] font-bold tracking-wide text-white gap-1 rounded-lg flex items-center justify-center transition-all disabled:opacity-70"
+                            style={{ backgroundColor: bgColor }}
+                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = hoverBg; }}
+                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = bgColor; }}
                           >
                             {isLoadingMP ? (
                               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -319,10 +331,7 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
                         <button
                           onClick={(e) => { e.stopPropagation(); handleVerTemario(curso); }}
                           className="w-full h-9 text-xs font-bold tracking-wide gap-1.5 rounded-lg flex items-center justify-center border transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
-                          style={{
-                            borderColor: curso.colorKey === 'emerald' ? '#10B981' : curso.colorKey === 'blue' ? '#3B82F6' : curso.colorKey === 'orange' ? '#F97316' : curso.colorKey === 'purple' ? '#8B5CF6' : curso.colorKey === 'teal' ? '#14B8A6' : curso.colorKey === 'red' ? '#EF4444' : '#0EA5E9',
-                            color: curso.colorKey === 'emerald' ? '#059669' : curso.colorKey === 'blue' ? '#2563EB' : curso.colorKey === 'orange' ? '#EA580C' : curso.colorKey === 'purple' ? '#7C3AED' : curso.colorKey === 'teal' ? '#0D9488' : curso.colorKey === 'red' ? '#DC2626' : '#0284C7',
-                          }}
+                          style={{ borderColor: bgColor, color: textColor }}
                         >
                           <ListChecks className="h-3.5 w-3.5" />
                           TEMARIO
@@ -339,10 +348,8 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
                         <Link
                           href="/iniciar-sesion"
                           onClick={(e) => e.stopPropagation()}
-                          className={cn(
-                            'w-full h-10 text-xs font-bold tracking-wide text-white gap-2 rounded-lg flex items-center justify-center transition-all',
-                            colors.bg, colors.hover
-                          )}
+                          className="w-full h-10 text-xs font-bold tracking-wide text-white gap-2 rounded-lg flex items-center justify-center transition-all"
+                          style={{ backgroundColor: bgColor }}
                         >
                           <LogIn className="h-4 w-4" />
                           INICIAR SESIÓN PARA COMPRAR
@@ -351,10 +358,7 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
                         <button
                           onClick={(e) => { e.stopPropagation(); handleVerTemario(curso); }}
                           className="w-full h-9 text-xs font-bold tracking-wide gap-1.5 rounded-lg flex items-center justify-center border transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
-                          style={{
-                            borderColor: curso.colorKey === 'emerald' ? '#10B981' : curso.colorKey === 'blue' ? '#3B82F6' : curso.colorKey === 'orange' ? '#F97316' : curso.colorKey === 'purple' ? '#8B5CF6' : curso.colorKey === 'teal' ? '#14B8A6' : curso.colorKey === 'red' ? '#EF4444' : '#0EA5E9',
-                            color: curso.colorKey === 'emerald' ? '#059669' : curso.colorKey === 'blue' ? '#2563EB' : curso.colorKey === 'orange' ? '#EA580C' : curso.colorKey === 'purple' ? '#7C3AED' : curso.colorKey === 'teal' ? '#0D9488' : curso.colorKey === 'red' ? '#DC2626' : '#0284C7',
-                          }}
+                          style={{ borderColor: bgColor, color: textColor }}
                         >
                           <ListChecks className="h-3.5 w-3.5" />
                           VER TEMARIO

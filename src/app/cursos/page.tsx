@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { fetchCMS } from '@/lib/fetchCMS';
-import { ALL_COURSES_QUERY } from '@/lib/sanity.queries';
+import { GENERAL_COURSES_QUERY } from '@/lib/sanity.queries';
 import type { SanityCourse } from '@/lib/sanity.client';
 import { CursosPageClient } from './CursosPageClient';
 
@@ -11,6 +11,6 @@ export const metadata: Metadata = {
 };
 
 export default async function PaginaCursos() {
-  const sanityCourses = await fetchCMS<SanityCourse[]>(ALL_COURSES_QUERY);
+  const sanityCourses = await fetchCMS<SanityCourse[]>(GENERAL_COURSES_QUERY);
   return <CursosPageClient sanityCourses={sanityCourses} />;
 }
