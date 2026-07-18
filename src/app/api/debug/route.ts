@@ -42,19 +42,25 @@ export async function GET() {
         useCdn: false, // bypass CDN to get live data
       });
 
-      // Quick query to test connection
+      // Quick query to test connection — fetch ALL courses (including hidden)
       const start = Date.now();
       const testData = await client.fetch<{
-        allCourses: Array<{ _id: string; title: string; slug: { current: string }; cardColor: string; group: string }>;
+        allCourses: Array<{ _id: string; title: string; slug: { current: string }; cardColor: string; group: string; hidden: boolean }>;
+        visibleCourses: Array<{ _id: string; title: string }>;
         siteSettings: Array<{ _id: string; companyName: string }>;
       }>(`{
-        "allCourses": *[_type == "course" && !hidden] | order(order asc) {
+        "allCourses": *[_type == "course"] | order(order asc) {
           _id,
           title,
           "slug": slug.current,
           cardColor,
-          group
-        }[0..5],
+          group,
+          hidden
+        },
+        "visibleCourses": *[_type == "course" && !hidden] | order(order asc) {
+          _id,
+          title
+        },
         "siteSettings": *[_type == "siteSettings"][0] {
           _id,
           companyName
@@ -67,7 +73,9 @@ export async function GET() {
         latency_ms: latency,
         useCdn: false,
         perspective: "published",
-        courseCount: testData.allCourses?.length || 0,
+        totalCourses: testData.allCourses?.length || 0,
+        visibleCourses: testData.visibleCourses?.length || 0,
+        hiddenCourses: (testData.allCourses?.length || 0) - (testData.visibleCourses?.length || 0),
         courses: (testData.allCourses || []).map((c) => ({
           title: c.title,
           slug: c.slug?.current,
@@ -75,6 +83,7 @@ export async function GET() {
           cardColorClean: c.cardColor?.replace(/[^0-9a-fA-F#]/g, ""),
           cardColorHasInvisible: c.cardColor !== c.cardColor?.replace(/[^0-9a-fA-F#]/g, ""),
           group: c.group,
+          hidden: c.hidden,
         })),
         siteSettings: testData.siteSettings?.companyName || "❌ NOT FOUND",
       };
@@ -101,9 +110,9 @@ export async function GET() {
 
   // ---- 4. CACHE INFO ----
   results.cache = {
-    fetchCMS_uses: "next: { tags: ['sanity'] } — cached until webhook revalidates",
-    problem: "If the Sanity webhook is NOT configured or NOT firing, the cache NEVER expires",
-    fix: "Either (A) configure the Sanity webhook, or (B) set revalidate: 60 for 60s auto-refresh",
+    fetchCMS_uses: "next: { tags: ['sanity'], revalidate: 60 }",
+    status: "✅ Auto-refresh every 60 seconds (revalidate: 60 already deployed)",
+    webhook: revalidateSecret ? "✅ Can receive instant updates via webhook" : "⚠️ No webhook secret set — relies on 60s auto-refresh only",
   };
 
   // ---- 5. QUICK FIX: Force revalidate button ----
