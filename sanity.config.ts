@@ -45,7 +45,7 @@ export default defineConfig({
           S.listItem().title("Cursos").icon(BookIcon).id("courses-group").child(
             S.list().title("Cursos").items([
               S.listItem().title("Cursos Generales").icon(BookIcon).id("general-courses-list").child(
-                S.documentTypeList("course").title("Cursos Generales").filter('group == "general" || group == "ambos"').defaultOrdering([{ field: "order", direction: "asc" }]),
+                S.documentTypeList("course").title("Cursos Generales").filter('group != "utp"').defaultOrdering([{ field: "order", direction: "asc" }]),
               ),
               S.listItem().title("Cursos UTP").icon(BookIcon).id("utp-courses-list").child(
                 S.documentTypeList("course").title("Cursos UTP").filter('group == "utp" || group == "ambos"').defaultOrdering([{ field: "order", direction: "asc" }]),
