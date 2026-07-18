@@ -44,8 +44,14 @@ export default defineConfig({
           ),
           S.listItem().title("Cursos").icon(BookIcon).id("courses-group").child(
             S.list().title("Cursos").items([
-              S.listItem().title("Todos los Cursos").icon(BookIcon).id("courses-list").child(
-                S.documentTypeList("course").title("Cursos").defaultOrdering([{ field: "order", direction: "asc" }]),
+              S.listItem().title("Cursos Generales").icon(BookIcon).id("general-courses-list").child(
+                S.documentTypeList("course").title("Cursos Generales").filter('group == "general" || group == "ambos"').defaultOrdering([{ field: "order", direction: "asc" }]),
+              ),
+              S.listItem().title("Cursos UTP").icon(BookIcon).id("utp-courses-list").child(
+                S.documentTypeList("course").title("Cursos UTP").filter('group == "utp" || group == "ambos"').defaultOrdering([{ field: "order", direction: "asc" }]),
+              ),
+              S.listItem().title("Todos los Cursos").icon(StackIcon).id("all-courses-list").child(
+                S.documentTypeList("course").title("Todos los Cursos").defaultOrdering([{ field: "order", direction: "asc" }]),
               ),
               S.listItem().title("Biblioteca de Videos").icon(StackIcon).id("video-library-list").child(
                 S.documentTypeList("videoLibrary").title("Videos Reutilizables").defaultOrdering([{ field: "title", direction: "asc" }]),

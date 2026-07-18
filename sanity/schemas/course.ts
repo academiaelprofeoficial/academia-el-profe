@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { defineType, defineField } from "sanity";
 import { titleField, slugField, imageField, descriptionField, orderField, featuredField } from "../lib/schema-master";
+import { ColorPickerInput } from "../components/ColorPickerInput";
 
 export default defineType({
   name: "course", title: "Curso", type: "document",
@@ -170,11 +171,7 @@ export default defineType({
       initialValue: "#10B981",
       description: "Elige el color del curso. Selecciona un color predefinido o personaliza con los controles RGB.",
       components: {
-        input: (() => {
-          // Dynamic import to avoid SSR issues with Sanity plugins
-          const mod = require("../components/ColorPickerInput");
-          return mod.ColorPickerInput;
-        })(),
+        input: ColorPickerInput,
       },
     }),
     defineField({

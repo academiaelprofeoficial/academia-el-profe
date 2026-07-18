@@ -7,7 +7,7 @@
 // ============================================================
 
 import { useState, useCallback, type ComponentType } from "react";
-import { type StringInputProps, set, unset, useCustomEvent } from "sanity";
+import { type StringInputProps, set } from "sanity";
 import { ChevronDownIcon } from "@sanity/icons";
 
 /** Preset color palette — covers the most common course themes */
@@ -76,10 +76,6 @@ export const ColorPickerInput: ComponentType<StringInputProps> = function ColorP
     },
     [rgb, commit]
   );
-
-  // Track changes for patching
-  const [patchChannel, setPatchChannel] = useState<string | null>(null);
-  useCustomEvent(patchChannel ? { channel: patchChannel, value: value } : { channel: "__noop__", value: "" });
 
   return (
     <div style={{ position: "relative", width: "100%" }}>
