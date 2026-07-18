@@ -41,16 +41,6 @@ interface DetalleCursoClientProps {
   readonly course: SanityCourse;
 }
 
-const CATEGORY_COLORS: Record<string, string> = {
-  calculo: 'bg-emerald-600',
-  mecanica: 'bg-blue-600',
-  fluidos: 'bg-cyan-600',
-  termodinamica: 'bg-orange-600',
-  estadistica: 'bg-purple-600',
-  ecuaciones: 'bg-rose-600',
-  otros: 'bg-slate-600',
-};
-
 const CATEGORY_LABELS: Record<string, string> = {
   calculo: 'Calculo',
   mecanica: 'Mecanica',
@@ -60,6 +50,36 @@ const CATEGORY_LABELS: Record<string, string> = {
   ecuaciones: 'Ecuaciones Diferenciales',
   otros: 'Otros',
 };
+
+/** Derive CSS variable overrides from a hex color */
+function courseColorVars(hex: string): React.CSSProperties {
+  const h = hex.replace('#', '');
+  const num = parseInt(h, 16);
+  const r = (num >> 16) & 0xff;
+  const g = (num >> 8) & 0xff;
+  const b = num & 0xff;
+  const darken = (amt: number) => {
+    const dr = Math.max(0, r - amt);
+    const dg = Math.max(0, g - amt);
+    const db = Math.max(0, b - amt);
+    return `#${((dr << 16) | (dg << 8) | db).toString(16).padStart(6, '0')}`;
+  };
+  const lighten = (amt: number) => {
+    const lr = Math.min(255, r + amt);
+    const lg = Math.min(255, g + amt);
+    const lb = Math.min(255, b + amt);
+    return `#${((lr << 16) | (lg << 8) | lb).toString(16).padStart(6, '0')}`;
+  };
+  return {
+    '--brand-primary': hex,
+    '--brand-primary-hover': darken(30),
+    '--brand-primary-text': darken(60),
+    '--brand-primary-bg': `${hex}1F`,
+    '--brand-primary-bg-light': `${hex}0F`,
+    '--brand-primary-darkest': darken(80),
+    '--brand-primary-light-text': lighten(80),
+  } as React.CSSProperties;
+}
 
 const LEVEL_LABELS: Record<string, string> = {
   basico: 'Basico',
@@ -90,7 +110,7 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
   const backHref = isUTP ? '/cursos/utp' : '/cursos';
   const backLabel = isUTP ? 'Volver a cursos UTP' : 'Volver al catalogo';
 
-  const categoryColor = CATEGORY_COLORS[category] || 'bg-emerald-600';
+  const cardColor = course.cardColor || '#10B981';
   const categoryLabel = CATEGORY_LABELS[category] || category;
   const professor = course.professor || '';
   const pricePEN = course.pricePEN || 0;
@@ -117,7 +137,7 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
   const handleComprar = useCallback(() => setShowPurchase(true), []);
 
   return (
-    <section>
+    <section style={courseColorVars(cardColor)}>
       {/* Back Navigation */}
       <Link
         href={backHref}
@@ -131,7 +151,7 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
         {/* Main Column */}
         <div className="lg:col-span-2 space-y-6">
           {/* Course Header */}
-          <div className={cn('rounded-2xl p-6 lg:p-8 text-white', categoryColor)}>
+          <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: cardColor }}>
             <div className="flex items-start justify-between mb-4">
               <div>
                 <div className="flex items-center gap-2 mb-3 flex-wrap">

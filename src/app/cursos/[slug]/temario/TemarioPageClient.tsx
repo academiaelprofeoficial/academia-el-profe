@@ -109,16 +109,6 @@ function getFileDarkColor(mimeType?: string): string {
   return 'bg-slate-800 text-slate-400';
 }
 
-const CATEGORY_COLORS: Record<string, string> = {
-  calculo: 'bg-emerald-600',
-  mecanica: 'bg-blue-600',
-  fluidos: 'bg-cyan-600',
-  termodinamica: 'bg-orange-600',
-  estadistica: 'bg-purple-600',
-  ecuaciones: 'bg-rose-600',
-  otros: 'bg-slate-600',
-};
-
 const CATEGORY_LABELS: Record<string, string> = {
   calculo: 'Calculo',
   mecanica: 'Mecanica',
@@ -150,7 +140,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
   const description = course?.description as PortableTextBlock[] | undefined;
   const slug = course?.slug || '';
   const category = course?.category || '';
-  const categoryColor = CATEGORY_COLORS[category] || 'bg-emerald-600';
+  const cardColor = course?.cardColor || '#10B981';
   const categoryLabel = CATEGORY_LABELS[category] || category;
   const professor = course?.professor || '';
   const pricePEN = course?.pricePEN || 0;
@@ -459,8 +449,38 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
     );
   }
 
+  // Override brand-primary CSS vars with course cardColor for entire page
+  const colorStyle = useMemo(() => {
+    const h = cardColor.replace('#', '');
+    const num = parseInt(h, 16);
+    const r = (num >> 16) & 0xff;
+    const g = (num >> 8) & 0xff;
+    const b = num & 0xff;
+    const darken = (amt: number) => {
+      const dr = Math.max(0, r - amt);
+      const dg = Math.max(0, g - amt);
+      const db = Math.max(0, b - amt);
+      return `#${((dr << 16) | (dg << 8) | db).toString(16).padStart(6, '0')}`;
+    };
+    const lighten = (amt: number) => {
+      const lr = Math.min(255, r + amt);
+      const lg = Math.min(255, g + amt);
+      const lb = Math.min(255, b + amt);
+      return `#${((lr << 16) | (lg << 8) | lb).toString(16).padStart(6, '0')}`;
+    };
+    return {
+      '--brand-primary': cardColor,
+      '--brand-primary-hover': darken(30),
+      '--brand-primary-text': darken(60),
+      '--brand-primary-bg': `${cardColor}1F`,
+      '--brand-primary-bg-light': `${cardColor}0F`,
+      '--brand-primary-darkest': darken(80),
+      '--brand-primary-light-text': lighten(80),
+    } as React.CSSProperties;
+  }, [cardColor]);
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" style={colorStyle}>
       {/* ===== BACK LINK ===== */}
       <Link
         href={backUrl}
@@ -471,7 +491,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
       </Link>
 
       {/* ===== COURSE HEADER ===== */}
-      <div className={`${categoryColor} rounded-2xl p-6 lg:p-8 text-white`}>
+      <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: cardColor }}>
         <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-3 flex-wrap">

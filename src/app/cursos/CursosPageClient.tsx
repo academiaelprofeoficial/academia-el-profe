@@ -274,10 +274,10 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
                         <Link
                           href={`/cursos/${curso.id}/temario`}
                           onClick={(e) => e.stopPropagation()}
-                          className={cn(
-                            'w-full h-10 text-xs font-bold tracking-wide gap-2 rounded-lg flex items-center justify-center transition-all text-white',
-                            colors.bg, colors.hover
-                          )}
+                          className="w-full h-10 text-xs font-bold tracking-wide gap-2 rounded-lg flex items-center justify-center transition-all text-white"
+                          style={{ backgroundColor: bgColor }}
+                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = hoverBg; }}
+                          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = bgColor; }}
                         >
                           <PlayCircle className="h-4 w-4" />
                           ACCEDER AL CURSO

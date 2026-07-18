@@ -150,6 +150,39 @@ export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
     return topic.materials.sort((a, b) => (a.order ?? 100) - (b.order ?? 100));
   }, [currentVideo?.topicTitle, course.topics]);
 
+  // Course color from CMS
+  const cardColor = course.cardColor || '#10B981';
+
+  // Derive CSS variable overrides from cardColor
+  const colorStyle = useMemo(() => {
+    const h = cardColor.replace('#', '');
+    const num = parseInt(h, 16);
+    const r = (num >> 16) & 0xff;
+    const g = (num >> 8) & 0xff;
+    const b = num & 0xff;
+    const darken = (amt: number) => {
+      const dr = Math.max(0, r - amt);
+      const dg = Math.max(0, g - amt);
+      const db = Math.max(0, b - amt);
+      return `#${((dr << 16) | (dg << 8) | db).toString(16).padStart(6, '0')}`;
+    };
+    const lighten = (amt: number) => {
+      const lr = Math.min(255, r + amt);
+      const lg = Math.min(255, g + amt);
+      const lb = Math.min(255, b + amt);
+      return `#${((lr << 16) | (lg << 8) | lb).toString(16).padStart(6, '0')}`;
+    };
+    return {
+      '--brand-primary': cardColor,
+      '--brand-primary-hover': darken(30),
+      '--brand-primary-text': darken(60),
+      '--brand-primary-bg': `${cardColor}1F`,
+      '--brand-primary-bg-light': `${cardColor}0F`,
+      '--brand-primary-darkest': darken(80),
+      '--brand-primary-light-text': lighten(80),
+    } as React.CSSProperties;
+  }, [cardColor]);
+
   // canAccessMaterials is already defined above
 
   /* ================================================================ */
@@ -170,7 +203,7 @@ export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
   }
 
   return (
-    <>
+    <div style={colorStyle}>
       {/* ============================================================== */}
       {/*  DESKTOP LAYOUT — 3 columns (1 + 3 + 1)                        */}
       {/* ============================================================== */}
@@ -679,6 +712,6 @@ export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
       priceUSD={priceUSD}
       slug={slug}
     />
-    </>
+    </div>
   );
 }
