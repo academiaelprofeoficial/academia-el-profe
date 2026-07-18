@@ -59,9 +59,7 @@ export default defineConfig({
             ]),
           ),
           S.listItem().title("Equipo").icon(StarIcon).id("team-group").child(
-            S.list().title("Equipo").items([
-              ...S.documentTypeListItems().filter((item) => item.getId() === "teamMember"),
-            ]),
+            S.documentTypeList("teamMember").title("Equipo").defaultOrdering([{ field: "order", direction: "asc" }]),
           ),
           S.listItem().title("Páginas del Sitio").icon(DocumentIcon).id("pages-group").child(
             S.documentTypeList("pageContent").title("Páginas Editables").defaultOrdering([{ field: "pageTitle", direction: "asc" }]),
