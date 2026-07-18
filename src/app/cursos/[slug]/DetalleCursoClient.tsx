@@ -71,13 +71,13 @@ function courseColorVars(hex: string): React.CSSProperties {
     return `#${((lr << 16) | (lg << 8) | lb).toString(16).padStart(6, '0')}`;
   };
   return {
-    '--brand-primary': hex,
-    '--brand-primary-hover': darken(30),
-    '--brand-primary-text': darken(60),
-    '--brand-primary-bg': `${hex}1F`,
-    '--brand-primary-bg-light': `${hex}0F`,
-    '--brand-primary-darkest': darken(80),
-    '--brand-primary-light-text': lighten(80),
+    '--color-brand-primary': hex,
+    '--color-brand-primary-hover': darken(30),
+    '--color-brand-primary-text': darken(60),
+    '--color-brand-primary-bg': `${hex}1F`,
+    '--color-brand-primary-bg-light': `${hex}0F`,
+    '--color-brand-primary-darkest': darken(80),
+    '--color-brand-primary-light-text': lighten(80),
   } as React.CSSProperties;
 }
 

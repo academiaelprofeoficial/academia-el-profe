@@ -173,13 +173,13 @@ export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
       return `#${((lr << 16) | (lg << 8) | lb).toString(16).padStart(6, '0')}`;
     };
     return {
-      '--brand-primary': cardColor,
-      '--brand-primary-hover': darken(30),
-      '--brand-primary-text': darken(60),
-      '--brand-primary-bg': `${cardColor}1F`,
-      '--brand-primary-bg-light': `${cardColor}0F`,
-      '--brand-primary-darkest': darken(80),
-      '--brand-primary-light-text': lighten(80),
+      '--color-brand-primary': cardColor,
+      '--color-brand-primary-hover': darken(30),
+      '--color-brand-primary-text': darken(60),
+      '--color-brand-primary-bg': `${cardColor}1F`,
+      '--color-brand-primary-bg-light': `${cardColor}0F`,
+      '--color-brand-primary-darkest': darken(80),
+      '--color-brand-primary-light-text': lighten(80),
     } as React.CSSProperties;
   }, [cardColor]);
 
