@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
+import { sanitizeHex } from '@/lib/utils';
 import type { SanityCourse, SanityClassVideo, SanityTopic } from '@/lib/sanity.client';
 import { useAuth } from '@/lib/auth-context';
 import { VideoPlayer } from '@/components/course/VideoPlayer';
@@ -151,7 +152,7 @@ export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
   }, [currentVideo?.topicTitle, course.topics]);
 
   // Course color from CMS
-  const cardColor = course.cardColor || '#10B981';
+  const cardColor = sanitizeHex(course.cardColor);
 
   // Derive CSS variable overrides from cardColor
   const colorStyle = useMemo(() => {
@@ -181,6 +182,7 @@ export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
       '--color-brand-primary-darkest': darken(80),
       '--color-brand-primary-light-text': lighten(80),
     } as React.CSSProperties;
+    // ^ cardColor is already sanitized via sanitizeHex() above
   }, [cardColor]);
 
   // canAccessMaterials is already defined above

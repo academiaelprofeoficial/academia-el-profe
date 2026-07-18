@@ -30,12 +30,17 @@ const PRESET_COLORS = [
   { name: "Verde Lima", hex: "#84CC16" },
 ];
 
+/** Strip invisible Unicode chars that corrupt CSS hex values */
+function cleanHex(hex: string): string {
+  return hex.replace(/[^0-9a-fA-F#]/g, '');
+}
+
 function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
-  const clean = hex.replace("#", "");
-  if (clean.length !== 6) return null;
-  const r = parseInt(clean.substring(0, 2), 16);
-  const g = parseInt(clean.substring(2, 4), 16);
-  const b = parseInt(clean.substring(4, 6), 16);
+  const raw = cleanHex(hex).replace("#", "");
+  if (raw.length !== 6) return null;
+  const r = parseInt(raw.substring(0, 2), 16);
+  const g = parseInt(raw.substring(2, 4), 16);
+  const b = parseInt(raw.substring(4, 6), 16);
   if ([r, g, b].some((v) => isNaN(v))) return null;
   return { r, g, b };
 }
@@ -106,7 +111,7 @@ export const ColorPickerInput: ComponentType<StringInputProps> = function ColorP
             width: "28px",
             height: "28px",
             borderRadius: "6px",
-            backgroundColor: value || "#10B981",
+            backgroundColor: cleanHex(value) || "#10B981",
             border: "2px solid var(--sanity-colors--border)",
             flexShrink: 0,
             boxShadow: `0 0 0 1px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.15)`,
@@ -114,7 +119,7 @@ export const ColorPickerInput: ComponentType<StringInputProps> = function ColorP
         />
         {/* Hex value */}
         <span style={{ flex: 1, fontFamily: "monospace", fontSize: "14px", letterSpacing: "0.5px" }}>
-          {value || "#10B981"}
+          {(cleanHex(value) || "#10B981").toUpperCase()}
         </span>
         {/* Dropdown arrow */}
         {!readOnly && (
@@ -153,7 +158,7 @@ export const ColorPickerInput: ComponentType<StringInputProps> = function ColorP
               width: "100%",
               height: "48px",
               borderRadius: "8px",
-              backgroundColor: value || "#10B981",
+              backgroundColor: cleanHex(value) || "#10B981",
               marginBottom: "16px",
               border: "1px solid rgba(255,255,255,0.1)",
             }}
@@ -191,12 +196,12 @@ export const ColorPickerInput: ComponentType<StringInputProps> = function ColorP
                     aspectRatio: "1",
                     borderRadius: "6px",
                     backgroundColor: c.hex,
-                    border: value.toUpperCase() === c.hex.toUpperCase() ? "3px solid white" : "2px solid rgba(255,255,255,0.1)",
+                    border: cleanHex(value).toUpperCase() === c.hex.toUpperCase() ? "3px solid white" : "2px solid rgba(255,255,255,0.1)",
                     cursor: "pointer",
                     transition: "transform 0.1s ease, border-color 0.1s ease",
-                    transform: value.toUpperCase() === c.hex.toUpperCase() ? "scale(1.15)" : "scale(1)",
+                    transform: cleanHex(value).toUpperCase() === c.hex.toUpperCase() ? "scale(1.15)" : "scale(1)",
                     boxShadow:
-                      value.toUpperCase() === c.hex.toUpperCase()
+                      cleanHex(value).toUpperCase() === c.hex.toUpperCase()
                         ? "0 0 0 2px rgba(59,130,246,0.6)"
                         : "none",
                   }}
@@ -204,7 +209,7 @@ export const ColorPickerInput: ComponentType<StringInputProps> = function ColorP
                     (e.currentTarget as HTMLElement).style.transform = "scale(1.15)";
                   }}
                   onMouseLeave={(e) => {
-                    const isCurrent = value.toUpperCase() === c.hex.toUpperCase();
+                    const isCurrent = cleanHex(value).toUpperCase() === c.hex.toUpperCase();
                     (e.currentTarget as HTMLElement).style.transform = isCurrent ? "scale(1.15)" : "scale(1)";
                   }}
                 />

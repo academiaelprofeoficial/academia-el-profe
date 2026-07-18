@@ -39,7 +39,7 @@ import { AnimatedSection } from '@/components/AnimatedSection';
 import { PurchaseOverlay } from '@/components/course/PurchaseOverlay';
 import { CURSOS_LANDING, COLOR_MAP, CURSOS_MOCK } from '@/lib/data';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
-import { cn } from '@/lib/utils';
+import { cn, sanitizeHex } from '@/lib/utils';
 import { useScrollSpy } from '@/hooks/useScrollSpy';
 import type { CourseLanding, Course } from '@/types';
 import { useAuth } from '@/lib/auth-context';
@@ -208,7 +208,7 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
             {displayCourses.map((curso, idx) => {
               // Use cardColor hex from Sanity for all styling
-              const hex = curso.cardColor || '#10B981';
+              const hex = sanitizeHex(curso.cardColor);
               const darken = (h: string, amt: number) => {
                 const num = parseInt(h.replace('#',''), 16);
                 const r = Math.max(0, (num >> 16) - amt);

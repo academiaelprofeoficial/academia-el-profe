@@ -31,7 +31,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { VideoPlayer } from '@/components/course/VideoPlayer';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
-import { cn } from '@/lib/utils';
+import { cn, sanitizeHex } from '@/lib/utils';
 import type { SanityCourse, SanityImage, PortableTextBlock } from '@/lib/sanity.client';
 import { getImageUrl } from '@/lib/sanity.client';
 import { PortableText } from '@portabletext/react';
@@ -52,7 +52,8 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 /** Derive CSS variable overrides from a hex color */
-function courseColorVars(hex: string): React.CSSProperties {
+function courseColorVars(raw: string): React.CSSProperties {
+  const hex = sanitizeHex(raw);
   const h = hex.replace('#', '');
   const num = parseInt(h, 16);
   const r = (num >> 16) & 0xff;

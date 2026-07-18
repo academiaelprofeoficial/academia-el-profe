@@ -31,6 +31,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
+import { sanitizeHex } from '@/lib/utils';
 import type { SanityCourse, SanityClassVideo, SanityTopic, PortableTextBlock } from '@/lib/sanity.client';
 import { getImageUrl } from '@/lib/sanity.client';
 import { PortableText } from '@portabletext/react';
@@ -140,7 +141,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
   const description = course?.description as PortableTextBlock[] | undefined;
   const slug = course?.slug || '';
   const category = course?.category || '';
-  const cardColor = course?.cardColor || '#10B981';
+  const cardColor = sanitizeHex(course?.cardColor);
   const categoryLabel = CATEGORY_LABELS[category] || category;
   const professor = course?.professor || '';
   const pricePEN = course?.pricePEN || 0;
@@ -468,12 +469,13 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
       const lb = Math.min(255, b + amt);
       return `#${((lr << 16) | (lg << 8) | lb).toString(16).padStart(6, '0')}`;
     };
+    const safeHex = cardColor; // already sanitized above
     return {
-      '--color-brand-primary': cardColor,
+      '--color-brand-primary': safeHex,
       '--color-brand-primary-hover': darken(30),
       '--color-brand-primary-text': darken(60),
-      '--color-brand-primary-bg': `${cardColor}1F`,
-      '--color-brand-primary-bg-light': `${cardColor}0F`,
+      '--color-brand-primary-bg': `${safeHex}1F`,
+      '--color-brand-primary-bg-light': `${safeHex}0F`,
       '--color-brand-primary-darkest': darken(80),
       '--color-brand-primary-light-text': lighten(80),
     } as React.CSSProperties;
