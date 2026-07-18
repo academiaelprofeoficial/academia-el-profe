@@ -29,7 +29,7 @@ export async function GET() {
     SANITY_REVALIDATE_SECRET: revalidateSecret ? "✅ SET" : "❌ NOT SET — webhook will reject all requests",
     SANITY_API_READ_TOKEN: apiReadToken ? `✅ SET (${apiReadToken.slice(0, 6)}***)` : "⚠️ NOT SET (draft mode won't work)",
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || "❌ NOT SET",
-    NEXT_PUBLIC_FIREBASE_...: process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? "✅ SET" : "❌ NOT SET",
+    firebase: process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? "✅ SET" : "❌ NOT SET",
   };
 
   // ---- 2. SANITY CONNECTION TEST ----
