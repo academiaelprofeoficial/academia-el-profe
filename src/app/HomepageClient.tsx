@@ -27,6 +27,7 @@ import {
   Zap,
   Users,
   Trophy,
+  ExternalLink,
 } from 'lucide-react';
 import { motion, useInView, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import gsap from 'gsap';
@@ -58,7 +59,7 @@ interface Props {
   sanityData?: SanityData;
 }
 
-const SECTION_IDS = ['hero', 'universidades', 'utp', 'numeros', 'clientes', 'beneficios'] as const;
+const SECTION_IDS = ['hero', 'universidades', 'utp', 'numeros', 'redes', 'clientes', 'beneficios'] as const;
 
 /* ------------------------------------------------------------------ */
 /*  Counter animation hook                                              */
@@ -310,6 +311,174 @@ function UTPSection() {
               loading="lazy"
             />
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Social Media Section — Ultra Professional                          */
+/* ------------------------------------------------------------------ */
+
+const SOCIAL_LINKS = [
+  {
+    name: 'TikTok',
+    handle: '@academiaelprofe20',
+    url: 'https://www.tiktok.com/@academiaelprofe20?_r=1&_t=ZS-97oVpcWj285',
+    glowColor: 'rgba(255, 0, 80, 0.5)',
+    borderColor: 'border-[#ff0050]/20',
+    hoverBorder: 'hover:border-[#ff0050]/50',
+    iconBg: 'bg-gradient-to-br from-[#25f4ee] to-[#fe2c55]',
+    iconShadow: 'shadow-[0_0_30px_rgba(255,0,80,0.4)]',
+    hoverGlow: 'group-hover:shadow-[0_0_50px_rgba(255,0,80,0.6)]',
+    tagColor: 'text-[#ff0050]',
+    tagBg: 'bg-[#ff0050]/10',
+    description: 'Clases cortas, tips de ingeniería y contenido educativo que no encuentras en ningún lado.',
+    ctaLabel: 'Ver en TikTok',
+  },
+  {
+    name: 'Facebook',
+    handle: 'Academia El Profe',
+    url: 'https://www.facebook.com/share/1KcKtAFkzV/?mibextid=wwXIfr',
+    glowColor: 'rgba(24, 119, 242, 0.5)',
+    borderColor: 'border-[#1877F2]/20',
+    hoverBorder: 'hover:border-[#1877F2]/50',
+    iconBg: 'bg-gradient-to-br from-[#1877F2] to-[#0d47a1]',
+    iconShadow: 'shadow-[0_0_30px_rgba(24,119,242,0.4)]',
+    hoverGlow: 'group-hover:shadow-[0_0_50px_rgba(24,119,242,0.6)]',
+    tagColor: 'text-[#1877F2]',
+    tagBg: 'bg-[#1877F2]/10',
+    description: 'Comunidad de estudiantes, anuncios de nuevos cursos y contenido exclusivo para seguidores.',
+    ctaLabel: 'Seguir en Facebook',
+  },
+];
+
+function TikTokIconPro({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M38.16 8.38a10.58 10.58 0 01-7.34-4.8V3h-7.4v29.42a6.2 6.2 0 01-6.2 5.58 6.2 6.2 0 01-6.2-6.2 6.2 6.2 0 016.2-6.2c.64 0 1.24.1 1.82.26v-7.54a13.64 13.64 0 00-1.82-.12A13.74 13.74 0 003.8 31.82 13.74 13.74 0 0017.54 45.56c7.6 0 13.74-6.14 13.74-13.74V18.6a17.9 17.9 0 009.72 2.84v-7.4a10.5 10.5 0 01-2.84-5.66z" fill="white"/>
+    </svg>
+  );
+}
+
+function FacebookIconPro({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M48 24C48 10.745 37.255 0 24 0S0 10.745 0 24c0 11.979 8.776 21.908 20.25 23.708v-16.77h-6.094V24h6.094v-5.288c0-6.014 3.583-9.337 9.065-9.337 2.626 0 5.372.469 5.372.469v5.906h-3.026c-2.981 0-3.911 1.85-3.911 3.75V24h6.656l-1.064 6.938H27.75v16.77C39.224 45.908 48 35.978 48 24z" fill="white"/>
+    </svg>
+  );
+}
+
+function SocialCard({ social, index }: { social: typeof SOCIAL_LINKS[number]; index: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, amount: 0.4 });
+  const Icon = social.name === 'TikTok' ? TikTokIconPro : FacebookIconPro;
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 40, scale: 0.95 }}
+      animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+      transition={{ duration: 0.7, delay: index * 0.15, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <a
+        href={social.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`group relative block rounded-2xl border ${social.borderColor} ${social.hoverBorder}
+          bg-white dark:bg-[var(--surface-2)] p-6 sm:p-8 transition-all duration-500
+          hover:-translate-y-2 ${social.hoverGlow}
+          shadow-lg hover:shadow-2xl`}
+      >
+        {/* Glow orb background effect */}
+        <div
+          className="absolute -top-20 -right-20 w-40 h-40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-3xl pointer-events-none"
+          style={{ backgroundColor: social.glowColor }}
+        />
+
+        {/* Top: Icon + Name */}
+        <div className="flex items-center justify-between mb-6 relative z-10">
+          <div className="flex items-center gap-4">
+            <div
+              className={`h-14 w-14 sm:h-16 sm:w-16 rounded-2xl ${social.iconBg} flex items-center justify-center
+                ${social.iconShadow} group-hover:scale-110 transition-transform duration-300`}
+            >
+              <Icon className="h-8 w-8 sm:h-9 sm:w-9" />
+            </div>
+            <div>
+              <h3 className="text-lg sm:text-xl font-extrabold text-brand-heading">{social.name}</h3>
+              <p className={`text-sm ${social.tagColor} font-medium`}>{social.handle}</p>
+            </div>
+          </div>
+          <div className={`h-10 w-10 rounded-full ${social.tagBg} flex items-center justify-center
+            opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-0 -translate-x-2`}>
+            <ExternalLink className={`h-4 w-4 ${social.tagColor}`} />
+          </div>
+        </div>
+
+        {/* Description */}
+        <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-6 relative z-10">
+          {social.description}
+        </p>
+
+        {/* CTA */}
+        <div className="relative z-10">
+          <span className={`inline-flex items-center gap-2 text-sm font-bold ${social.tagColor} group-hover:gap-3 transition-all duration-300`}>
+            {social.ctaLabel}
+            <ArrowRight className="h-4 w-4" />
+          </span>
+        </div>
+
+        {/* Bottom decorative gradient bar */}
+        <div className={`absolute bottom-0 left-6 right-6 h-0.5 bg-gradient-to-r from-[#ff0050] via-[#fe2c55] to-[#25f4ee] opacity-30 group-hover:opacity-80 transition-opacity duration-500 rounded-full`} />
+      </a>
+    </motion.div>
+  );
+}
+
+function SocialMediaSection() {
+  const ref = useRef<HTMLElement>(null);
+  const isInView = useInView(ref, { once: true, amount: 0.2 });
+
+  return (
+    <section id="redes" ref={ref} className="py-14 lg:py-20 scroll-mt-16 relative overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white via-slate-50/80 to-white dark:from-[var(--surface-0)] dark:via-[var(--surface-1)] dark:to-[var(--surface-0)] pointer-events-none" />
+      <div className="absolute top-10 left-[15%] w-64 h-64 bg-[#ff0050]/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-10 right-[15%] w-64 h-64 bg-[#1877F2]/5 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <motion.div
+          className="text-center mb-10 lg:mb-14"
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+        >
+          <motion.div
+            className="inline-flex items-center gap-2 bg-brand-primary-bg-light dark:bg-brand-primary-bg px-4 py-1.5 rounded-full text-sm font-semibold text-brand-primary-text mb-4"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={isInView ? { opacity: 1, scale: 1 } : {}}
+            transition={{ delay: 0.1, duration: 0.5 }}
+          >
+            <Zap className="h-4 w-4" />
+            NUESTRAS REDES SOCIALES
+          </motion.div>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-brand-heading mb-3">
+            Únete a Nuestra{' '}
+            <span className="bg-gradient-to-r from-[#ff0050] via-[#fe2c55] to-[#25f4ee] bg-clip-text text-transparent">
+              Comunidad
+            </span>
+          </h2>
+          <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 max-w-lg mx-auto">
+            Síguenos en redes sociales para obtener contenido exclusivo, tips de estudio y ser el primero en enterarte de nuevos cursos.
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6">
+          {SOCIAL_LINKS.map((social, idx) => (
+            <SocialCard key={social.name} social={social} index={idx} />
+          ))}
         </div>
       </div>
     </section>
@@ -660,6 +829,11 @@ export function HomepageClient({ sanityData }: Props) {
           </div>
         </section>
       )}
+
+      {/* ============================================================ */}
+      {/* REDES SOCIALES */}
+      {/* ============================================================ */}
+      <SocialMediaSection />
 
       {/* ============================================================ */}
       {/* TESTIMONIOS */}
