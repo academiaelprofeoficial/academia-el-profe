@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   FileText,
   Clock,
+  Users,
   Shield,
   PlayCircle,
   ShoppingCart,
@@ -58,7 +59,7 @@ const FORMULA_ICONS: Record<string, React.ComponentType<{ className?: string }>>
 };
 
 export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCourse[] | null }) {
-  const { user, purchasedCourseIds } = useAuth();
+  const { user, purchasedCourseIds, isGoogleUser } = useAuth();
   const [cursoCompra, setCursoCompra] = useState<Course | null>(null);
   const [compraAbierta, setCompraAbierta] = useState(false);
   const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>({});
@@ -81,6 +82,7 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
         formulaIcon: mock?.formulaIcon || 'BookOpen',
         formula: mock?.formula || '',
         coverImage: getImageUrl(sc.coverImage, 400, 250) || '',
+        studentCount: sc.studentCount || 0,
         _sanityId: sc._id,
       };
     });
@@ -264,6 +266,10 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
                       <Lock className="h-3.5 w-3.5 shrink-0 text-slate-400" />
                       <span>Acceso permanente</span>
                     </div>
+                    <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs">
+                      <Users className="h-3.5 w-3.5 shrink-0" style={{ color: textColor }} />
+                      <span>{curso.studentCount > 0 ? `${curso.studentCount} alumnos inscritos` : 'Primeros en inscribirse'}</span>
+                    </div>
                   </div>
 
                   {/* FOOTER: price + payment buttons + temario — mt-auto para alinear abajo */}
@@ -287,7 +293,8 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
                         </p>
                       </>
                     ) : user ? (
-                      /* ---- AUTENTICADO: botones de pago ---- */
+                      isGoogleUser ? (
+                      /* ---- GOOGLE AUTHENTICATED: botones de pago ---- */
                       <>
                         <div className="flex items-baseline gap-3">
                           <span className="text-xl font-bold text-orange-500">{formatoSoles(curso.price)}</span>
@@ -337,6 +344,43 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
                           TEMARIO
                         </button>
                       </>
+                    ) : (
+                      /* ---- LOGUEADO PERO NO CON GOOGLE: exigir Google ---- */
+                      <>
+                        <div className="flex items-baseline gap-3">
+                          <span className="text-xl font-bold text-orange-500">{formatoSoles(curso.price)}</span>
+                          <span className="text-xs text-slate-400 font-medium">{formatoUSD(curso.priceUSD)}</span>
+                        </div>
+
+                        <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-900/20 px-3 py-2.5 text-center">
+                          <p className="text-[11px] font-semibold text-amber-700 dark:text-amber-400 mb-1">
+                            Debes iniciar sesión con Google para comprar
+                          </p>
+                          <p className="text-[10px] text-amber-600/80 dark:text-amber-500/60">
+                            Tu cuenta actual no está vinculada con Google
+                          </p>
+                        </div>
+
+                        <Link
+                          href="/iniciar-sesion"
+                          onClick={(e) => e.stopPropagation()}
+                          className="w-full h-10 text-xs font-bold tracking-wide text-white gap-2 rounded-lg flex items-center justify-center transition-all"
+                          style={{ backgroundColor: bgColor }}
+                        >
+                          <LogIn className="h-4 w-4" />
+                          INICIAR SESIÓN CON GOOGLE
+                        </Link>
+
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleVerTemario(curso); }}
+                          className="w-full h-9 text-xs font-bold tracking-wide gap-1.5 rounded-lg flex items-center justify-center border transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                          style={{ borderColor: bgColor, color: textColor }}
+                        >
+                          <ListChecks className="h-3.5 w-3.5" />
+                          VER TEMARIO
+                        </button>
+                      </>
+                    )
                     ) : (
                       /* ---- INVITADO: "Iniciar sesión para comprar" ---- */
                       <>
