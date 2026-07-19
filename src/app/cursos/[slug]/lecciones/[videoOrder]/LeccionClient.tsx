@@ -28,6 +28,8 @@ import {
   MessageSquare,
   ThumbsUp,
   QrCode,
+  LogIn,
+  ShieldAlert,
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
@@ -80,7 +82,7 @@ interface LeccionClientProps {
 /* ------------------------------------------------------------------ */
 
 export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
-  const { user, purchasedCourseIds, isOwner } = useAuth();
+  const { user, purchasedCourseIds, isOwner, isGoogleUser } = useAuth();
   const [comentario, setComentario] = useState('');
   const [expandedTopic, setExpandedTopic] = useState<string | null>(null);
   const [showQr, setShowQr] = useState(false);
@@ -364,24 +366,49 @@ export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
                 <p className="text-sm text-muted-foreground mb-6 max-w-sm">
                   Esta clase requiere la compra del curso para acceder al video y materiales.
                 </p>
-                <div className="flex items-baseline gap-2 mb-4">
+              <div className="flex items-baseline gap-2 mb-4">
                   <span className="text-2xl font-bold text-foreground">{formatoSoles(pricePEN)}</span>
                   <span className="text-sm text-muted-foreground">{formatoUSD(priceUSD)}</span>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-2">
+                {/* Auth Gate: require Google login */}
+                {!user ? (
+                  <div className="space-y-2 w-full">
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-900/20 p-4 text-center">
+                      <ShieldAlert className="h-8 w-8 text-amber-500 mx-auto mb-2" />
+                      <p className="text-sm font-bold text-amber-800 dark:text-amber-300 mb-1">Debes iniciar sesion para comprar</p>
+                      <p className="text-xs text-amber-600/80 dark:text-amber-500/60">Usa tu cuenta de Google para continuar</p>
+                    </div>
+                    <Link
+                      href="/iniciar-sesion"
+                      className="flex-1 bg-brand-primary hover:bg-brand-primary-hover text-white font-bold text-sm py-2.5 px-6 rounded-xl transition-colors flex items-center justify-center gap-2 w-full"
+                    >
+                      <LogIn className="h-4 w-4" />
+                      Iniciar Sesion con Google
+                    </Link>
+                  </div>
+                ) : !isGoogleUser ? (
+                  <div className="w-full">
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-900/20 p-4 text-center">
+                      <ShieldAlert className="h-8 w-8 text-amber-500 mx-auto mb-2" />
+                      <p className="text-sm font-bold text-amber-800 dark:text-amber-300 mb-1">Se requiere cuenta de Google</p>
+                      <p className="text-xs text-amber-600/80 dark:text-amber-500/60">Cierra sesion y entra con Google</p>
+                    </div>
+                  </div>
+                ) : (
+                <div className="flex flex-col sm:flex-row gap-2 w-full">
                   <Link
                     href={`/api/checkout?courseId=${slug}&provider=mercadopago`}
-                    className="bg-[#009ee3] hover:bg-[#007ab8] text-white font-bold text-sm py-2.5 px-6 rounded-xl transition-colors flex items-center justify-center gap-2"
+                    className="flex-1 bg-[#009ee3] hover:bg-[#007ab8] text-white font-bold text-sm py-2.5 px-6 rounded-xl transition-colors flex items-center justify-center gap-2"
                   >
                     <ShoppingCart className="h-4 w-4" />
-                    MercadoPago
+                    Pagar con MercadoPago
                   </Link>
                   <Link
                     href={`/api/checkout/paypal?courseId=${slug}`}
-                    className="bg-[#ffc439] hover:bg-[#f0b020] text-[#003087] font-bold text-sm py-2.5 px-6 rounded-xl transition-colors flex items-center justify-center gap-2"
+                    className="flex-1 bg-[#ffc439] hover:bg-[#f0b020] text-[#003087] font-bold text-sm py-2.5 px-6 rounded-xl transition-colors flex items-center justify-center gap-2"
                   >
                     <ShoppingCart className="h-4 w-4" />
-                    PayPal
+                    Pagar con PayPal
                   </Link>
                   <button
                     onClick={() => setShowQr(true)}
@@ -391,6 +418,7 @@ export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
                     Pagar con QR
                   </button>
                 </div>
+                )}
               </div>
             ) : (
               /* ---- VIDEO PLAYER ---- */
@@ -602,20 +630,43 @@ export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
               <span className="text-2xl font-bold">{formatoSoles(pricePEN)}</span>
               <span className="text-sm text-muted-foreground">{formatoUSD(priceUSD)}</span>
             </div>
+            {!user ? (
+              <div className="w-full space-y-2">
+                <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-900/20 p-3 text-center">
+                  <ShieldAlert className="h-6 w-6 text-amber-500 mx-auto mb-1" />
+                  <p className="text-xs font-bold text-amber-800 dark:text-amber-300">Debes iniciar sesion con Google para comprar</p>
+                </div>
+                <Link
+                  href="/iniciar-sesion"
+                  className="flex-1 bg-brand-primary hover:bg-brand-primary-hover text-white font-bold text-sm py-2.5 rounded-xl text-center flex items-center justify-center gap-2 w-full"
+                >
+                  <LogIn className="h-4 w-4" />
+                  Iniciar Sesion con Google
+                </Link>
+              </div>
+            ) : !isGoogleUser ? (
+              <div className="w-full">
+                <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-900/20 p-3 text-center">
+                  <ShieldAlert className="h-6 w-6 text-amber-500 mx-auto mb-1" />
+                  <p className="text-xs font-bold text-amber-800 dark:text-amber-300">Se requiere cuenta de Google</p>
+                </div>
+              </div>
+            ) : (
             <div className="flex gap-2 w-full">
               <Link
                 href={`/api/checkout?courseId=${slug}&provider=mercadopago`}
                 className="flex-1 bg-[#009ee3] text-white font-bold text-sm py-2.5 rounded-xl text-center"
               >
-                MercadoPago
+                Pagar con MercadoPago
               </Link>
               <Link
                 href={`/api/checkout/paypal?courseId=${slug}`}
                 className="flex-1 bg-[#ffc439] text-[#003087] font-bold text-sm py-2.5 rounded-xl text-center"
               >
-                PayPal
+                Pagar con PayPal
               </Link>
             </div>
+            )}
           </div>
         ) : (
           <div className="rounded-xl overflow-hidden bg-black mb-4">

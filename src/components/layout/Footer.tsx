@@ -79,11 +79,11 @@ export function Footer() {
   const anioActual = new Date().getFullYear();
 
   const socials = [
-    { url: settings?.tiktokUrl, icon: TikTokIcon, label: 'TikTok', color: 'hover:text-[#ff0050]' },
-    { url: settings?.facebookUrl, icon: FacebookIcon, label: 'Facebook', color: 'hover:text-[#1877F2]' },
-    { url: settings?.instagramUrl, icon: InstagramIcon, label: 'Instagram', color: 'hover:text-[#E4405F]' },
-    { url: settings?.youtubeUrl, icon: YouTubeIcon, label: 'YouTube', color: 'hover:text-[#FF0000]' },
-  ].filter(s => s.url);
+    { url: settings?.tiktokUrl || '#', icon: TikTokIcon, label: 'TikTok', color: 'hover:text-[#ff0050]' },
+    { url: settings?.facebookUrl || '#', icon: FacebookIcon, label: 'Facebook', color: 'hover:text-[#1877F2]' },
+    { url: settings?.instagramUrl || '#', icon: InstagramIcon, label: 'Instagram', color: 'hover:text-[#E4405F]' },
+    { url: settings?.youtubeUrl || '#', icon: YouTubeIcon, label: 'YouTube', color: 'hover:text-[#FF0000]' },
+  ];
 
   return (
     <footer className="border-t border-border/40 bg-muted/20 px-6 py-8">
@@ -98,25 +98,32 @@ export function Footer() {
           </div>
 
           {/* Social Media Icons */}
-          {socials.length > 0 && (
-            <div className="flex items-center gap-1">
-              {socials.map((s) => {
-                const Icon = s.icon;
-                return (
-                  <a
-                    key={s.label}
-                    href={s.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={s.label}
-                    className={`p-2 rounded-full text-muted-foreground/70 transition-all duration-200 ${s.color} hover:scale-110 hover:bg-muted/60 active:scale-95`}
-                  >
-                    <Icon size={20} />
-                  </a>
-                );
-              })}
-            </div>
-          )}
+          <div className="flex items-center gap-1">
+            {socials.map((s) => {
+              const Icon = s.icon;
+              const isPlaceholder = s.url === '#';
+              return isPlaceholder ? (
+                <span
+                  key={s.label}
+                  aria-label={s.label}
+                  className={`p-2 rounded-full text-muted-foreground/40 cursor-default ${s.color}`}
+                >
+                  <Icon size={20} />
+                </span>
+              ) : (
+                <a
+                  key={s.label}
+                  href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                  className={`p-2 rounded-full text-muted-foreground/70 transition-all duration-200 ${s.color} hover:scale-110 hover:bg-muted/60 active:scale-95`}
+                >
+                  <Icon size={20} />
+                </a>
+              );
+            })}
+          </div>
         </div>
 
         {/* Divider */}

@@ -29,6 +29,8 @@ import {
   Send,
   ListChecks,
   Loader2,
+  LogIn,
+  ShieldAlert,
 } from 'lucide-react';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
 import { sanitizeHex } from '@/lib/utils';
@@ -125,7 +127,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 /* ------------------------------------------------------------------ */
 
 export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }: TemarioPageClientProps) {
-  const { user, purchasedCourseIds, isOwner } = useAuth();
+  const { user, purchasedCourseIds, isOwner, isGoogleUser } = useAuth();
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set());
   const [selectedVideo, setSelectedVideo] = useState<SelectedVideo | null>(null);
   const [activeTopicTitle, setActiveTopicTitle] = useState<string | null>(null);
@@ -545,7 +547,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
           </div>
 
           {/* Price card — estilo directo como en /cursos */}
-          {!isFreeCourse && (
+          {!isFreeCourse && !hasFullAccess && (
             <div className="bg-white/15 backdrop-blur-sm rounded-xl p-5 text-center min-w-[200px]">
               <p className="text-xs text-white/70 mb-1">Precio del curso</p>
               <div className="flex items-baseline justify-center gap-2 mb-1">
@@ -553,8 +555,34 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                 <span className="text-sm text-white/80 font-medium">{formatoUSD(priceUSD)}</span>
               </div>
 
-              {/* Botones de pago directo — MP y PayPal con POST */}
-              <div className="flex flex-col gap-1.5 mt-3">
+              {/* Auth Gate: require Google login to purchase */}
+              {!user ? (
+                <div className="flex flex-col gap-1.5 mt-3">
+                  <div className="rounded-lg border border-amber-300/40 bg-amber-500/20 p-3 text-center">
+                    <ShieldAlert className="h-6 w-6 text-amber-300 mx-auto mb-1" />
+                    <p className="text-[11px] font-bold text-amber-100 mb-0.5">Debes iniciar sesion para comprar</p>
+                    <p className="text-[10px] text-amber-200/70">Usa tu cuenta de Google</p>
+                  </div>
+                  <Link
+                    href="/iniciar-sesion"
+                    className="w-full h-10 text-xs font-bold tracking-wide text-white gap-1.5 rounded-lg flex items-center justify-center transition-all bg-white/25 hover:bg-white/35"
+                  >
+                    <LogIn className="h-4 w-4 shrink-0" />
+                    Iniciar Sesion con Google
+                  </Link>
+                </div>
+              ) : !isGoogleUser ? (
+                <div className="flex flex-col gap-1.5 mt-3">
+                  <div className="rounded-lg border border-amber-300/40 bg-amber-500/20 p-3 text-center">
+                    <ShieldAlert className="h-6 w-6 text-amber-300 mx-auto mb-1" />
+                    <p className="text-[11px] font-bold text-amber-100 mb-0.5">Se requiere cuenta de Google</p>
+                    <p className="text-[10px] text-amber-200/70">Cierra sesion y entra con Google</p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                {/* Botones de pago directo — MP y PayPal con POST */}
+                <div className="flex flex-col gap-1.5 mt-3">
                 <button
                   onClick={handleMP}
                   disabled={loadingPay[`${slug}-mp`] || loadingPay[`${slug}-pp`]}
@@ -565,7 +593,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                   ) : (
                     <ShoppingCart className="h-4 w-4 shrink-0" />
                   )}
-                  PEN {formatoSoles(pricePEN)} — Mercado Pago
+                  Pagar con MercadoPago
                 </button>
                 <button
                   onClick={handlePayPal}
@@ -577,7 +605,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                   ) : (
                     <img src="/images/paypal-logo.png" alt="PP" className="h-4 w-4 object-contain shrink-0" />
                   )}
-                  USD {formatoUSD(priceUSD)} — PayPal
+                  Pagar con PayPal
                 </button>
                 <Link
                   href={`/cursos/${slug}/temario`}
@@ -587,6 +615,8 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                   VER TEMARIO
                 </Link>
               </div>
+                </>
+              )}
             </div>
           )}
         </div>

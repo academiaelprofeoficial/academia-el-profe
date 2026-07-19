@@ -25,7 +25,10 @@ import {
   BadgeCheck,
   ChevronRight,
   QrCode,
+  LogIn,
+  ShieldAlert,
 } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -98,6 +101,7 @@ const ptComponents = {
 };
 
 export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
+  const { user, isGoogleUser } = useAuth();
   const [showPurchase, setShowPurchase] = useState(false);
   const [showQr, setShowQr] = useState(false);
 
@@ -427,6 +431,39 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
                 Soporte del profesor
               </div>
             </div>
+            {/* Auth Gate: require Google login to purchase */}
+            {!user ? (
+              <div className="space-y-3">
+                <div className="rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-900/20 p-4 text-center">
+                  <ShieldAlert className="h-8 w-8 text-amber-500 mx-auto mb-2" />
+                  <p className="text-sm font-bold text-amber-800 dark:text-amber-300 mb-1">
+                    Debes iniciar sesion para comprar
+                  </p>
+                  <p className="text-xs text-amber-600/80 dark:text-amber-500/60">
+                    Inicia sesion con tu cuenta de Google para continuar con el pago
+                  </p>
+                </div>
+                <Link
+                  href="/iniciar-sesion"
+                  className="flex-1 bg-brand-primary hover:bg-brand-primary-hover text-white font-bold text-sm py-3 rounded-xl text-center transition-colors flex items-center justify-center gap-2 w-full"
+                >
+                  <LogIn className="h-4 w-4" />
+                  Iniciar Sesion con Google
+                </Link>
+              </div>
+            ) : !isGoogleUser ? (
+              <div className="space-y-3">
+                <div className="rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-900/20 p-4 text-center">
+                  <ShieldAlert className="h-8 w-8 text-amber-500 mx-auto mb-2" />
+                  <p className="text-sm font-bold text-amber-800 dark:text-amber-300 mb-1">
+                    Se requiere cuenta de Google
+                  </p>
+                  <p className="text-xs text-amber-600/80 dark:text-amber-500/60">
+                    Para comprar cursos debes iniciar sesion con tu cuenta de Google. Cierra sesion y vuelve a entrar con Google.
+                  </p>
+                </div>
+              </div>
+            ) : (
             <div className="flex flex-col gap-2">
               <Link
                 href={`/api/checkout?courseId=${slug}&provider=mercadopago`}
@@ -448,6 +485,7 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
                 Pagar con QR
               </button>
             </div>
+            )}
             <button
               onClick={() => setShowPurchase(false)}
               className="w-full mt-3 text-sm text-muted-foreground hover:text-foreground py-2"
