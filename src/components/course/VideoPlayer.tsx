@@ -226,10 +226,9 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
         if (video && /iPad|iPhone|iPod/.test(navigator.userAgent) && (video as any).webkitEnterFullscreen) {
           (video as any).webkitEnterFullscreen();
           video.play().catch(() => {});
-        } else if (container.requestFullscreen) {
-          container.requestFullscreen().then(async () => {
-            try { await (screen.orientation as any).lock('landscape'); } catch {}
-          }).catch(() => {});
+        } else if (video && video.requestFullscreen) {
+          // Android / Desktop: use VIDEO ELEMENT fullscreen (native browser controls)
+          video.requestFullscreen().catch(() => {});
         }
       }
     };
@@ -315,7 +314,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
       const video = videoRef.current;
       if (!video) return;
 
-      // iOS: use native video fullscreen (webkitEnterFullscreen) — auto landscape
+      // iOS: use native video fullscreen (webkitEnterFullscreen)
       if (isIOS && (video as any).webkitEnterFullscreen) {
         try {
           (video as any).webkitEnterFullscreen();
@@ -324,17 +323,12 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
         return;
       }
 
-      // Android / Desktop: use container fullscreen + orientation lock
-      if (!containerRef.current) return;
+      // Android / Desktop: use VIDEO ELEMENT fullscreen (native browser controls, same UX as iOS)
       if (!document.fullscreenElement) {
         try {
-          await containerRef.current.requestFullscreen();
-          try {
-            await (screen.orientation as any).lock('landscape');
-          } catch {}
+          await video.requestFullscreen();
         } catch {}
       } else {
-        try { await (screen.orientation as any).unlock(); } catch {}
         try { await document.exitFullscreen(); } catch {}
       }
     }, [isIOS]);
@@ -416,6 +410,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
 
             // Click en el video - Desktop: Play/Pause, Mobile: skip (handled by touch)
             const handleVideoClick = useCallback(() => {
+              if (document.fullscreenElement) return; // Don't interfere with native fullscreen controls
               if (Date.now() - lastTouchTimeRef.current < 500) return;
               const video = videoRef.current;
               if (!video) return;
@@ -441,15 +436,16 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
                 return;
               }
 
-              if (!containerRef.current) return;
+              // Android / Desktop: use VIDEO ELEMENT fullscreen (native browser controls)
               if (!document.fullscreenElement) {
-                containerRef.current.requestFullscreen();
+                video.requestFullscreen().catch(() => {});
               } else {
-                document.exitFullscreen();
+                document.exitFullscreen().catch(() => {});
               }
             }, []);
 
             const handleVideoTouch = useCallback((e: React.TouchEvent<HTMLVideoElement>) => {
+              if (document.fullscreenElement) return; // Don't interfere with native fullscreen controls
               e.preventDefault();
               lastTouchTimeRef.current = Date.now();
               setShowControls(prev => !prev);
