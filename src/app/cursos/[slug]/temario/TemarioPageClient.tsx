@@ -167,7 +167,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cursoId: slug, titulo: safeTitle, precio: pricePEN, userId: user?.uid || undefined
+        body: JSON.stringify({ cursoId: slug, titulo: safeTitle, precio: pricePEN, userId: user?.uid || undefined,
           userEmail: user?.email || undefined, }),
       });
       const data = await res.json();
@@ -185,7 +185,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
       const res = await fetch('/api/checkout/paypal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cursoId: slug, titulo: safeTitle, precioUSD: priceUSD, userId: user?.uid || undefined
+        body: JSON.stringify({ cursoId: slug, titulo: safeTitle, precioUSD: priceUSD, userId: user?.uid || undefined,
           userEmail: user?.email || undefined, }),
       });
       const data = await res.json();
