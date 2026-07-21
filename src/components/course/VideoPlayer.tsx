@@ -7,7 +7,7 @@
 // Soporta: archivos Sanity (MP4/MOV/WebM), YouTube y Vimeo.
 // ============================================================
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Play } from 'lucide-react';
 import { useGlobalRecordingDetection } from '@/hooks/useGlobalRecordingDetection';
 
