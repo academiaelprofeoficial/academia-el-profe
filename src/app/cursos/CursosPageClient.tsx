@@ -120,6 +120,7 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
           titulo: cursoLanding.title,
           precioUSD: cursoLanding.priceUSD,
           userId: user?.uid || undefined,
+          userEmail: user?.email || undefined,
         }),
       });
 
@@ -149,6 +150,7 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
           titulo: cursoLanding.title,
           precio: cursoLanding.price,
           userId: user?.uid || undefined,
+          userEmail: user?.email || undefined,
         }),
       });
 

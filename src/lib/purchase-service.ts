@@ -29,8 +29,38 @@ export interface PurchaseRecord {
  * personalizada (subida a Supabase Storage).
  */
 export async function syncUser(firebaseUid: string, email: string, name?: string, photoURL?: string) {
-  // Check if user has a custom uploaded photo (Supabase Storage URL)
-  // If so, do NOT overwrite it with the Firebase/Google avatar
+  if (!email) return null; // Prevenir error de base de datos con email vacío
+
+  // 1. Verificar si el email ya existe bajo otro ID (e.g. cuenta temporal de Admin o Webhook MP)
+  const existingByEmail = await db.user.findUnique({
+    where: { email },
+  });
+
+  if (existingByEmail && existingByEmail.id !== firebaseUid) {
+    const oldId = existingByEmail.id;
+    
+    // A. Crear o actualizar la cuenta con el UID real
+    await db.user.upsert({
+      where: { id: firebaseUid },
+      update: { email, name, photoURL: photoURL || undefined },
+      create: { id: firebaseUid, email, name, photoURL },
+    });
+
+    // B. Migrar todas las relaciones, ignorando colisiones únicas (si el usuario ya tenía ese curso/progreso)
+    try { await db.purchase.updateMany({ where: { userId: oldId }, data: { userId: firebaseUid } }); } catch(e) { console.error(e) }
+    try { await db.courseAccess.updateMany({ where: { userId: oldId }, data: { userId: firebaseUid } }); } catch(e) { console.error(e) }
+    try { await db.courseProgress.updateMany({ where: { userId: oldId }, data: { userId: firebaseUid } }); } catch(e) { console.error(e) }
+    try { await db.wishlist.updateMany({ where: { userId: oldId }, data: { userId: firebaseUid } }); } catch(e) { console.error(e) }
+    try { await db.comment.updateMany({ where: { userId: oldId }, data: { userId: firebaseUid } }); } catch(e) { console.error(e) }
+    try { await db.supportTicket.updateMany({ where: { userId: oldId }, data: { userId: firebaseUid } }); } catch(e) { console.error(e) }
+
+    // C. Eliminar la cuenta temporal
+    try { await db.user.delete({ where: { id: oldId } }); } catch(e) { console.error(e) }
+    
+    return db.user.findUnique({ where: { id: firebaseUid } });
+  }
+
+  // 2. Flujo normal
   const existing = await db.user.findUnique({
     where: { id: firebaseUid },
     select: { photoURL: true },
@@ -43,7 +73,6 @@ export async function syncUser(firebaseUid: string, email: string, name?: string
     update: {
       email,
       name,
-      // Only update photoURL if user doesn't have a custom uploaded photo
       ...(hasCustomPhoto ? {} : { photoURL }),
     },
     create: { id: firebaseUid, email, name, photoURL },

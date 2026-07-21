@@ -74,6 +74,7 @@ export function PurchaseOverlay({
           titulo: curso.titulo,
           precio: curso.precio,
           userId: user?.uid || undefined,
+          userEmail: user?.email || undefined,
         }),
       });
 
@@ -110,6 +111,7 @@ export function PurchaseOverlay({
           titulo: curso.titulo,
           precioUSD: curso.precioUSD,
           userId: user?.uid || undefined,
+          userEmail: user?.email || undefined,
         }),
       });
 

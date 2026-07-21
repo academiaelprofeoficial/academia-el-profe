@@ -12,13 +12,14 @@ interface CheckoutRequestBody {
   cursoId: string;
   titulo: string;
   precio: number;
-  userId?: string; // Firebase UID
+  userId?: string;
+  userEmail?: string; // Firebase UID
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: CheckoutRequestBody = await request.json();
-    let { cursoId, titulo, precio, userId } = body;
+    let { cursoId, titulo, precio, userId, userEmail } = body;
 
     // Sanitizar título: eliminar caracteres de ancho cero que inflan la URL
     titulo = titulo.replace(/[\u200B-\u200D\uFEFF\u2060-\u2064\u00AD]/g, '').trim().substring(0, 127);
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
     if (userId) {
       try {
         const { syncUser, createPendingPurchase } = await import('@/lib/purchase-service');
-        await syncUser(userId, '', ''); // sync básico sin email (no lo tenemos aquí)
+        if (userEmail) await syncUser(userId, userEmail, ''); // sync básico sin email (no lo tenemos aquí)
         const purchase = await createPendingPurchase({
           userId,
           courseId: cursoId,

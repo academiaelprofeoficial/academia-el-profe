@@ -31,9 +31,16 @@ export async function POST(req: NextRequest) {
     }
 
     // Find user by email
-    const user = await db.user.findUnique({ where: { email: userEmail.toLowerCase() } });
+    let user = await db.user.findUnique({ where: { email: userEmail.toLowerCase() } });
     if (!user) {
-      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
+      // Crear cuenta temporal. Cuando el usuario inicie sesión, `syncUser` la migrará automáticamente.
+      user = await db.user.create({
+        data: {
+          id: `manual_${userEmail.toLowerCase()}`,
+          email: userEmail.toLowerCase(),
+          name: userEmail.split('@')[0],
+        }
+      });
     }
 
     const results = [];

@@ -31,6 +31,7 @@ function WishListBuyButton({ cursoId }: { readonly cursoId: string }) {
           titulo: cursoId,
           precio: 0,
           userId: user?.uid || undefined,
+          userEmail: user?.email || undefined,
         }),
       });
       const data = await res.json();

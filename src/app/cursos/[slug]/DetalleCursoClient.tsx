@@ -101,6 +101,57 @@ const ptComponents = {
 };
 
 export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
+  const [loadingMP, setLoadingMP] = useState(false);
+  const [loadingPP, setLoadingPP] = useState(false);
+
+  const handleMercadoPago = async () => {
+    setLoadingMP(true);
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cursoId: slug,
+          titulo: title,
+          precio: pricePEN,
+          userId: user?.uid || undefined,
+          userEmail: user?.email || undefined
+        })
+      });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+      else alert(data.error || 'Error al iniciar pago');
+    } catch (e) {
+      alert('Error de conexión');
+    } finally {
+      setLoadingMP(false);
+    }
+  };
+
+  const handlePayPal = async () => {
+    setLoadingPP(true);
+    try {
+      const res = await fetch('/api/checkout/paypal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cursoId: slug,
+          titulo: title,
+          precioUSD: priceUSD,
+          userId: user?.uid || undefined,
+          userEmail: user?.email || undefined
+        })
+      });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+      else alert(data.error || 'Error al iniciar pago');
+    } catch (e) {
+      alert('Error de conexión');
+    } finally {
+      setLoadingPP(false);
+    }
+  };
+
   const { user, isGoogleUser } = useAuth();
   const [showPurchase, setShowPurchase] = useState(false);
   const [showQr, setShowQr] = useState(false);
