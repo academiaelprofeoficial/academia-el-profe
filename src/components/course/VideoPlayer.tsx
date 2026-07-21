@@ -33,7 +33,7 @@ function extractVimeoId(url: string): string | null {
   return match ? match[1] : null;
 }
 
-export default function VideoPlayer({
+export function VideoPlayer({
   videoUrl,
   webmUrl,
   titulo,
