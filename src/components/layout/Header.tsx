@@ -45,7 +45,7 @@ export function Header() {
   const [busqueda, setBusqueda] = useState('');
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80">
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 pt-[env(safe-area-inset-top)]">
       <div className="flex h-16 items-center px-4 lg:px-6">
         {/* Logo + Hamburguesa móvil */}
         <div className="flex items-center gap-3">

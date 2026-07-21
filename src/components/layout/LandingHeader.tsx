@@ -281,12 +281,12 @@ export function LandingHeader() {
       {/* ============================================================ */}
       {/* NAVBAR SUPERIOR FIJA — UNIFICADA                              */}
       {/* ============================================================ */}
-      <header className={`fixed top-0 inset-x-0 z-50 h-16 transition-all duration-500 ${
+      <header className={`fixed top-0 inset-x-0 z-50 pt-[env(safe-area-inset-top)] transition-all duration-500 ${
         scrolled
           ? 'bg-brand-primary/95 dark:bg-[var(--surface-0)]/95 backdrop-blur-xl shadow-lg shadow-black/10 border-b border-brand-primary/20 dark:border-[var(--surface-border)]'
           : 'bg-white/80 dark:bg-transparent border-b border-slate-200/60 dark:border-transparent backdrop-blur-md'
       }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16">
 
           {/* ====== LAYOUT PC ====== */}
           <div className="hidden lg:flex items-center justify-between h-full">
@@ -396,8 +396,8 @@ export function LandingHeader() {
         </div>
       </header>
 
-      {/* Spacer — always match header height (h-16 = 64px) */}
-      <div className="h-16 shrink-0" />
+      {/* Spacer — always match header height (h-16 = 64px) + safe area */}
+      <div className="shrink-0 h-[calc(4rem+env(safe-area-inset-top))]" />
 
       {/* ============================================================ */}
       {/* MENÚ MÓVIL — Framer Motion                                    */}
@@ -420,7 +420,7 @@ export function LandingHeader() {
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="fixed top-0 left-0 bottom-0 z-[9999] w-[85%] max-w-[360px] bg-white dark:bg-[var(--surface-1)] shadow-2xl lg:hidden flex flex-col"
+              className="fixed top-0 left-0 bottom-0 z-[9999] w-[85%] max-w-[360px] bg-white dark:bg-[var(--surface-1)] shadow-2xl lg:hidden flex flex-col pt-[env(safe-area-inset-top)]"
               style={{
                 transformOrigin: 'left center',
                 borderTopRightRadius: '24px',
