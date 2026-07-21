@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { defineType, defineField } from "sanity";
 import { titleField, slugField, imageField, descriptionField, orderField, featuredField } from "../lib/schema-master";
+import { ColorPickerInput } from "../components/ColorPickerInput";
 
 export default defineType({
   name: "course", title: "Curso", type: "document",
@@ -165,10 +166,13 @@ export default defineType({
     }),
     defineField({
       name: "cardColor",
-      title: "Color de la Tarjeta",
+      title: "🎨 Color de la Tarjeta",
       type: "string",
       initialValue: "#10B981",
-      description: "Elige el color hexadecimal para la tarjeta del curso (ej: #10B981 para verde, #3B82F6 para azul).",
+      description: "Elige el color del curso. Selecciona un color predefinido o personaliza con los controles RGB.",
+      components: {
+        input: ColorPickerInput,
+      },
     }),
     defineField({
       name: "hidden",

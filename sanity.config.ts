@@ -44,18 +44,22 @@ export default defineConfig({
           ),
           S.listItem().title("Cursos").icon(BookIcon).id("courses-group").child(
             S.list().title("Cursos").items([
-              S.listItem().title("Todos los Cursos").icon(BookIcon).id("courses-list").child(
-                S.documentTypeList("course").title("Cursos").defaultOrdering([{ field: "order", direction: "asc" }]),
+              S.listItem().title("Cursos Generales").icon(BookIcon).id("general-courses-list").child(
+                S.documentTypeList("course").title("Cursos Generales").filter('_type == "course" && group != "utp"'),
+              ),
+              S.listItem().title("Cursos UTP").icon(BookIcon).id("utp-courses-list").child(
+                S.documentTypeList("course").title("Cursos UTP").filter('_type == "course" && (group == "utp" || group == "ambos")'),
+              ),
+              S.listItem().title("Todos los Cursos").icon(StackIcon).id("all-courses-list").child(
+                S.documentTypeList("course").title("Todos los Cursos"),
               ),
               S.listItem().title("Biblioteca de Videos").icon(StackIcon).id("video-library-list").child(
-                S.documentTypeList("videoLibrary").title("Videos Reutilizables").defaultOrdering([{ field: "title", direction: "asc" }]),
+                S.documentTypeList("videoLibrary").title("Videos Reutilizables"),
               ),
             ]),
           ),
           S.listItem().title("Equipo").icon(StarIcon).id("team-group").child(
-            S.list().title("Equipo").items([
-              ...S.documentTypeListItems().filter((item) => item.getId() === "teamMember"),
-            ]),
+            S.documentTypeList("teamMember").title("Equipo").defaultOrdering([{ field: "order", direction: "asc" }]),
           ),
           S.listItem().title("Páginas del Sitio").icon(DocumentIcon).id("pages-group").child(
             S.documentTypeList("pageContent").title("Páginas Editables").defaultOrdering([{ field: "pageTitle", direction: "asc" }]),
@@ -99,14 +103,18 @@ export default defineConfig({
           resolve: (doc) => ({ href: "/#clientes", label: doc?.authorName || "Testimonio" }),
         },
         course: {
-          select: { title: "title", slug: "slug.current" },
+          select: { title: "title", slug: "slug.current", group: "group" },
           resolve: (doc) => {
             const slug = doc?.slug?.current || "";
             const label = doc?.title || "Curso";
-            return [
+            const locations = [
               { href: `/cursos/${slug}`, label: `${label} — Detalle` },
               { href: `/cursos/${slug}/temario`, label: `${label} — Temario` },
             ];
+            if (doc?.group === "utp" || doc?.group === "ambos") {
+              locations.push({ href: "/cursos/utp", label: `${label}` });
+            }
+            return locations;
           },
         },
         teamMember: {

@@ -8,9 +8,10 @@ export async function fetchCMS<T>(query: string): Promise<T | null> {
     try { const dm = await draftMode(); isDraft = dm.isEnabled; } catch {}
     const client = getClientForDraft(isDraft);
     if (!client) return null;
-    // Tag all CMS fetches so the Sanity webhook can purge them instantly
+    // Tag all CMS fetches so the Sanity webhook can purge them instantly.
+    // revalidate: 60 = fallback: auto-refresh every 60s even without webhook.
     const data = await client.fetch<T>(query, {}, {
-      next: { tags: ["sanity"] },
+      next: { tags: ["sanity"], revalidate: 60 },
     } as never);
     return data ?? null;
   } catch (error) { console.warn("[CMS] Fetch failed:", error); return null; }

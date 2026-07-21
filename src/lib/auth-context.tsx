@@ -31,6 +31,7 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   isOwner: boolean;
+  isGoogleUser: boolean;
   idToken: string | null;
   profileName: string | null;
   profilePhoto: string | null;
@@ -61,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+  const [isGoogleUser, setIsGoogleUser] = useState(false);
   const [idToken, setIdToken] = useState<string | null>(null);
   const [purchasedCourseIds, setPurchasedCourseIds] = useState<string[]>([]);
   const [profileName, setProfileName] = useState<string | null>(null);
@@ -126,6 +128,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
+      // Check if user signed in via Google
+      const googleProvider = firebaseUser?.providerData?.some(p => p.providerId === 'google.com') ?? false;
+      setIsGoogleUser(googleProvider);
       await syncAndLoadPurchases(firebaseUser);
       setLoading(false);
     });
@@ -178,6 +183,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setIsAdmin(false);
       setIsOwner(false);
+      setIsGoogleUser(false);
       setIdToken(null);
       setPurchasedCourseIds([]);
       setProfileName(null);
@@ -191,7 +197,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, isAdmin, isOwner, idToken, profileName, profilePhoto, signOut, purchasedCourseIds, refreshPurchases, refreshIdToken, updateProfileInfo }}>
+    <AuthContext.Provider value={{ user, loading, isAdmin, isOwner, isGoogleUser, idToken, profileName, profilePhoto, signOut, purchasedCourseIds, refreshPurchases, refreshIdToken, updateProfileInfo }}>
       {children}
     </AuthContext.Provider>
   );

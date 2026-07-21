@@ -18,6 +18,8 @@ import {
   ArrowLeft,
   Zap,
   BookOpen,
+  LogIn,
+  ShieldAlert,
 } from 'lucide-react';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
 import { Button } from '@/components/ui/button';
@@ -110,8 +112,40 @@ function PaymentButtons({
   readonly course: MergedCourse;
   readonly userId?: string;
 }) {
+  const { user, isGoogleUser } = useAuth();
   const loadingRef = useRef<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
+
+  // Google login gate
+  if (!user) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-900/20 px-3 py-2.5 text-center">
+          <ShieldAlert className="h-5 w-5 text-amber-500 mx-auto mb-1" />
+          <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400">Debes iniciar sesion con Google</p>
+          <p className="text-[9px] text-amber-600/80 dark:text-amber-500/60">Para comprar cursos</p>
+        </div>
+        <Link href="/iniciar-sesion" onClick={(e) => e.stopPropagation()}
+          className="h-9 text-[11px] font-bold tracking-wide text-white gap-1.5 rounded-lg flex items-center justify-center transition-all"
+          style={{ backgroundColor: extractHex(course.cardColor) }}>
+          <LogIn className="h-3.5 w-3.5" />
+          INICIAR SESION
+        </Link>
+      </div>
+    );
+  }
+
+  if (!isGoogleUser) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-900/20 px-3 py-2.5 text-center">
+          <ShieldAlert className="h-5 w-5 text-amber-500 mx-auto mb-1" />
+          <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400">Se requiere cuenta de Google</p>
+          <p className="text-[9px] text-amber-600/80 dark:text-amber-500/60">Cierra sesion y entra con Google</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleMercadoPago = async () => {
     const key = `${course.id}-mp`;

@@ -25,13 +25,16 @@ import {
   BadgeCheck,
   ChevronRight,
   QrCode,
+  LogIn,
+  ShieldAlert,
 } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { VideoPlayer } from '@/components/course/VideoPlayer';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
-import { cn } from '@/lib/utils';
+import { cn, sanitizeHex } from '@/lib/utils';
 import type { SanityCourse, SanityImage, PortableTextBlock } from '@/lib/sanity.client';
 import { getImageUrl } from '@/lib/sanity.client';
 import { PortableText } from '@portabletext/react';
@@ -40,16 +43,6 @@ import { QrPaymentModal } from '@/components/QrPaymentModal';
 interface DetalleCursoClientProps {
   readonly course: SanityCourse;
 }
-
-const CATEGORY_COLORS: Record<string, string> = {
-  calculo: 'bg-emerald-600',
-  mecanica: 'bg-blue-600',
-  fluidos: 'bg-cyan-600',
-  termodinamica: 'bg-orange-600',
-  estadistica: 'bg-purple-600',
-  ecuaciones: 'bg-rose-600',
-  otros: 'bg-slate-600',
-};
 
 const CATEGORY_LABELS: Record<string, string> = {
   calculo: 'Calculo',
@@ -60,6 +53,37 @@ const CATEGORY_LABELS: Record<string, string> = {
   ecuaciones: 'Ecuaciones Diferenciales',
   otros: 'Otros',
 };
+
+/** Derive CSS variable overrides from a hex color */
+function courseColorVars(raw: string): React.CSSProperties {
+  const hex = sanitizeHex(raw);
+  const h = hex.replace('#', '');
+  const num = parseInt(h, 16);
+  const r = (num >> 16) & 0xff;
+  const g = (num >> 8) & 0xff;
+  const b = num & 0xff;
+  const darken = (amt: number) => {
+    const dr = Math.max(0, r - amt);
+    const dg = Math.max(0, g - amt);
+    const db = Math.max(0, b - amt);
+    return `#${((dr << 16) | (dg << 8) | db).toString(16).padStart(6, '0')}`;
+  };
+  const lighten = (amt: number) => {
+    const lr = Math.min(255, r + amt);
+    const lg = Math.min(255, g + amt);
+    const lb = Math.min(255, b + amt);
+    return `#${((lr << 16) | (lg << 8) | lb).toString(16).padStart(6, '0')}`;
+  };
+  return {
+    '--color-brand-primary': hex,
+    '--color-brand-primary-hover': darken(30),
+    '--color-brand-primary-text': darken(60),
+    '--color-brand-primary-bg': `${hex}1F`,
+    '--color-brand-primary-bg-light': `${hex}0F`,
+    '--color-brand-primary-darkest': darken(80),
+    '--color-brand-primary-light-text': lighten(80),
+  } as React.CSSProperties;
+}
 
 const LEVEL_LABELS: Record<string, string> = {
   basico: 'Basico',
@@ -77,6 +101,7 @@ const ptComponents = {
 };
 
 export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
+  const { user, isGoogleUser } = useAuth();
   const [showPurchase, setShowPurchase] = useState(false);
   const [showQr, setShowQr] = useState(false);
 
@@ -90,7 +115,7 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
   const backHref = isUTP ? '/cursos/utp' : '/cursos';
   const backLabel = isUTP ? 'Volver a cursos UTP' : 'Volver al catalogo';
 
-  const categoryColor = CATEGORY_COLORS[category] || 'bg-emerald-600';
+  const cardColor = course.cardColor || '#10B981';
   const categoryLabel = CATEGORY_LABELS[category] || category;
   const professor = course.professor || '';
   const pricePEN = course.pricePEN || 0;
@@ -117,7 +142,7 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
   const handleComprar = useCallback(() => setShowPurchase(true), []);
 
   return (
-    <section>
+    <section style={courseColorVars(cardColor)}>
       {/* Back Navigation */}
       <Link
         href={backHref}
@@ -131,7 +156,7 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
         {/* Main Column */}
         <div className="lg:col-span-2 space-y-6">
           {/* Course Header */}
-          <div className={cn('rounded-2xl p-6 lg:p-8 text-white', categoryColor)}>
+          <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: cardColor }}>
             <div className="flex items-start justify-between mb-4">
               <div>
                 <div className="flex items-center gap-2 mb-3 flex-wrap">
@@ -406,6 +431,39 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
                 Soporte del profesor
               </div>
             </div>
+            {/* Auth Gate: require Google login to purchase */}
+            {!user ? (
+              <div className="space-y-3">
+                <div className="rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-900/20 p-4 text-center">
+                  <ShieldAlert className="h-8 w-8 text-amber-500 mx-auto mb-2" />
+                  <p className="text-sm font-bold text-amber-800 dark:text-amber-300 mb-1">
+                    Debes iniciar sesion para comprar
+                  </p>
+                  <p className="text-xs text-amber-600/80 dark:text-amber-500/60">
+                    Inicia sesion con tu cuenta de Google para continuar con el pago
+                  </p>
+                </div>
+                <Link
+                  href="/iniciar-sesion"
+                  className="flex-1 bg-brand-primary hover:bg-brand-primary-hover text-white font-bold text-sm py-3 rounded-xl text-center transition-colors flex items-center justify-center gap-2 w-full"
+                >
+                  <LogIn className="h-4 w-4" />
+                  Iniciar Sesion con Google
+                </Link>
+              </div>
+            ) : !isGoogleUser ? (
+              <div className="space-y-3">
+                <div className="rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-900/20 p-4 text-center">
+                  <ShieldAlert className="h-8 w-8 text-amber-500 mx-auto mb-2" />
+                  <p className="text-sm font-bold text-amber-800 dark:text-amber-300 mb-1">
+                    Se requiere cuenta de Google
+                  </p>
+                  <p className="text-xs text-amber-600/80 dark:text-amber-500/60">
+                    Para comprar cursos debes iniciar sesion con tu cuenta de Google. Cierra sesion y vuelve a entrar con Google.
+                  </p>
+                </div>
+              </div>
+            ) : (
             <div className="flex flex-col gap-2">
               <Link
                 href={`/api/checkout?courseId=${slug}&provider=mercadopago`}
@@ -427,6 +485,7 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
                 Pagar con QR
               </button>
             </div>
+            )}
             <button
               onClick={() => setShowPurchase(false)}
               className="w-full mt-3 text-sm text-muted-foreground hover:text-foreground py-2"

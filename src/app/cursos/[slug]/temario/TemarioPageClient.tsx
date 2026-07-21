@@ -29,8 +29,11 @@ import {
   Send,
   ListChecks,
   Loader2,
+  LogIn,
+  ShieldAlert,
 } from 'lucide-react';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
+import { sanitizeHex } from '@/lib/utils';
 import type { SanityCourse, SanityClassVideo, SanityTopic, PortableTextBlock } from '@/lib/sanity.client';
 import { getImageUrl } from '@/lib/sanity.client';
 import { PortableText } from '@portabletext/react';
@@ -109,16 +112,6 @@ function getFileDarkColor(mimeType?: string): string {
   return 'bg-slate-800 text-slate-400';
 }
 
-const CATEGORY_COLORS: Record<string, string> = {
-  calculo: 'bg-emerald-600',
-  mecanica: 'bg-blue-600',
-  fluidos: 'bg-cyan-600',
-  termodinamica: 'bg-orange-600',
-  estadistica: 'bg-purple-600',
-  ecuaciones: 'bg-rose-600',
-  otros: 'bg-slate-600',
-};
-
 const CATEGORY_LABELS: Record<string, string> = {
   calculo: 'Calculo',
   mecanica: 'Mecanica',
@@ -134,7 +127,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 /* ------------------------------------------------------------------ */
 
 export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }: TemarioPageClientProps) {
-  const { user, purchasedCourseIds, isOwner } = useAuth();
+  const { user, purchasedCourseIds, isOwner, isGoogleUser } = useAuth();
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set());
   const [selectedVideo, setSelectedVideo] = useState<SelectedVideo | null>(null);
   const [activeTopicTitle, setActiveTopicTitle] = useState<string | null>(null);
@@ -150,7 +143,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
   const description = course?.description as PortableTextBlock[] | undefined;
   const slug = course?.slug || '';
   const category = course?.category || '';
-  const categoryColor = CATEGORY_COLORS[category] || 'bg-emerald-600';
+  const cardColor = sanitizeHex(course?.cardColor);
   const categoryLabel = CATEGORY_LABELS[category] || category;
   const professor = course?.professor || '';
   const pricePEN = course?.pricePEN || 0;
@@ -459,8 +452,39 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
     );
   }
 
+  // Override brand-primary CSS vars with course cardColor for entire page
+  const colorStyle = useMemo(() => {
+    const h = cardColor.replace('#', '');
+    const num = parseInt(h, 16);
+    const r = (num >> 16) & 0xff;
+    const g = (num >> 8) & 0xff;
+    const b = num & 0xff;
+    const darken = (amt: number) => {
+      const dr = Math.max(0, r - amt);
+      const dg = Math.max(0, g - amt);
+      const db = Math.max(0, b - amt);
+      return `#${((dr << 16) | (dg << 8) | db).toString(16).padStart(6, '0')}`;
+    };
+    const lighten = (amt: number) => {
+      const lr = Math.min(255, r + amt);
+      const lg = Math.min(255, g + amt);
+      const lb = Math.min(255, b + amt);
+      return `#${((lr << 16) | (lg << 8) | lb).toString(16).padStart(6, '0')}`;
+    };
+    const safeHex = cardColor; // already sanitized above
+    return {
+      '--color-brand-primary': safeHex,
+      '--color-brand-primary-hover': darken(30),
+      '--color-brand-primary-text': darken(60),
+      '--color-brand-primary-bg': `${safeHex}1F`,
+      '--color-brand-primary-bg-light': `${safeHex}0F`,
+      '--color-brand-primary-darkest': darken(80),
+      '--color-brand-primary-light-text': lighten(80),
+    } as React.CSSProperties;
+  }, [cardColor]);
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" style={colorStyle}>
       {/* ===== BACK LINK ===== */}
       <Link
         href={backUrl}
@@ -471,7 +495,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
       </Link>
 
       {/* ===== COURSE HEADER ===== */}
-      <div className={`${categoryColor} rounded-2xl p-6 lg:p-8 text-white`}>
+      <div className="rounded-2xl p-6 lg:p-8 text-white" style={{ backgroundColor: cardColor }}>
         <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-3 flex-wrap">
@@ -523,7 +547,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
           </div>
 
           {/* Price card — estilo directo como en /cursos */}
-          {!isFreeCourse && (
+          {!isFreeCourse && !hasFullAccess && (
             <div className="bg-white/15 backdrop-blur-sm rounded-xl p-5 text-center min-w-[200px]">
               <p className="text-xs text-white/70 mb-1">Precio del curso</p>
               <div className="flex items-baseline justify-center gap-2 mb-1">
@@ -531,8 +555,34 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                 <span className="text-sm text-white/80 font-medium">{formatoUSD(priceUSD)}</span>
               </div>
 
-              {/* Botones de pago directo — MP y PayPal con POST */}
-              <div className="flex flex-col gap-1.5 mt-3">
+              {/* Auth Gate: require Google login to purchase */}
+              {!user ? (
+                <div className="flex flex-col gap-1.5 mt-3">
+                  <div className="rounded-lg border border-amber-300/40 bg-amber-500/20 p-3 text-center">
+                    <ShieldAlert className="h-6 w-6 text-amber-300 mx-auto mb-1" />
+                    <p className="text-[11px] font-bold text-amber-100 mb-0.5">Debes iniciar sesion para comprar</p>
+                    <p className="text-[10px] text-amber-200/70">Usa tu cuenta de Google</p>
+                  </div>
+                  <Link
+                    href="/iniciar-sesion"
+                    className="w-full h-10 text-xs font-bold tracking-wide text-white gap-1.5 rounded-lg flex items-center justify-center transition-all bg-white/25 hover:bg-white/35"
+                  >
+                    <LogIn className="h-4 w-4 shrink-0" />
+                    Iniciar Sesion con Google
+                  </Link>
+                </div>
+              ) : !isGoogleUser ? (
+                <div className="flex flex-col gap-1.5 mt-3">
+                  <div className="rounded-lg border border-amber-300/40 bg-amber-500/20 p-3 text-center">
+                    <ShieldAlert className="h-6 w-6 text-amber-300 mx-auto mb-1" />
+                    <p className="text-[11px] font-bold text-amber-100 mb-0.5">Se requiere cuenta de Google</p>
+                    <p className="text-[10px] text-amber-200/70">Cierra sesion y entra con Google</p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                {/* Botones de pago directo — MP y PayPal con POST */}
+                <div className="flex flex-col gap-1.5 mt-3">
                 <button
                   onClick={handleMP}
                   disabled={loadingPay[`${slug}-mp`] || loadingPay[`${slug}-pp`]}
@@ -543,7 +593,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                   ) : (
                     <ShoppingCart className="h-4 w-4 shrink-0" />
                   )}
-                  PEN {formatoSoles(pricePEN)} — Mercado Pago
+                  Pagar con MercadoPago
                 </button>
                 <button
                   onClick={handlePayPal}
@@ -555,7 +605,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                   ) : (
                     <img src="/images/paypal-logo.png" alt="PP" className="h-4 w-4 object-contain shrink-0" />
                   )}
-                  USD {formatoUSD(priceUSD)} — PayPal
+                  Pagar con PayPal
                 </button>
                 <Link
                   href={`/cursos/${slug}/temario`}
@@ -565,62 +615,29 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                   VER TEMARIO
                 </Link>
               </div>
+                </>
+              )}
             </div>
           )}
         </div>
       </div>
 
-      {/* ===== DESCRIPTION ===== */}
+      {/* ===== DESCRIPTION (collapsed by default) ===== */}
       {description && description.length > 0 && (
-        <div className="rounded-xl border border-border/40 bg-card p-6">
-          <h2 className="text-lg font-bold text-foreground mb-3">Descripcion del Curso</h2>
-          <div className="prose prose-sm dark:prose-invert max-w-none">
+        <details className="rounded-xl border border-border/40 bg-card group">
+          <summary className="px-4 py-3 text-sm font-bold text-foreground cursor-pointer hover:bg-muted/20 transition-colors flex items-center justify-between">
+            Descripcion del Curso
+            <ChevronDown className="h-4 w-4 text-muted-foreground group-open:rotate-180 transition-transform" />
+          </summary>
+          <div className="px-4 pb-4 prose prose-sm dark:prose-invert max-w-none">
             <PortableText value={description} components={ptComponents} />
           </div>
-        </div>
+        </details>
       )}
 
-      {/* ===== PROMO VIDEO — full bleed en mobile ===== */}
-      {(course?.videoUrl || course?.courseVideo?.asset?.url) && (
-        <div className="-mx-4 sm:mx-0 rounded-none sm:rounded-xl border-0 sm:border border-border/40 bg-transparent sm:bg-card sm:p-4">
-          <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2 px-4 sm:px-0">
-            <PlayCircle className="h-5 w-5 text-brand-primary" />
-            Video de Presentacion
-          </h2>
-          <div className="video-player-container relative bg-black aspect-video sm:rounded-lg overflow-hidden" onContextMenu={(e) => e.preventDefault()}>
-            <VideoPlayer
-              videoUrl={course.videoUrl || course.courseVideo?.asset?.url || ''}
-              titulo="Video de Presentacion"
-              posterUrl={coverImg || undefined}
-              isFree={true}
-            />
-          </div>
-        </div>
-      )}
 
-      {/* ===== CONTENT STATS BAR ===== */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="rounded-xl border border-border/40 bg-card p-4 text-center">
-          <FolderOpen className="h-5 w-5 mx-auto mb-1.5 text-brand-primary" />
-          <p className="text-xl font-bold text-foreground">{totalTopicCount}</p>
-          <p className="text-xs text-muted-foreground">Modulos</p>
-        </div>
-        <div className="rounded-xl border border-border/40 bg-card p-4 text-center">
-          <Video className="h-5 w-5 mx-auto mb-1.5 text-blue-500" />
-          <p className="text-xl font-bold text-foreground">{totalVideos}</p>
-          <p className="text-xs text-muted-foreground">Videos</p>
-        </div>
-        <div className="rounded-xl border border-border/40 bg-card p-4 text-center">
-          <FileText className="h-5 w-5 mx-auto mb-1.5 text-orange-500" />
-          <p className="text-xl font-bold text-foreground">{totalMaterials}</p>
-          <p className="text-xs text-muted-foreground">Materiales</p>
-        </div>
-        <div className="rounded-xl border border-border/40 bg-card p-4 text-center">
-          <Clock className="h-5 w-5 mx-auto mb-1.5 text-purple-500" />
-          <p className="text-xl font-bold text-foreground">{totalHours}</p>
-          <p className="text-xs text-muted-foreground">Horas</p>
-        </div>
-      </div>
+
+
 
       {/* ===== COURSE CURRICULUM — SPLIT VIEW ===== */}
       <div>
@@ -771,9 +788,9 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                         {/* 📱 MOBILE: Inline video player + materials inside module */}
                         {groupHasSelectedVideo && (
                           <div className="lg:hidden border-t border-border/10 my-1 pt-2 px-1">
-                            {/* Video Player */}
-                            <div className="video-player-container relative rounded-xl border border-border/40 bg-card overflow-hidden mb-3">
-                              <div className="relative bg-black aspect-video" onContextMenu={(e) => e.preventDefault()}>
+                            {/* Video Player — Netflix: no border, full width, clean */}
+                            <div className="video-player-container relative bg-black aspect-video overflow-hidden mb-3">
+                              <div className="relative w-full h-full" onContextMenu={(e) => e.preventDefault()}>
                                 {!isGroupVideoAccessible ? (
                                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 p-4 text-center">
                                     <Lock className="h-10 w-10 text-amber-500 mb-2 shrink-0" />
@@ -959,8 +976,8 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
             <div className="hidden lg:block lg:col-span-3">
               {selectedVideo ? (
                 <div className="space-y-4">
-                  {/* Video Player */}
-                  <div className="video-player-container relative rounded-xl border border-border/40 bg-card overflow-hidden">
+                  {/* Video Player — Netflix: no extra border, video is the hero */}
+                  <div className="video-player-container relative bg-card overflow-hidden">
                     {(() => {
                       // Find the actual video object to check access
                       let activeVideoObj: SanityClassVideo | undefined;
@@ -1133,13 +1150,10 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                   </div>
                 </div>
               ) : (
-                /* Placeholder when no video selected */
-                <div className="rounded-xl border border-dashed border-border/60 bg-muted/10 flex flex-col items-center justify-center py-20 lg:py-28">
-                  <MonitorPlay className="h-12 w-12 text-muted-foreground/30 mb-4" />
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Selecciona un modulo</p>
-                  <p className="text-xs text-muted-foreground/60 text-center max-w-xs">
-                    Haz clic en cualquier modulo de la izquierda para ver el video y materiales aqui
-                  </p>
+                /* Placeholder when no video selected — Netflix minimal */
+                <div className="rounded-xl border border-dashed border-border/40 bg-muted/5 flex flex-col items-center justify-center py-20 lg:py-28">
+                  <PlayCircle className="h-10 w-10 text-muted-foreground/20 mb-3" />
+                  <p className="text-sm font-medium text-muted-foreground/50">Selecciona un modulo</p>
                 </div>
               )}
             </div>
@@ -1147,20 +1161,12 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
         )}
               </div>
 
-              {/* ===== CERTIFICATE SECTION ===== */}
-      <div className="rounded-xl border border-border/40 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 p-6">
-        <div className="flex items-start gap-4">
-          <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-amber-100 dark:bg-amber-900/30 shrink-0">
-            <GraduationCap className="h-6 w-6 text-amber-600 dark:amber-400" />
-          </div>
-          <div>
-            <h3 className="text-base font-bold text-foreground mb-1">Certificado Incluido</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Al completar el curso, obtendras un certificado digital verificado que podras compartir
-              en tu perfil profesional y redes sociales.
-            </p>
-          </div>
+      {/* ===== CERTIFICATE SECTION ===== */}
+      <div className="rounded-xl border border-border/40 bg-card p-4 flex items-center gap-3">
+        <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-amber-100 dark:bg-amber-900/30 shrink-0">
+          <GraduationCap className="h-5 w-5 text-amber-600 dark:amber-400" />
         </div>
+        <p className="text-sm text-foreground font-semibold">Certificado Incluido</p>
       </div>
     </div>
   );
