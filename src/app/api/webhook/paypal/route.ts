@@ -71,8 +71,25 @@ export async function POST(request: NextRequest) {
 
     const { approvePurchase, createPendingPurchase, syncUser } = await import('@/lib/purchase-service');
 
-    // Intentar aprobar la compra existente (por purchaseId en custom)
+    let purchaseId: string | undefined = undefined;
+    let userId: string | undefined = undefined;
+    let courseId: string | undefined = undefined;
+
+    if (custom && !custom.includes(':')) {
+      purchaseId = custom;
+    } else if (custom.includes(':')) {
+      const parts = custom.split(':');
+      if (parts.length === 2 && parts[0] !== 'anon') {
+        userId = parts[0];
+        courseId = parts[1];
+      }
+    }
+
+    // Intentar aprobar la compra existente
     const result = await approvePurchase({
+      purchaseId,
+      userId,
+      courseId,
       gatewayPaymentId: txnId,
       payerEmail,
     });

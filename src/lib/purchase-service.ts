@@ -112,24 +112,44 @@ export async function approvePurchase(params: {
   courseId?: string;
   userId?: string;
   payerEmail?: string;
+  purchaseId?: string;
 }) {
-  // Buscar la compra pendiente por gatewayPaymentId
-  const existing = await db.purchase.findFirst({
+  // 1. Intentar encontrar por ID de compra directa (pasado como external_reference o custom)
+  if (params.purchaseId && !params.purchaseId.includes(':')) {
+    const existingById = await db.purchase.findUnique({
+      where: { id: params.purchaseId },
+    });
+    
+    if (existingById) {
+      return db.purchase.update({
+        where: { id: existingById.id },
+        data: {
+          status: 'approved',
+          gatewayPaymentId: params.gatewayPaymentId,
+          approvedAt: new Date(),
+          payerEmail: params.payerEmail ?? existingById.payerEmail,
+        },
+      });
+    }
+  }
+
+  // 2. Buscar la compra pendiente por gatewayPaymentId
+  const existingByGatewayId = await db.purchase.findFirst({
     where: { gatewayPaymentId: params.gatewayPaymentId },
   });
 
-  if (existing) {
+  if (existingByGatewayId) {
     return db.purchase.update({
-      where: { id: existing.id },
+      where: { id: existingByGatewayId.id },
       data: {
         status: 'approved',
         approvedAt: new Date(),
-        payerEmail: params.payerEmail ?? existing.payerEmail,
+        payerEmail: params.payerEmail ?? existingByGatewayId.payerEmail,
       },
     });
   }
 
-  // Fallback: buscar por userId + courseId si no se encontró por gatewayPaymentId
+  // 3. Fallback: buscar por userId + courseId si no se encontró por los métodos anteriores
   if (params.userId && params.courseId) {
     const byUserCourse = await db.purchase.findFirst({
       where: {

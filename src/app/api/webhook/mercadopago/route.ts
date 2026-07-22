@@ -55,9 +55,25 @@ export async function POST(request: NextRequest) {
       const { approvePurchase } = await import('@/lib/purchase-service');
 
       const externalRef = payment.external_reference || '';
+      let purchaseId: string | undefined = undefined;
+      let userId: string | undefined = undefined;
+      let courseId: string | undefined = undefined;
+
+      if (externalRef && !externalRef.includes(':')) {
+        purchaseId = externalRef;
+      } else if (externalRef.includes(':')) {
+        const parts = externalRef.split(':');
+        if (parts.length === 2 && parts[0] !== 'anon') {
+          userId = parts[0];
+          courseId = parts[1];
+        }
+      }
 
       // Intentar encontrar la compra por external_reference (es el purchaseId)
       const result = await approvePurchase({
+        purchaseId,
+        userId,
+        courseId,
         gatewayPaymentId: String(payment.id),
         payerEmail: payment.payer?.email,
       });
