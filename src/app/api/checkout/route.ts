@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
       notification_url: `${origin}/api/webhook/mercadopago`,
       external_reference: externalRef,
       statement_descriptor: 'ACADEMIA EL PROFE',
+      ...(userEmail ? { payer: { email: userEmail } } : {})
     };
 
     const mpResponse = await fetch(
