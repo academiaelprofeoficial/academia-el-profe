@@ -230,10 +230,10 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
               const isPurchased = purchasedCourseIds.includes(curso.id);
 
               return (
-                <AnimatedSection key={curso.id} delay={idx * 0.08} direction="up">
+                <AnimatedSection key={curso.id} delay={idx * 0.08} direction="up" className="h-full">
                 <motion.div
                   id={`curso-${curso.id}`}
-                  className="flex flex-col rounded-xl overflow-hidden shadow-md border border-slate-100 dark:border-[var(--surface-border)] hover:shadow-xl transition-shadow premium-card-shimmer card-glow cursor-pointer"
+                  className="flex flex-col h-full rounded-xl overflow-hidden shadow-md border border-slate-100 dark:border-[var(--surface-border)] hover:shadow-xl transition-shadow premium-card-shimmer card-glow cursor-pointer"
                   whileHover={{ y: -4 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                   onClick={() => handleVerTemario(curso)}

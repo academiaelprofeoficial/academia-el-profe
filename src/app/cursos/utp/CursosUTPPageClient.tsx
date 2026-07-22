@@ -216,7 +216,7 @@ function CourseCard({ course, isPurchased, index }: { readonly course: MergedCou
       transition={{ delay: index * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
       onClick={() => { window.location.href = `/cursos/${course.slug}/temario`; }}
-      className="flex flex-col rounded-xl overflow-hidden shadow-md border border-slate-100 dark:border-[var(--surface-border)] hover:shadow-xl transition-shadow premium-card-shimmer card-glow cursor-pointer"
+      className="flex flex-col h-full rounded-xl overflow-hidden shadow-md border border-slate-100 dark:border-[var(--surface-border)] hover:shadow-xl transition-shadow premium-card-shimmer card-glow cursor-pointer"
     >
       <div style={{ backgroundColor: hex }} className="px-4 py-5 flex flex-col gap-2 min-h-[120px] relative">
         {isPurchased && (
@@ -228,7 +228,7 @@ function CourseCard({ course, isPurchased, index }: { readonly course: MergedCou
         <h3 className="text-sm font-bold text-white leading-snug">{course.title}</h3>
         <p className="text-[11px] text-white/70 leading-snug mt-auto">{course.desc}</p>
       </div>
-      <div className="bg-white dark:bg-[var(--surface-2)] px-4 py-3 flex flex-col gap-2 border-b border-slate-100 dark:border-[var(--surface-border)]">
+      <div className="bg-white dark:bg-[var(--surface-2)] px-4 py-3 flex flex-col gap-2 border-b border-slate-100 dark:border-[var(--surface-border)] flex-1">
         <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs">
           <Video className="h-3.5 w-3.5 shrink-0" /><span>Clases grabadas</span>
         </div>
@@ -236,7 +236,7 @@ function CourseCard({ course, isPurchased, index }: { readonly course: MergedCou
           <FileText className="h-3.5 w-3.5 shrink-0" /><span>Material en PDF</span>
         </div>
       </div>
-      <div className="bg-white dark:bg-[var(--surface-2)] px-4 py-4 flex flex-col gap-3">
+      <div className="bg-white dark:bg-[var(--surface-2)] px-4 py-4 flex flex-col gap-3 mt-auto">
         {isPurchased ? (
           <>
             <Link href={`/cursos/${course.slug}/temario`}>
