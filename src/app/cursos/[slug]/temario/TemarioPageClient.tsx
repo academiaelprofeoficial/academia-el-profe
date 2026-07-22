@@ -811,15 +811,17 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                                     <p className="text-xs text-slate-400 mt-1">Adquiere el curso para ver esta clase.</p>
                                   </div>
                                 ) : (
-                                  {!isDesktop && (
-                                    <VideoPlayer
-                                      key={`mobile-${selectedVideo.url}`}
-                                      videoUrl={selectedVideo.url}
-                                      titulo={selectedVideo.title}
-                                      posterUrl={selectedVideo.poster}
-                                      isFree={selectedVideo.isFree}
-                                    />
-                                  )}
+                                  <>
+                                    {!isDesktop && (
+                                      <VideoPlayer
+                                        key={`mobile-${selectedVideo.url}`}
+                                        videoUrl={selectedVideo.url}
+                                        titulo={selectedVideo.title}
+                                        posterUrl={selectedVideo.poster}
+                                        isFree={selectedVideo.isFree}
+                                      />
+                                    )}
+                                  </>
                                 )}
                               </div>
                               <div className="px-4 py-3">
