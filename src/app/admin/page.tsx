@@ -96,11 +96,11 @@ function getAdminHeaders(idToken: string | null, user: { email: string | null; u
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { color: string; label: string; icon: any }> = {
     approved: { color: 'bg-brand-primary-bg text-brand-primary-text', label: 'Aprobado', icon: CheckCircle2 },
-    pending: { color: 'bg-amber-100 text-amber-700', label: 'Pendiente', icon: Clock },
-    rejected: { color: 'bg-red-100 text-red-700', label: 'Rechazado', icon: XCircle },
-    refunded: { color: 'bg-slate-100 text-slate-600', label: 'Reembolsado', icon: AlertCircle },
+    pending: { color: 'bg-amber-100 text-amber-400', label: 'Pendiente', icon: Clock },
+    rejected: { color: 'bg-red-100 text-red-400', label: 'Rechazado', icon: XCircle },
+    refunded: { color: 'bg-slate-800 text-slate-300', label: 'Reembolsado', icon: AlertCircle },
   };
-  const s = map[status] || { color: 'bg-slate-100 text-slate-600', label: status, icon: AlertCircle };
+  const s = map[status] || { color: 'bg-slate-800 text-slate-300', label: status, icon: AlertCircle };
   const Icon = s.icon;
   return (
     <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${s.color}`}>
@@ -111,12 +111,12 @@ function StatusBadge({ status }: { status: string }) {
 
 function TicketBadge({ estado }: { estado: string }) {
   const map: Record<string, { color: string; label: string }> = {
-    nuevo: { color: 'bg-blue-100 text-blue-700', label: 'Nuevo' },
-    en_proceso: { color: 'bg-amber-100 text-amber-700', label: 'En Proceso' },
+    nuevo: { color: 'bg-blue-100 text-blue-400', label: 'Nuevo' },
+    en_proceso: { color: 'bg-amber-100 text-amber-400', label: 'En Proceso' },
     resuelto: { color: 'bg-brand-primary-bg text-brand-primary-text', label: 'Resuelto' },
-    cerrado: { color: 'bg-slate-100 text-slate-500', label: 'Cerrado' },
+    cerrado: { color: 'bg-slate-800 text-slate-400', label: 'Cerrado' },
   };
-  const s = map[estado] || { color: 'bg-slate-100 text-slate-600', label: estado };
+  const s = map[estado] || { color: 'bg-slate-800 text-slate-300', label: estado };
   return (
     <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${s.color}`}>{s.label}</span>
   );
@@ -125,13 +125,13 @@ function TicketBadge({ estado }: { estado: string }) {
 function RoleBadge({ role }: { role: string }) {
   if (role === 'admin') {
     return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">
+      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-400">
         <ShieldCheck className="h-2.5 w-2.5" />Admin
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+    <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
       <UserCircle className="h-2.5 w-2.5" />Estudiante
     </span>
   );
@@ -140,14 +140,14 @@ function RoleBadge({ role }: { role: string }) {
 // --- SKELETON COMPONENTS ---
 
 function SkeletonPulse({ className }: { className?: string }) {
-  return <div className={`animate-pulse bg-slate-200/70 rounded-xl ${className || ''}`} />;
+  return <div className={`animate-pulse bg-slate-800/70 rounded-xl ${className || ''}`} />;
 }
 
 function SkeletonKPICards() {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="bg-white rounded-2xl p-4 shadow-sm space-y-3">
+        <div key={i} className="bg-[#111827] rounded-2xl p-4 shadow-sm space-y-3">
           <SkeletonPulse className="h-3 w-20" />
           <SkeletonPulse className="h-7 w-28" />
           <SkeletonPulse className="h-3 w-16" />
@@ -161,7 +161,7 @@ function SkeletonCardList({ rows = 3 }: { rows?: number }) {
   return (
     <div className="space-y-3">
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="bg-white rounded-2xl p-4 shadow-sm space-y-3">
+        <div key={i} className="bg-[#111827] rounded-2xl p-4 shadow-sm space-y-3">
           <div className="flex items-center gap-3">
             <SkeletonPulse className="h-10 w-10 rounded-full shrink-0" />
             <div className="flex-1 space-y-2">
@@ -180,12 +180,12 @@ function SkeletonSection() {
     <div className="space-y-5">
       <SkeletonKPICards />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <div className="bg-white rounded-2xl p-5 shadow-sm space-y-3">
+        <div className="bg-[#111827] rounded-2xl p-5 shadow-sm space-y-3">
           <SkeletonPulse className="h-4 w-40" />
           <SkeletonPulse className="h-10 w-full" />
           <SkeletonPulse className="h-10 w-full" />
         </div>
-        <div className="bg-white rounded-2xl p-5 shadow-sm space-y-3">
+        <div className="bg-[#111827] rounded-2xl p-5 shadow-sm space-y-3">
           <SkeletonPulse className="h-4 w-40" />
           <div className="grid grid-cols-2 gap-4">
             {[1, 2, 3, 4].map((i) => (
@@ -198,7 +198,7 @@ function SkeletonSection() {
           </div>
         </div>
       </div>
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden space-y-3 p-5">
+      <div className="bg-[#111827] rounded-2xl shadow-sm overflow-hidden space-y-3 p-5">
         <SkeletonPulse className="h-4 w-48" />
         <SkeletonCardList rows={2} />
       </div>
@@ -227,7 +227,7 @@ function BottomNav({
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t border-slate-100 safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#111827]/95 backdrop-blur-xl border-t border-slate-800 safe-area-bottom">
       <div className="max-w-[1400px] mx-auto flex items-center justify-around px-2">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -237,13 +237,13 @@ function BottomNav({
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
               className={`flex flex-col items-center justify-center py-2 px-3 min-w-[64px] min-h-[52px] rounded-2xl transition-all duration-200 active:scale-95 ${
-                isActive ? 'text-brand-primary-text' : 'text-slate-400 active:text-slate-500'
+                isActive ? 'text-brand-primary-text' : 'text-slate-400 active:text-slate-400'
               }`}
             >
               <div className="relative">
                 <Icon className={`h-5 w-5 transition-all duration-200 ${isActive ? 'scale-110' : ''}`} />
                 {tab.id === 'tickets' && newTickets && newTickets > 0 ? (
-                  <span className="absolute -top-1.5 -right-2.5 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 leading-none">
+                  <span className="absolute -top-1.5 -right-2.5 bg-red-900/200 text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 leading-none">
                     {newTickets}
                   </span>
                 ) : null}
@@ -459,9 +459,9 @@ export default function PaginaAdmin() {
   // ========== LOADING (Skeleton) ==========
   if (authLoading || (loading && isAdmin && user)) {
     return (
-      <div className="min-h-screen bg-[#f8fafb]">
+      <div className="min-h-screen bg-[#0B1120]">
         {/* Header skeleton */}
-        <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl shadow-sm">
+        <div className="sticky top-0 z-40 bg-[#111827]/95 backdrop-blur-xl shadow-sm">
           <div className="max-w-[1400px] mx-auto px-4 lg:px-8 h-14 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <SkeletonPulse className="h-5 w-5 rounded-lg" />
@@ -483,13 +483,13 @@ export default function PaginaAdmin() {
   // ========== NO AUTORIZADO ==========
   if (!user || !isAdmin) {
     return (
-      <div className="min-h-screen bg-[#f8fafb] flex items-center justify-center px-4">
-        <div className="bg-white rounded-3xl p-8 shadow-sm max-w-sm w-full text-center">
-          <div className="h-16 w-16 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-5">
+      <div className="min-h-screen bg-[#0B1120] flex items-center justify-center px-4">
+        <div className="bg-[#111827] rounded-3xl p-8 shadow-sm max-w-sm w-full text-center">
+          <div className="h-16 w-16 rounded-2xl bg-red-900/20 flex items-center justify-center mx-auto mb-5">
             <Shield className="h-8 w-8 text-red-400" />
           </div>
-          <h2 className="text-lg font-bold text-brand-heading mb-2">Acceso restringido</h2>
-          <p className="text-sm text-slate-500 leading-relaxed mb-6">Necesitas iniciar sesión con una cuenta de administrador para acceder a este panel.</p>
+          <h2 className="text-lg font-bold text-white mb-2">Acceso restringido</h2>
+          <p className="text-sm text-slate-400 leading-relaxed mb-6">Necesitas iniciar sesión con una cuenta de administrador para acceder a este panel.</p>
           <button
             onClick={() => router.push('/iniciar-sesion')}
             className="w-full py-3 bg-brand-primary-hover text-white text-sm font-semibold rounded-2xl hover:bg-brand-primary-hover active:scale-[0.98] transition-all duration-150"
@@ -498,7 +498,7 @@ export default function PaginaAdmin() {
           </button>
           <button
             onClick={() => router.push('/')}
-            className="w-full mt-3 py-3 text-sm text-slate-500 hover:text-brand-heading-secondary font-medium active:scale-[0.98] transition-all duration-150"
+            className="w-full mt-3 py-3 text-sm text-slate-400 hover:text-slate-300 font-medium active:scale-[0.98] transition-all duration-150"
           >
             Volver al inicio
           </button>
@@ -510,42 +510,68 @@ export default function PaginaAdmin() {
   const m = metrics;
 
   return (
-    <div className="min-h-screen bg-[#f8fafb] flex flex-col">
-      {/* ===== HEADER ===== */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-        <div className="max-w-[1400px] mx-auto px-4 lg:px-8 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-xl bg-brand-primary-bg-light flex items-center justify-center">
-              <BarChart3 className="h-4 w-4 text-brand-primary-text" />
-            </div>
-            <h1 className="text-base font-bold text-brand-heading tracking-tight">Admin Panel</h1>
+    <div className="min-h-screen bg-[#0B1120] flex flex-col lg:flex-row">
+      {/* Sidebar for PC */}
+      <aside className="hidden lg:flex w-[260px] bg-[#111827] border-r border-slate-800 flex-col h-screen sticky top-0 shrink-0">
+        <div className="h-16 flex items-center gap-3 px-6 border-b border-slate-800">
+          <div className="h-8 w-8 rounded-xl bg-brand-primary/10 flex items-center justify-center">
+            <BarChart3 className="h-4 w-4 text-brand-primary" />
           </div>
-          <div className="flex items-center gap-2">
-            {user?.photoURL && (
-              <img src={user.photoURL} alt="" className="h-8 w-8 rounded-full ring-2 ring-slate-100" />
-            )}
-            <button
-              onClick={() => router.push('/dashboard/cursos')}
-              className="hidden lg:inline-flex text-sm text-slate-500 hover:text-brand-heading-secondary font-medium px-3 py-2 rounded-xl hover:bg-slate-50 active:scale-95 transition-all duration-150"
-            >
-              Dashboard
-            </button>
-            <button
-              onClick={signOut}
-              className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-600 font-medium px-3 py-2 rounded-xl hover:bg-red-50 active:scale-95 transition-all duration-150"
-            >
-              <LogOut className="h-4 w-4" />
-              <span className="hidden lg:inline">Salir</span>
-            </button>
-          </div>
+          <h1 className="text-base font-bold text-white tracking-tight">Admin Panel</h1>
         </div>
-      </header>
+        <nav className="flex-1 p-4 flex flex-col gap-2">
+          <button onClick={() => setActiveTab('resumen')} className={lex items-center gap-3 px-4 py-3 rounded-xl transition-all }>
+            <BarChart3 className="h-5 w-5" />
+            <span>Resumen</span>
+          </button>
+          <button onClick={() => setActiveTab('usuarios')} className={lex items-center gap-3 px-4 py-3 rounded-xl transition-all }>
+            <Users className="h-5 w-5" />
+            <span>Usuarios</span>
+          </button>
+          <button onClick={() => setActiveTab('compras')} className={lex items-center gap-3 px-4 py-3 rounded-xl transition-all }>
+            <ShoppingCart className="h-5 w-5" />
+            <span>Compras</span>
+          </button>
+          <button onClick={() => setActiveTab('soporte')} className={lex items-center gap-3 px-4 py-3 rounded-xl transition-all }>
+            <MessageSquare className="h-5 w-5" />
+            <span>Soporte</span>
+          </button>
+        </nav>
+        <div className="p-4 border-t border-slate-800 space-y-2">
+          <button onClick={() => router.push('/dashboard/cursos')} className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all font-medium">
+            <LogOut className="h-5 w-5 rotate-180" />
+            <span>Volver a App</span>
+          </button>
+          <button onClick={signOut} className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-all font-medium">
+            <LogOut className="h-5 w-5" />
+            <span>Cerrar Sesión</span>
+          </button>
+        </div>
+      </aside>
 
-      {/* ===== MAIN CONTENT ===== */}
-      <main className="flex-1 max-w-[1400px] mx-auto w-full px-4 lg:px-8 py-5 pb-24 lg:pb-8">
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Mobile Header (Hidden on PC) */}
+        <header className="lg:hidden sticky top-0 z-40 bg-[#111827]/95 backdrop-blur-xl border-b border-slate-800">
+          <div className="max-w-[1400px] mx-auto px-4 h-14 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="h-8 w-8 rounded-xl bg-brand-primary/10 flex items-center justify-center">
+                <BarChart3 className="h-4 w-4 text-brand-primary" />
+              </div>
+              <h1 className="text-base font-bold text-white tracking-tight">Admin</h1>
+            </div>
+            <div className="flex items-center gap-2">
+              {user?.photoURL && (
+                <img src={user.photoURL} alt="" className="h-8 w-8 rounded-full ring-2 ring-slate-800" />
+              )}
+            </div>
+          </div>
+        </header>
+
+        {/* ===== MAIN CONTENT ===== */}
+        <main className="flex-1 max-w-[1400px] w-full mx-auto px-4 lg:px-8 py-5 pb-24 lg:pb-8">
         {/* Warning */}
         {apiWarning && (
-          <div className="mb-4 flex items-start gap-2.5 p-3.5 bg-amber-50 border border-amber-100 rounded-2xl text-sm text-amber-700">
+          <div className="mb-4 flex items-start gap-2.5 p-3.5 bg-amber-900/20 border border-amber-900/50 rounded-2xl text-sm text-amber-400">
             <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
             <span>{apiWarning}</span>
           </div>
@@ -559,11 +585,11 @@ export default function PaginaAdmin() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-0.5">Panel de Control</p>
-                  <h2 className="text-xl font-bold text-brand-heading tracking-tight">Resumen General</h2>
+                  <h2 className="text-xl font-bold text-white tracking-tight">Resumen General</h2>
                 </div>
                 <button
                   onClick={() => { setLoading(true); fetchMetrics().finally(() => setLoading(false)); }}
-                  className="h-10 w-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-slate-400 hover:text-brand-primary-text active:scale-95 transition-all duration-150"
+                  className="h-10 w-10 rounded-xl bg-[#111827] shadow-sm flex items-center justify-center text-slate-400 hover:text-brand-primary-text active:scale-95 transition-all duration-150"
                 >
                   <BarChart3 className="h-4 w-4" />
                 </button>
@@ -573,20 +599,20 @@ export default function PaginaAdmin() {
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {[
                   { label: 'Ingresos Totales', value: fmtSoles(m.totalRevenuePEN), sub: fmtUSD(m.totalRevenueUSD), icon: DollarSign, color: 'text-brand-primary-text', bg: 'bg-brand-primary-bg-light' },
-                  { label: 'Estudiantes', value: String(m.totalUsers), sub: `+${m.recentUsers?.length || 0} recientes`, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
-                  { label: 'Compras Aprobadas', value: String(m.totalPurchases), sub: `${m.pendingPurchases} pendientes`, icon: ShoppingCart, color: 'text-purple-600', bg: 'bg-purple-50' },
-                  { label: 'Ticket Promedio', value: fmtSoles(m.ticketPromedio), sub: `${m.totalTickets} tickets`, icon: TrendingUp, color: 'text-orange-600', bg: 'bg-orange-50' },
+                  { label: 'Estudiantes', value: String(m.totalUsers), sub: `+${m.recentUsers?.length || 0} recientes`, icon: Users, color: 'text-blue-600', bg: 'bg-blue-900/20' },
+                  { label: 'Compras Aprobadas', value: String(m.totalPurchases), sub: `${m.pendingPurchases} pendientes`, icon: ShoppingCart, color: 'text-purple-600', bg: 'bg-purple-900/20' },
+                  { label: 'Ticket Promedio', value: fmtSoles(m.ticketPromedio), sub: `${m.totalTickets} tickets`, icon: TrendingUp, color: 'text-orange-600', bg: 'bg-orange-900/20' },
                 ].map((card) => {
                   const Icon = card.icon;
                   return (
-                    <div key={card.label} className="bg-white rounded-2xl p-4 shadow-sm active:scale-[0.98] transition-transform duration-150">
+                    <div key={card.label} className="bg-[#111827] rounded-2xl p-4 shadow-sm active:scale-[0.98] transition-transform duration-150">
                       <div className="flex items-center justify-between mb-3">
                         <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">{card.label}</span>
                         <div className={`h-8 w-8 rounded-xl ${card.bg} flex items-center justify-center`}>
                           <Icon className={`h-4 w-4 ${card.color}`} />
                         </div>
                       </div>
-                      <div className={`text-2xl font-bold tracking-tight text-brand-heading ${card.label.includes('Ingresos') || card.label.includes('Ticket') ? 'font-mono' : ''}`}>
+                      <div className={`text-2xl font-bold tracking-tight text-white ${card.label.includes('Ingresos') || card.label.includes('Ticket') ? 'font-mono' : ''}`}>
                         {card.value}
                       </div>
                       {card.sub && <div className="text-xs text-slate-400 mt-1">{card.sub}</div>}
@@ -598,26 +624,26 @@ export default function PaginaAdmin() {
               {/* Fila: Gateway + Actividad */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 {/* Ingresos por Gateway */}
-                <div className="bg-white rounded-2xl p-5 shadow-sm">
+                <div className="bg-[#111827] rounded-2xl p-5 shadow-sm">
                   <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-4">Ingresos por Gateway</p>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-3 rounded-xl bg-sky-50/60">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-xl bg-sky-100 flex items-center justify-center text-sky-600 text-xs font-bold">MP</div>
-                        <span className="text-sm font-medium text-brand-heading-secondary">MercadoPago</span>
+                        <span className="text-sm font-medium text-slate-300">MercadoPago</span>
                       </div>
                       <div className="text-right">
-                        <div className="text-sm font-bold font-mono text-brand-heading">{fmtSoles(m.mercadopago.ingresos)}</div>
+                        <div className="text-sm font-bold font-mono text-white">{fmtSoles(m.mercadopago.ingresos)}</div>
                         <div className="text-[10px] text-slate-400">{m.mercadopago.ventas} ventas</div>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-amber-50/60">
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-amber-900/20/60">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 text-xs font-bold">PP</div>
-                        <span className="text-sm font-medium text-brand-heading-secondary">PayPal</span>
+                        <span className="text-sm font-medium text-slate-300">PayPal</span>
                       </div>
                       <div className="text-right">
-                        <div className="text-sm font-bold font-mono text-brand-heading">{fmtUSD(m.paypal.ingresos)}</div>
+                        <div className="text-sm font-bold font-mono text-white">{fmtUSD(m.paypal.ingresos)}</div>
                         <div className="text-[10px] text-slate-400">{m.paypal.ventas} ventas</div>
                       </div>
                     </div>
@@ -625,23 +651,23 @@ export default function PaginaAdmin() {
                 </div>
 
                 {/* Actividad de la plataforma */}
-                <div className="bg-white rounded-2xl p-5 shadow-sm">
+                <div className="bg-[#111827] rounded-2xl p-5 shadow-sm">
                   <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-4">Actividad de la Plataforma</p>
                   <div className="grid grid-cols-2 gap-4">
                     {[
                       { label: 'Clases completadas', value: m.clasesCompletadas, icon: BookOpen, color: 'text-brand-primary-text', bg: 'bg-brand-primary-bg-light' },
                       { label: 'Wishlist', value: m.wishlistCount, icon: CreditCard, color: 'text-pink-600', bg: 'bg-pink-50' },
-                      { label: 'Tickets nuevos', value: m.newTickets, icon: MessageSquare, color: 'text-blue-600', bg: 'bg-blue-50' },
-                      { label: 'Compras rechazadas', value: m.rejectedPurchases, icon: XCircle, color: 'text-red-500', bg: 'bg-red-50' },
+                      { label: 'Tickets nuevos', value: m.newTickets, icon: MessageSquare, color: 'text-blue-600', bg: 'bg-blue-900/20' },
+                      { label: 'Compras rechazadas', value: m.rejectedPurchases, icon: XCircle, color: 'text-red-500', bg: 'bg-red-900/20' },
                     ].map((item) => {
                       const Icon = item.icon;
                       return (
-                        <div key={item.label} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50/80">
+                        <div key={item.label} className="flex items-center gap-3 p-3 rounded-xl bg-slate-800/50/80">
                           <div className={`h-9 w-9 rounded-xl ${item.bg} flex items-center justify-center shrink-0`}>
                             <Icon className={`h-4 w-4 ${item.color}`} />
                           </div>
                           <div>
-                            <div className="text-lg font-bold text-brand-heading tracking-tight">{item.value}</div>
+                            <div className="text-lg font-bold text-white tracking-tight">{item.value}</div>
                             <div className="text-[10px] text-slate-400 font-medium leading-tight">{item.label}</div>
                           </div>
                         </div>
@@ -652,7 +678,7 @@ export default function PaginaAdmin() {
               </div>
 
               {/* Últimos usuarios registrados */}
-              <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <div className="bg-[#111827] rounded-2xl shadow-sm overflow-hidden">
                 <div className="px-5 py-4 flex items-center justify-between border-b border-slate-50">
                   <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Últimos usuarios</p>
                   <button
@@ -670,16 +696,16 @@ export default function PaginaAdmin() {
                 ) : (
                   <div className="divide-y divide-slate-50">
                     {m.recentUsers.map((u) => (
-                      <div key={u.id} className="px-4 py-3 flex items-center gap-3 active:bg-slate-50 transition-colors">
+                      <div key={u.id} className="px-4 py-3 flex items-center gap-3 active:bg-slate-800/50 transition-colors">
                         {u.photoURL ? (
-                          <img src={u.photoURL} className="h-10 w-10 rounded-full ring-2 ring-slate-100" />
+                          <img src={u.photoURL} className="h-10 w-10 rounded-full ring-2 ring-slate-800" />
                         ) : (
                           <div className="h-10 w-10 rounded-full bg-brand-primary-bg-light flex items-center justify-center text-brand-primary-text font-bold text-sm">
                             {(u.name || u.email)[0].toUpperCase()}
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-semibold text-brand-heading truncate">{u.name || 'Sin nombre'}</div>
+                          <div className="text-sm font-semibold text-white truncate">{u.name || 'Sin nombre'}</div>
                           <div className="text-xs text-slate-400 truncate">{u.email}</div>
                         </div>
                         <RoleBadge role={u.role} />
@@ -690,7 +716,7 @@ export default function PaginaAdmin() {
               </div>
 
               {/* Compras recientes */}
-              <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <div className="bg-[#111827] rounded-2xl shadow-sm overflow-hidden">
                 <div className="px-5 py-4 flex items-center justify-between border-b border-slate-50">
                   <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Compras recientes</p>
                   <button
@@ -710,10 +736,10 @@ export default function PaginaAdmin() {
                     {/* Mobile: card list */}
                     <div className="lg:hidden divide-y divide-slate-50">
                       {m.recentPurchases.map((p) => (
-                        <div key={p.id} className="px-4 py-3.5 active:bg-slate-50 transition-colors">
+                        <div key={p.id} className="px-4 py-3.5 active:bg-slate-800/50 transition-colors">
                           <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-sm font-semibold text-brand-heading truncate max-w-[60%]">{p.courseTitle || p.courseId}</span>
-                            <span className="text-sm font-bold font-mono text-brand-heading">
+                            <span className="text-sm font-semibold text-white truncate max-w-[60%]">{p.courseTitle || p.courseId}</span>
+                            <span className="text-sm font-bold font-mono text-white">
                               {p.currency === 'PEN' ? fmtSoles(p.amount) : fmtUSD(p.amount)}
                             </span>
                           </div>
@@ -724,7 +750,7 @@ export default function PaginaAdmin() {
                           </div>
                           <div className="flex items-center gap-2 mt-2">
                             <StatusBadge status={p.status} />
-                            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${p.gateway === 'mercadopago' ? 'bg-sky-100 text-sky-700' : 'bg-amber-100 text-amber-700'}`}>
+                            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${p.gateway === 'mercadopago' ? 'bg-sky-100 text-sky-700' : 'bg-amber-100 text-amber-400'}`}>
                               {p.gateway === 'mercadopago' ? 'MercadoPago' : 'PayPal'}
                             </span>
                           </div>
@@ -735,7 +761,7 @@ export default function PaginaAdmin() {
                     <div className="hidden lg:block overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b border-slate-100 text-left">
+                          <tr className="border-b border-slate-800 text-left">
                             <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Fecha</th>
                             <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Usuario</th>
                             <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Curso</th>
@@ -746,16 +772,16 @@ export default function PaginaAdmin() {
                         </thead>
                         <tbody className="divide-y divide-slate-50">
                           {m.recentPurchases.map((p) => (
-                            <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
-                              <td className="px-5 py-3 text-slate-500 text-xs whitespace-nowrap">{p.approvedAt ? tiempoRelativo(p.approvedAt) : p.id.substring(0,8)}</td>
-                              <td className="px-5 py-3 text-brand-heading-secondary text-xs max-w-[150px] truncate">{p.userName || p.userEmail || '-'}</td>
-                              <td className="px-5 py-3 font-medium text-brand-heading text-xs max-w-[180px] truncate">{p.courseTitle || p.courseId}</td>
+                            <tr key={p.id} className="hover:bg-slate-800/50/50 transition-colors">
+                              <td className="px-5 py-3 text-slate-400 text-xs whitespace-nowrap">{p.approvedAt ? tiempoRelativo(p.approvedAt) : p.id.substring(0,8)}</td>
+                              <td className="px-5 py-3 text-slate-300 text-xs max-w-[150px] truncate">{p.userName || p.userEmail || '-'}</td>
+                              <td className="px-5 py-3 font-medium text-white text-xs max-w-[180px] truncate">{p.courseTitle || p.courseId}</td>
                               <td className="px-5 py-3">
-                                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${p.gateway === 'mercadopago' ? 'bg-sky-100 text-sky-700' : 'bg-amber-100 text-amber-700'}`}>
+                                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${p.gateway === 'mercadopago' ? 'bg-sky-100 text-sky-700' : 'bg-amber-100 text-amber-400'}`}>
                                   {p.gateway === 'mercadopago' ? 'MP' : 'PayPal'}
                                 </span>
                               </td>
-                              <td className="px-5 py-3 text-right font-mono font-medium text-xs text-brand-heading">
+                              <td className="px-5 py-3 text-right font-mono font-medium text-xs text-white">
                                 {p.currency === 'PEN' ? fmtSoles(p.amount) : fmtUSD(p.amount)}
                               </td>
                               <td className="px-5 py-3"><StatusBadge status={p.status} /></td>
@@ -779,7 +805,7 @@ export default function PaginaAdmin() {
             {/* Section header */}
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-0.5">Gestión de Usuarios</p>
-              <h2 className="text-xl font-bold text-brand-heading tracking-tight">Estudiantes</h2>
+              <h2 className="text-xl font-bold text-white tracking-tight">Estudiantes</h2>
             </div>
 
             {/* Search bar — full width, rounded-2xl */}
@@ -790,15 +816,15 @@ export default function PaginaAdmin() {
                 placeholder="Buscar por nombre o email..."
                 value={searchStudent}
                 onChange={(e) => setSearchStudent(e.target.value)}
-                className="w-full pl-12 pr-4 py-3.5 text-sm bg-white rounded-2xl shadow-sm border-0 text-brand-heading placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary/30 focus:shadow-[0_0_0_3px_rgba(16,185,129,0.1)] transition-all"
+                className="w-full pl-12 pr-4 py-3.5 text-sm bg-[#111827] rounded-2xl shadow-sm border-0 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary/30 focus:shadow-[0_0_0_3px_rgba(16,185,129,0.1)] transition-all"
               />
             </div>
 
             {/* Grant Access — collapsible */}
-            <div className="bg-white rounded-2xl shadow-sm p-4">
+            <div className="bg-[#111827] rounded-2xl shadow-sm p-4">
               <button
                 onClick={() => setShowGrantForm(!showGrantForm)}
-                className="w-full flex items-center justify-between text-sm font-semibold text-brand-heading"
+                className="w-full flex items-center justify-between text-sm font-semibold text-white"
               >
                 <span className="flex items-center gap-2">
                   <ShieldCheck className="h-4 w-4 text-brand-primary" />
@@ -809,20 +835,20 @@ export default function PaginaAdmin() {
                 </svg>
               </button>
               {showGrantForm && (
-                <div className="mt-3 space-y-3 border-t border-slate-100 pt-3">
+                <div className="mt-3 space-y-3 border-t border-slate-800 pt-3">
                   <input
                     type="email"
                     placeholder="Email del alumno"
                     value={grantEmail}
                     onChange={(e) => setGrantEmail(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+                    className="w-full px-3 py-2 text-sm rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
                   />
                   <input
                     type="text"
                     placeholder="Slug del curso (ej: calculo-diferencial)"
                     value={grantCourse}
                     onChange={(e) => setGrantCourse(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+                    className="w-full px-3 py-2 text-sm rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
                   />
                   <div className="flex gap-2">
                     <button
@@ -835,7 +861,7 @@ export default function PaginaAdmin() {
                     <button
                       onClick={handleRevokeAccess}
                       disabled={granting || !grantEmail || !grantCourse}
-                      className="h-9 px-4 text-xs font-bold text-red-500 rounded-xl border border-red-200 hover:bg-red-50 disabled:opacity-50 transition-colors"
+                      className="h-9 px-4 text-xs font-bold text-red-500 rounded-xl border border-red-200 hover:bg-red-900/20 disabled:opacity-50 transition-colors"
                     >
                       Revocar
                     </button>
@@ -854,11 +880,11 @@ export default function PaginaAdmin() {
 
             {/* Student list */}
             {students.length === 0 ? (
-              <div className="bg-white rounded-2xl shadow-sm p-12 text-center">
-                <div className="h-16 w-16 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-4">
+              <div className="bg-[#111827] rounded-2xl shadow-sm p-12 text-center">
+                <div className="h-16 w-16 rounded-2xl bg-slate-800/50 flex items-center justify-center mx-auto mb-4">
                   <Users className="h-8 w-8 text-slate-300" />
                 </div>
-                <p className="text-sm font-semibold text-slate-600 mb-1">No se encontraron estudiantes</p>
+                <p className="text-sm font-semibold text-slate-300 mb-1">No se encontraron estudiantes</p>
                 <p className="text-xs text-slate-400">Intenta ajustar tu búsqueda</p>
               </div>
             ) : (
@@ -868,33 +894,33 @@ export default function PaginaAdmin() {
                   {students.map((s) => (
                     <div
                       key={s.id}
-                      className="bg-white rounded-2xl p-4 shadow-sm active:scale-[0.99] transition-all duration-150"
+                      className="bg-[#111827] rounded-2xl p-4 shadow-sm active:scale-[0.99] transition-all duration-150"
                     >
                       <div className="flex items-center gap-3 mb-3">
                         {s.photoURL ? (
-                          <img src={s.photoURL} alt="" className="h-11 w-11 rounded-full ring-2 ring-slate-100" />
+                          <img src={s.photoURL} alt="" className="h-11 w-11 rounded-full ring-2 ring-slate-800" />
                         ) : (
                           <div className="h-11 w-11 rounded-full bg-brand-primary-bg-light flex items-center justify-center text-brand-primary-text font-bold text-sm">
                             {(s.name || s.email)[0].toUpperCase()}
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-semibold text-brand-heading truncate">{s.name}</div>
+                          <div className="text-sm font-semibold text-white truncate">{s.name}</div>
                           <div className="text-xs text-slate-400 truncate">{s.email}</div>
                         </div>
                         <RoleBadge role={s.role} />
                       </div>
                       <div className="grid grid-cols-3 gap-2 mb-3">
-                        <div className="bg-slate-50/80 rounded-xl px-3 py-2 text-center">
-                          <div className="text-sm font-bold text-brand-heading">{s.stats.cursosComprados}</div>
+                        <div className="bg-slate-800/50/80 rounded-xl px-3 py-2 text-center">
+                          <div className="text-sm font-bold text-white">{s.stats.cursosComprados}</div>
                           <div className="text-[10px] text-slate-400 font-medium">Cursos</div>
                         </div>
-                        <div className="bg-slate-50/80 rounded-xl px-3 py-2 text-center">
-                          <div className="text-sm font-bold font-mono text-brand-heading">{fmtSoles(s.totalGastado)}</div>
+                        <div className="bg-slate-800/50/80 rounded-xl px-3 py-2 text-center">
+                          <div className="text-sm font-bold font-mono text-white">{fmtSoles(s.totalGastado)}</div>
                           <div className="text-[10px] text-slate-400 font-medium">Gastado</div>
                         </div>
-                        <div className="bg-slate-50/80 rounded-xl px-3 py-2 text-center">
-                          <div className="text-sm font-bold text-brand-heading">{s.stats.clasesVistas}<span className="text-slate-400 font-normal">/{s.stats.totalProgreso}</span></div>
+                        <div className="bg-slate-800/50/80 rounded-xl px-3 py-2 text-center">
+                          <div className="text-sm font-bold text-white">{s.stats.clasesVistas}<span className="text-slate-400 font-normal">/{s.stats.totalProgreso}</span></div>
                           <div className="text-[10px] text-slate-400 font-medium">Clases</div>
                         </div>
                       </div>
@@ -911,7 +937,7 @@ export default function PaginaAdmin() {
                         </button>
                         <button
                           onClick={() => changeUserRole(s.id, s.role === 'admin' ? 'estudiante' : 'admin')}
-                          className="h-11 w-11 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 hover:bg-purple-100 active:scale-95 transition-all duration-150"
+                          className="h-11 w-11 rounded-xl bg-purple-900/20 flex items-center justify-center text-purple-600 hover:bg-purple-100 active:scale-95 transition-all duration-150"
                         >
                           {s.role === 'admin' ? <Shield className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
                         </button>
@@ -921,10 +947,10 @@ export default function PaginaAdmin() {
                 </div>
 
                 {/* Desktop: Table */}
-                <div className="hidden lg:block bg-white rounded-2xl shadow-sm overflow-hidden">
+                <div className="hidden lg:block bg-[#111827] rounded-2xl shadow-sm overflow-hidden">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-slate-100 text-left bg-slate-50/50">
+                      <tr className="border-b border-slate-800 text-left bg-slate-800/50/50">
                         <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Usuario</th>
                         <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Rol</th>
                         <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider text-center">Cursos</th>
@@ -936,42 +962,42 @@ export default function PaginaAdmin() {
                     </thead>
                     <tbody className="divide-y divide-slate-50">
                       {students.map((s) => (
-                        <tr key={s.id} className="hover:bg-slate-50/50 transition-colors">
+                        <tr key={s.id} className="hover:bg-slate-800/50/50 transition-colors">
                           <td className="px-5 py-3">
                             <div className="flex items-center gap-3">
                               {s.photoURL ? (
-                                <img src={s.photoURL} alt="" className="h-9 w-9 rounded-full ring-2 ring-slate-100" />
+                                <img src={s.photoURL} alt="" className="h-9 w-9 rounded-full ring-2 ring-slate-800" />
                               ) : (
                                 <div className="h-9 w-9 rounded-full bg-brand-primary-bg-light flex items-center justify-center text-brand-primary-text font-bold text-sm">
                                   {(s.name || s.email)[0].toUpperCase()}
                                 </div>
                               )}
                               <div className="min-w-0">
-                                <div className="font-medium text-brand-heading truncate max-w-[180px]">{s.name}</div>
+                                <div className="font-medium text-white truncate max-w-[180px]">{s.name}</div>
                                 <div className="text-xs text-slate-400 truncate max-w-[180px]">{s.email}</div>
                               </div>
                             </div>
                           </td>
                           <td className="px-5 py-3"><RoleBadge role={s.role} /></td>
                           <td className="px-5 py-3 text-center">
-                            <span className="text-sm font-semibold text-brand-heading">{s.stats.cursosComprados}</span>
+                            <span className="text-sm font-semibold text-white">{s.stats.cursosComprados}</span>
                           </td>
                           <td className="px-5 py-3 text-center">
-                            <span className="text-sm font-mono font-medium text-brand-heading-secondary">{fmtSoles(s.totalGastado)}</span>
+                            <span className="text-sm font-mono font-medium text-slate-300">{fmtSoles(s.totalGastado)}</span>
                           </td>
                           <td className="px-5 py-3 text-center">
-                            <span className="text-sm text-slate-600">{s.stats.clasesVistas}/{s.stats.totalProgreso}</span>
+                            <span className="text-sm text-slate-300">{s.stats.clasesVistas}/{s.stats.totalProgreso}</span>
                           </td>
                           <td className="px-5 py-3">
-                            <div className="text-xs text-slate-500">{fmtFecha(s.createdAt)}</div>
+                            <div className="text-xs text-slate-400">{fmtFecha(s.createdAt)}</div>
                             <div className="text-xs text-slate-400">{fmtHora(s.createdAt)}</div>
                           </td>
                           <td className="px-5 py-3">
                             <div className="flex items-center justify-center gap-1">
-                              <button onClick={() => viewUserDetail(s.id)} title="Ver detalle" className="p-2 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-brand-primary-text active:scale-95 transition-all duration-150">
+                              <button onClick={() => viewUserDetail(s.id)} title="Ver detalle" className="p-2 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-brand-primary-text active:scale-95 transition-all duration-150">
                                 <Eye className="h-4 w-4" />
                               </button>
-                              <button onClick={() => changeUserRole(s.id, s.role === 'admin' ? 'estudiante' : 'admin')} title="Cambiar rol" className="p-2 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-purple-600 active:scale-95 transition-all duration-150">
+                              <button onClick={() => changeUserRole(s.id, s.role === 'admin' ? 'estudiante' : 'admin')} title="Cambiar rol" className="p-2 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-purple-600 active:scale-95 transition-all duration-150">
                                 {s.role === 'admin' ? <Shield className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
                               </button>
                             </div>
@@ -983,7 +1009,7 @@ export default function PaginaAdmin() {
 
                   {/* Pagination */}
                   {studentsPagination.pages > 1 && (
-                    <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-between">
+                    <div className="px-5 py-3 border-t border-slate-800 flex items-center justify-between">
                       <span className="text-xs text-slate-400">
                         Página {studentsPagination.page} de {studentsPagination.pages}
                       </span>
@@ -991,16 +1017,16 @@ export default function PaginaAdmin() {
                         <button
                           onClick={() => fetchStudents(Math.max(1, studentsPagination.page - 1), searchStudent)}
                           disabled={studentsPagination.page <= 1}
-                          className="h-9 w-9 rounded-xl bg-slate-50 flex items-center justify-center hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all duration-150"
+                          className="h-9 w-9 rounded-xl bg-slate-800/50 flex items-center justify-center hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all duration-150"
                         >
-                          <ChevronLeft className="h-4 w-4 text-slate-600" />
+                          <ChevronLeft className="h-4 w-4 text-slate-300" />
                         </button>
                         <button
                           onClick={() => fetchStudents(Math.min(studentsPagination.pages, studentsPagination.page + 1), searchStudent)}
                           disabled={studentsPagination.page >= studentsPagination.pages}
-                          className="h-9 w-9 rounded-xl bg-slate-50 flex items-center justify-center hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all duration-150"
+                          className="h-9 w-9 rounded-xl bg-slate-800/50 flex items-center justify-center hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all duration-150"
                         >
-                          <ChevronRight className="h-4 w-4 text-slate-600" />
+                          <ChevronRight className="h-4 w-4 text-slate-300" />
                         </button>
                       </div>
                     </div>
@@ -1009,7 +1035,7 @@ export default function PaginaAdmin() {
 
                 {/* Mobile Pagination */}
                 {studentsPagination.pages > 1 && (
-                  <div className="lg:hidden flex items-center justify-between bg-white rounded-2xl p-4 shadow-sm">
+                  <div className="lg:hidden flex items-center justify-between bg-[#111827] rounded-2xl p-4 shadow-sm">
                     <span className="text-xs text-slate-400">
                       Página {studentsPagination.page} de {studentsPagination.pages}
                     </span>
@@ -1017,9 +1043,9 @@ export default function PaginaAdmin() {
                       <button
                         onClick={() => fetchStudents(Math.max(1, studentsPagination.page - 1), searchStudent)}
                         disabled={studentsPagination.page <= 1}
-                        className="h-11 w-11 rounded-xl bg-slate-50 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all duration-150"
+                        className="h-11 w-11 rounded-xl bg-slate-800/50 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all duration-150"
                       >
-                        <ChevronLeft className="h-4 w-4 text-slate-600" />
+                        <ChevronLeft className="h-4 w-4 text-slate-300" />
                       </button>
                       <button
                         onClick={() => fetchStudents(Math.min(studentsPagination.pages, studentsPagination.page + 1), searchStudent)}
@@ -1041,15 +1067,15 @@ export default function PaginaAdmin() {
           <div className="space-y-5">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-0.5">Historial</p>
-              <h2 className="text-xl font-bold text-brand-heading tracking-tight">Compras</h2>
+              <h2 className="text-xl font-bold text-white tracking-tight">Compras</h2>
             </div>
 
             {(!m || m.recentPurchases?.length === 0) ? (
-              <div className="bg-white rounded-2xl shadow-sm p-12 text-center">
-                <div className="h-16 w-16 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-4">
+              <div className="bg-[#111827] rounded-2xl shadow-sm p-12 text-center">
+                <div className="h-16 w-16 rounded-2xl bg-slate-800/50 flex items-center justify-center mx-auto mb-4">
                   <ShoppingCart className="h-8 w-8 text-slate-300" />
                 </div>
-                <p className="text-sm font-semibold text-slate-600 mb-1">No hay compras registradas</p>
+                <p className="text-sm font-semibold text-slate-300 mb-1">No hay compras registradas</p>
                 <p className="text-xs text-slate-400">Las compras aparecerán aquí cuando se realicen</p>
               </div>
             ) : (
@@ -1057,9 +1083,9 @@ export default function PaginaAdmin() {
                 {/* Mobile: Card list */}
                 <div className="lg:hidden space-y-3">
                   {m.recentPurchases.map((p) => (
-                    <div key={p.id} className="bg-white rounded-2xl p-4 shadow-sm active:scale-[0.99] transition-all duration-150">
+                    <div key={p.id} className="bg-[#111827] rounded-2xl p-4 shadow-sm active:scale-[0.99] transition-all duration-150">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-semibold text-brand-heading truncate max-w-[60%]">{p.courseTitle || p.courseId}</span>
+                        <span className="text-sm font-semibold text-white truncate max-w-[60%]">{p.courseTitle || p.courseId}</span>
                         <StatusBadge status={p.status} />
                       </div>
                       <div className="flex items-center gap-2 text-xs text-slate-400 mb-2">
@@ -1067,14 +1093,14 @@ export default function PaginaAdmin() {
                       </div>
                       <div className="flex items-center justify-between pt-2 border-t border-slate-50">
                         <div className="flex items-center gap-2">
-                          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${p.gateway === 'mercadopago' ? 'bg-sky-100 text-sky-700' : 'bg-amber-100 text-amber-700'}`}>
+                          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${p.gateway === 'mercadopago' ? 'bg-sky-100 text-sky-700' : 'bg-amber-100 text-amber-400'}`}>
                             {p.gateway === 'mercadopago' ? 'MercadoPago' : 'PayPal'}
                           </span>
                           <span className="text-xs text-slate-400">
                             {p.approvedAt ? fmtFecha(p.approvedAt) : '-'}
                           </span>
                         </div>
-                        <span className="text-sm font-bold font-mono text-brand-heading">
+                        <span className="text-sm font-bold font-mono text-white">
                           {p.currency === 'PEN' ? fmtSoles(p.amount) : fmtUSD(p.amount)}
                         </span>
                       </div>
@@ -1085,10 +1111,10 @@ export default function PaginaAdmin() {
                   ))}
                 </div>
                 {/* Desktop: Table */}
-                <div className="hidden lg:block bg-white rounded-2xl shadow-sm overflow-hidden">
+                <div className="hidden lg:block bg-[#111827] rounded-2xl shadow-sm overflow-hidden">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-slate-100 text-left bg-slate-50/50">
+                      <tr className="border-b border-slate-800 text-left bg-slate-800/50/50">
                         <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Fecha</th>
                         <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Usuario</th>
                         <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Curso</th>
@@ -1100,22 +1126,22 @@ export default function PaginaAdmin() {
                     </thead>
                     <tbody className="divide-y divide-slate-50">
                       {m.recentPurchases.map((p) => (
-                        <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
-                          <td className="px-5 py-3 text-xs text-slate-500 whitespace-nowrap">
+                        <tr key={p.id} className="hover:bg-slate-800/50/50 transition-colors">
+                          <td className="px-5 py-3 text-xs text-slate-400 whitespace-nowrap">
                             <div>{p.approvedAt ? fmtFecha(p.approvedAt) : '-'}</div>
                             <div className="text-slate-400">{p.approvedAt ? fmtHora(p.approvedAt) : ''}</div>
                           </td>
                           <td className="px-5 py-3">
-                            <div className="text-xs font-medium text-brand-heading-secondary truncate max-w-[150px]">{p.userName || '-'}</div>
+                            <div className="text-xs font-medium text-slate-300 truncate max-w-[150px]">{p.userName || '-'}</div>
                             <div className="text-xs text-slate-400 truncate max-w-[150px]">{p.userEmail || p.payerEmail || '-'}</div>
                           </td>
-                          <td className="px-5 py-3 text-xs font-medium text-brand-heading max-w-[180px] truncate">{p.courseTitle || p.courseId}</td>
+                          <td className="px-5 py-3 text-xs font-medium text-white max-w-[180px] truncate">{p.courseTitle || p.courseId}</td>
                           <td className="px-5 py-3">
-                            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${p.gateway === 'mercadopago' ? 'bg-sky-100 text-sky-700' : 'bg-amber-100 text-amber-700'}`}>
+                            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${p.gateway === 'mercadopago' ? 'bg-sky-100 text-sky-700' : 'bg-amber-100 text-amber-400'}`}>
                               {p.gateway === 'mercadopago' ? 'MercadoPago' : 'PayPal'}
                             </span>
                           </td>
-                          <td className="px-5 py-3 text-right font-mono font-medium text-xs text-brand-heading">
+                          <td className="px-5 py-3 text-right font-mono font-medium text-xs text-white">
                             {p.currency === 'PEN' ? fmtSoles(p.amount) : fmtUSD(p.amount)}
                           </td>
                           <td className="px-5 py-3"><StatusBadge status={p.status} /></td>
@@ -1136,10 +1162,10 @@ export default function PaginaAdmin() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-0.5">Soporte</p>
-                <h2 className="text-xl font-bold text-brand-heading tracking-tight">Tickets</h2>
+                <h2 className="text-xl font-bold text-white tracking-tight">Tickets</h2>
               </div>
               {m?.newTickets ? (
-                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue-600">
+                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-900/20 text-blue-600">
                   {m.newTickets} nuevo{m.newTickets !== 1 ? 's' : ''}
                 </span>
               ) : null}
@@ -1153,7 +1179,7 @@ export default function PaginaAdmin() {
                   return (
                     <button
                       key={filter}
-                      className="shrink-0 text-xs font-medium px-3.5 py-2 rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50 active:scale-95 transition-all duration-150"
+                      className="shrink-0 text-xs font-medium px-3.5 py-2 rounded-full border border-slate-700 text-slate-300 hover:bg-slate-800/50 active:scale-95 transition-all duration-150"
                     >
                       {filter === 'todos' ? 'Todos' : filter.replace('_', ' ')} ({count})
                     </button>
@@ -1163,17 +1189,17 @@ export default function PaginaAdmin() {
             )}
 
             {(!m || m.recentTickets?.length === 0) ? (
-              <div className="bg-white rounded-2xl shadow-sm p-12 text-center">
-                <div className="h-16 w-16 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-4">
+              <div className="bg-[#111827] rounded-2xl shadow-sm p-12 text-center">
+                <div className="h-16 w-16 rounded-2xl bg-slate-800/50 flex items-center justify-center mx-auto mb-4">
                   <MessageSquare className="h-8 w-8 text-slate-300" />
                 </div>
-                <p className="text-sm font-semibold text-slate-600 mb-1">No hay tickets de soporte</p>
+                <p className="text-sm font-semibold text-slate-300 mb-1">No hay tickets de soporte</p>
                 <p className="text-xs text-slate-400">Los tickets nuevos aparecerán aquí</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {m.recentTickets.map((t) => (
-                  <div key={t.id} className="bg-white rounded-2xl p-4 shadow-sm active:scale-[0.99] transition-all duration-150">
+                  <div key={t.id} className="bg-[#111827] rounded-2xl p-4 shadow-sm active:scale-[0.99] transition-all duration-150">
                     <div className="flex items-start gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1.5 flex-wrap">
@@ -1181,9 +1207,9 @@ export default function PaginaAdmin() {
                           <span className="text-xs text-slate-400">{tiempoRelativo(t.createdAt)}</span>
                         </div>
                         {t.asunto && (
-                          <div className="text-sm font-semibold text-brand-heading mb-1">{t.asunto}</div>
+                          <div className="text-sm font-semibold text-white mb-1">{t.asunto}</div>
                         )}
-                        <p className="text-sm text-slate-500 leading-relaxed line-clamp-2">{t.mensaje}</p>
+                        <p className="text-sm text-slate-400 leading-relaxed line-clamp-2">{t.mensaje}</p>
                         <div className="flex items-center gap-3 mt-2.5 text-xs text-slate-400">
                           <span className="flex items-center gap-1">
                             <Mail className="h-3 w-3" />{t.email}
@@ -1198,7 +1224,7 @@ export default function PaginaAdmin() {
                       {t.estado === 'nuevo' && (
                         <button
                           onClick={() => updateTicketStatus(t.id, 'en_proceso')}
-                          className="flex-1 py-2.5 text-xs font-semibold rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-100 active:scale-[0.97] transition-all duration-150"
+                          className="flex-1 py-2.5 text-xs font-semibold rounded-xl bg-amber-900/20 text-amber-400 hover:bg-amber-100 active:scale-[0.97] transition-all duration-150"
                         >
                           Tomar
                         </button>
@@ -1214,7 +1240,7 @@ export default function PaginaAdmin() {
                       {t.estado === 'resuelto' && (
                         <button
                           onClick={() => updateTicketStatus(t.id, 'cerrado')}
-                          className="flex-1 py-2.5 text-xs font-semibold rounded-xl bg-slate-50 text-slate-600 hover:bg-slate-100 active:scale-[0.97] transition-all duration-150"
+                          className="flex-1 py-2.5 text-xs font-semibold rounded-xl bg-slate-800/50 text-slate-300 hover:bg-slate-800 active:scale-[0.97] transition-all duration-150"
                         >
                           Cerrar
                         </button>
@@ -1243,22 +1269,22 @@ export default function PaginaAdmin() {
 
           {/* Bottom Sheet (mobile) / Centered Modal (desktop) */}
           <div
-            className="absolute bottom-0 left-0 right-0 lg:bottom-auto lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 bg-white rounded-t-3xl lg:rounded-2xl w-full lg:max-w-2xl max-h-[90vh] lg:max-h-[85vh] overflow-hidden shadow-2xl z-10"
+            className="absolute bottom-0 left-0 right-0 lg:bottom-auto lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 bg-[#111827] rounded-t-3xl lg:rounded-2xl w-full lg:max-w-2xl max-h-[90vh] lg:max-h-[85vh] overflow-hidden shadow-2xl z-10"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drag handle (mobile) */}
             <div className="lg:hidden flex justify-center pt-3 pb-1">
-              <div className="h-1 w-10 rounded-full bg-slate-200" />
+              <div className="h-1 w-10 rounded-full bg-slate-700" />
             </div>
 
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-5 lg:px-6 py-3 lg:py-4 border-b border-slate-100">
-              <h2 className="text-base font-bold text-brand-heading">Detalle del Usuario</h2>
+            <div className="flex items-center justify-between px-5 lg:px-6 py-3 lg:py-4 border-b border-slate-800">
+              <h2 className="text-base font-bold text-white">Detalle del Usuario</h2>
               <button
                 onClick={() => setShowUserModal(false)}
-                className="h-9 w-9 rounded-xl bg-slate-50 flex items-center justify-center hover:bg-slate-100 active:scale-95 transition-all duration-150"
+                className="h-9 w-9 rounded-xl bg-slate-800/50 flex items-center justify-center hover:bg-slate-800 active:scale-95 transition-all duration-150"
               >
-                <X className="h-4 w-4 text-slate-500" />
+                <X className="h-4 w-4 text-slate-400" />
               </button>
             </div>
 
@@ -1266,15 +1292,15 @@ export default function PaginaAdmin() {
               {/* Info principal */}
               <div className="flex items-center gap-4">
                 {selectedUser.photoURL ? (
-                  <img src={selectedUser.photoURL} className="h-14 w-14 rounded-full ring-2 ring-slate-100" />
+                  <img src={selectedUser.photoURL} className="h-14 w-14 rounded-full ring-2 ring-slate-800" />
                 ) : (
                   <div className="h-14 w-14 rounded-full bg-brand-primary-bg-light flex items-center justify-center text-brand-primary-text font-bold text-xl">
                     {(selectedUser.name || selectedUser.email)[0].toUpperCase()}
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <div className="font-bold text-brand-heading text-lg truncate">{selectedUser.name || 'Sin nombre'}</div>
-                  <div className="text-sm text-slate-500 truncate">{selectedUser.email}</div>
+                  <div className="font-bold text-white text-lg truncate">{selectedUser.name || 'Sin nombre'}</div>
+                  <div className="text-sm text-slate-400 truncate">{selectedUser.email}</div>
                   <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                     <RoleBadge role={selectedUser.role} />
                     <span className="text-xs text-slate-400">Registro: {fmtFecha(selectedUser.createdAt)}</span>
@@ -1286,17 +1312,17 @@ export default function PaginaAdmin() {
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {[
                   { label: 'Cursos comprados', value: selectedUser.stats.comprasAprobadas, icon: BookOpen, color: 'text-brand-primary-text', bg: 'bg-brand-primary-bg-light' },
-                  { label: 'Total gastado', value: fmtSoles(selectedUser.stats.totalGastado), icon: DollarSign, color: 'text-blue-600', bg: 'bg-blue-50' },
-                  { label: 'Clases vistas', value: selectedUser.stats.clasesCompletadas, icon: CheckCircle2, color: 'text-purple-600', bg: 'bg-purple-50' },
+                  { label: 'Total gastado', value: fmtSoles(selectedUser.stats.totalGastado), icon: DollarSign, color: 'text-blue-600', bg: 'bg-blue-900/20' },
+                  { label: 'Clases vistas', value: selectedUser.stats.clasesCompletadas, icon: CheckCircle2, color: 'text-purple-600', bg: 'bg-purple-900/20' },
                   { label: 'Wishlist', value: selectedUser.stats.enWishlist, icon: CreditCard, color: 'text-pink-600', bg: 'bg-pink-50' },
                 ].map((stat) => {
                   const Icon = stat.icon;
                   return (
-                    <div key={stat.label} className="bg-slate-50/80 rounded-xl p-3 text-center">
+                    <div key={stat.label} className="bg-slate-800/50/80 rounded-xl p-3 text-center">
                       <div className={`h-8 w-8 rounded-lg ${stat.bg} flex items-center justify-center mx-auto mb-1.5`}>
                         <Icon className={`h-4 w-4 ${stat.color}`} />
                       </div>
-                      <div className="text-lg font-bold text-brand-heading tracking-tight">{stat.value}</div>
+                      <div className="text-lg font-bold text-white tracking-tight">{stat.value}</div>
                       <div className="text-[10px] text-slate-400 font-medium">{stat.label}</div>
                     </div>
                   );
@@ -1312,23 +1338,23 @@ export default function PaginaAdmin() {
                   {/* Mobile: card list */}
                   <div className="lg:hidden space-y-2">
                     {selectedUser.purchases.map((p: any) => (
-                      <div key={p.id} className="bg-slate-50/80 rounded-xl p-3 flex items-center justify-between">
+                      <div key={p.id} className="bg-slate-800/50/80 rounded-xl p-3 flex items-center justify-between">
                         <div className="flex-1 min-w-0 mr-3">
-                          <div className="text-sm font-medium text-brand-heading truncate">{p.courseTitle || p.courseId}</div>
+                          <div className="text-sm font-medium text-white truncate">{p.courseTitle || p.courseId}</div>
                           <div className="text-xs text-slate-400">{p.approvedAt ? fmtFecha(p.approvedAt) : '-'}</div>
                         </div>
                         <div className="text-right shrink-0">
-                          <div className="text-sm font-bold font-mono text-brand-heading">{p.currency === 'PEN' ? fmtSoles(p.amount) : fmtUSD(p.amount)}</div>
+                          <div className="text-sm font-bold font-mono text-white">{p.currency === 'PEN' ? fmtSoles(p.amount) : fmtUSD(p.amount)}</div>
                           <StatusBadge status={p.status} />
                         </div>
                       </div>
                     ))}
                   </div>
                   {/* Desktop: table */}
-                  <div className="hidden lg:block rounded-xl border border-slate-100 overflow-hidden">
+                  <div className="hidden lg:block rounded-xl border border-slate-800 overflow-hidden">
                     <table className="w-full text-xs">
                       <thead>
-                        <tr className="bg-slate-50">
+                        <tr className="bg-slate-800/50">
                           <th className="px-3 py-2 text-left font-semibold text-slate-400 uppercase tracking-wider">Curso</th>
                           <th className="px-3 py-2 text-right font-semibold text-slate-400 uppercase tracking-wider">Monto</th>
                           <th className="px-3 py-2 text-center font-semibold text-slate-400 uppercase tracking-wider">Estado</th>
@@ -1338,7 +1364,7 @@ export default function PaginaAdmin() {
                       <tbody className="divide-y divide-slate-50">
                         {selectedUser.purchases.map((p: any) => (
                           <tr key={p.id}>
-                            <td className="px-3 py-2 text-brand-heading-secondary max-w-[150px] truncate">{p.courseTitle || p.courseId}</td>
+                            <td className="px-3 py-2 text-slate-300 max-w-[150px] truncate">{p.courseTitle || p.courseId}</td>
                             <td className="px-3 py-2 text-right font-mono">{p.currency === 'PEN' ? fmtSoles(p.amount) : fmtUSD(p.amount)}</td>
                             <td className="px-3 py-2 text-center"><StatusBadge status={p.status} /></td>
                             <td className="px-3 py-2 text-slate-400">{p.approvedAt ? fmtFecha(p.approvedAt) : '-'}</td>
@@ -1358,13 +1384,13 @@ export default function PaginaAdmin() {
                   </p>
                   <div className="space-y-1.5 max-h-40 overflow-y-auto">
                     {selectedUser.progress.map((p: any) => (
-                      <div key={p.id} className="flex items-center gap-2.5 text-xs px-3 py-2 rounded-xl bg-slate-50/80">
+                      <div key={p.id} className="flex items-center gap-2.5 text-xs px-3 py-2 rounded-xl bg-slate-800/50/80">
                         {p.completed ? (
                           <CheckCircle2 className="h-3.5 w-3.5 text-brand-primary shrink-0" />
                         ) : (
                           <Clock className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                         )}
-                        <span className="text-slate-600 truncate flex-1">{p.courseId}{p.temaId ? ` / ${p.temaId}` : ''}</span>
+                        <span className="text-slate-300 truncate flex-1">{p.courseId}{p.temaId ? ` / ${p.temaId}` : ''}</span>
                         <span className="text-slate-400 font-mono shrink-0">{p.watchTime}s</span>
                       </div>
                     ))}
@@ -1387,10 +1413,10 @@ export default function PaginaAdmin() {
               )}
 
               {/* Acciones */}
-              <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
+              <div className="flex items-center gap-3 pt-4 border-t border-slate-800">
                 <button
                   onClick={() => changeUserRole(selectedUser.id, selectedUser.role === 'admin' ? 'estudiante' : 'admin')}
-                  className="flex-1 py-3 text-sm font-semibold rounded-2xl border border-purple-200 text-purple-700 hover:bg-purple-50 active:scale-[0.97] transition-all duration-150"
+                  className="flex-1 py-3 text-sm font-semibold rounded-2xl border border-purple-200 text-purple-400 hover:bg-purple-900/20 active:scale-[0.97] transition-all duration-150"
                 >
                   {selectedUser.role === 'admin' ? 'Quitar Admin' : 'Promover a Admin'}
                 </button>
@@ -1404,7 +1430,7 @@ export default function PaginaAdmin() {
                     </button>
                     <button
                       onClick={() => setConfirmDelete(null)}
-                      className="px-5 py-3 text-sm font-medium rounded-2xl border border-slate-200 text-slate-600 active:scale-95 transition-all duration-150"
+                      className="px-5 py-3 text-sm font-medium rounded-2xl border border-slate-700 text-slate-300 active:scale-95 transition-all duration-150"
                     >
                       Cancelar
                     </button>
@@ -1412,7 +1438,7 @@ export default function PaginaAdmin() {
                 ) : (
                   <button
                     onClick={() => setConfirmDelete(selectedUser.id)}
-                    className="px-5 py-3 text-sm font-medium rounded-2xl border border-red-200 text-red-600 hover:bg-red-50 active:scale-95 transition-all duration-150 flex items-center gap-1.5"
+                    className="px-5 py-3 text-sm font-medium rounded-2xl border border-red-200 text-red-600 hover:bg-red-900/20 active:scale-95 transition-all duration-150 flex items-center gap-1.5"
                   >
                     <Trash2 className="h-4 w-4" />Eliminar
                   </button>

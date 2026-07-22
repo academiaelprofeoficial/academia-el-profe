@@ -1,24 +1,64 @@
-﻿import subprocess
+﻿import re
 
-result = subprocess.run(['git', 'show', 'FETCH_HEAD:src/components/course/VideoPlayer.tsx'], capture_output=True)
-content = result.stdout.decode('utf-8')
+with open('src/components/course/VideoPlayer.tsx', 'r', encoding='utf-8') as f:
+    content = f.read()
 
-# Remove lg:hidden from mobile controls
-content = content.replace('className={lg:hidden absolute inset-0', 'className={bsolute inset-0')
+# Add a playback rate function
+new_playback = """    const handleSpeedChange = useCallback((speed: number) => {
+      setPlaybackRate(speed);
+      const v = videoRef.current;
+      if (v) v.playbackRate = speed;
+      setShowSpeedMenu(false);
+    }, []);"""
 
-# Change the onClick for the mobile overlay wrapper
-old_onclick = 'onClick={() => setShowControls(prev => !prev)}'
-new_onclick = 'onClick={(e) => { togglePlay(e); setShowControls(true); resetControlsTimer(); }}'
-content = content.replace(old_onclick, new_onclick)
+# Insert after handleVolumeChange
+content = content.replace("    const toggleFullscreen =", new_playback + "\n\n    const toggleFullscreen =")
 
-# Remove the desktop controls block entirely
-desktop_start = content.find('{/* ===== CONTROLES DESKTOP')
-if desktop_start != -1:
-    pip_start = content.find('{/* Indicador de PiP */}', desktop_start)
-    if pip_start != -1:
-        content = content[:desktop_start] + content[pip_start:]
+# Add the UI for playback rate next to PiP button
+# Find where PiP button is rendered
+pip_button_code = """            {/* PiP button — sin círculo */}
+            {pipEnabled && (
+              <button
+                onClick={(e) => { e.stopPropagation(); togglePictureInPicture(e); }}
+                className={p-1.5 transition-all active:scale-90 }
+                aria-label="Picture in Picture"
+              >
+                <PictureInPicture2 className="w-5 h-5 drop-shadow-lg" />
+              </button>
+            )}"""
+
+speed_button_code = """            {/* Playback Rate button */}
+            <div className="relative">
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowSpeedMenu(!showSpeedMenu); }}
+                className="px-2 py-1 transition-all active:scale-90 text-white font-mono text-xs font-bold drop-shadow-lg bg-black/40 rounded hover:bg-black/60"
+                aria-label="Velocidad de reproducción"
+              >
+                {playbackRate}x
+              </button>
+              {showSpeedMenu && (
+                <div
+                  className="absolute top-full right-0 mt-2 bg-black/90 backdrop-blur-sm rounded-xl p-2 shadow-xl border border-white/10 flex flex-col gap-1 z-50"
+                  onMouseLeave={() => setShowSpeedMenu(false)}
+                >
+                  {[0.75, 1, 1.25, 1.5, 2].map((speed) => (
+                    <button
+                      key={speed}
+                      onClick={(e) => { e.stopPropagation(); handleSpeedChange(speed); }}
+                      className={	ext-xs px-4 py-1.5 rounded-lg text-left transition-colors }
+                    >
+                      {speed}x
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+""" + pip_button_code
+
+content = content.replace(pip_button_code, speed_button_code)
 
 with open('src/components/course/VideoPlayer.tsx', 'w', encoding='utf-8') as f:
     f.write(content)
 
-print('Clean rewrite done')
+print("Playback rate added!")

@@ -650,12 +650,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
             showControls || !isPlaying ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
           onClick={(e) => { 
-            const video = videoRef.current;
-            if (video) {
-              if (video.paused) { video.play().catch(()=>{}); setIsPlaying(true); }
-              else { video.pause(); setIsPlaying(false); }
-            }
-            setShowControls(true); 
+            setShowControls(prev => !prev); 
             resetControlsTimer(); 
           }}
         >
