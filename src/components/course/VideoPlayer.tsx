@@ -631,7 +631,15 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
           className={`absolute inset-0 transition-opacity duration-300 z-40 ${
             showControls || !isPlaying ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
-          onClick={(e) => { setShowControls(true); resetControlsTimer(); }}
+          onClick={(e) => { 
+            const video = videoRef.current;
+            if (video) {
+              if (video.paused) { video.play().catch(()=>{}); setIsPlaying(true); }
+              else { video.pause(); setIsPlaying(false); }
+            }
+            setShowControls(true); 
+            resetControlsTimer(); 
+          }}
         >
           {/* Centro: Skip -10s | Play/Pause | Skip +10s */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
@@ -755,9 +763,40 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
               </div>
             </div>
             {/* Time row */}
-            <div className="flex justify-between text-[11px] text-gray-300 font-mono">
-              <span>{formatTime(currentTime)}</span>
-              <span>{formatRemainingTime(currentTime, duration)}</span>
+            <div className="flex justify-between items-center text-[11px] text-gray-300 font-mono">
+              <div className="flex items-center gap-3">
+                <span>{formatTime(currentTime)}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span>{formatRemainingTime(currentTime, duration)}</span>
+
+            <div className="relative">
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowSpeedMenu(!showSpeedMenu); }}
+                className="px-2 py-1 transition-all active:scale-90 text-white font-mono text-xs font-bold drop-shadow-lg bg-black/40 rounded hover:bg-black/60"
+                aria-label="Velocidad de reproducción"
+              >
+                {playbackRate}x
+              </button>
+              {showSpeedMenu && (
+                <div
+                  className="absolute bottom-full right-0 mb-2 bg-black/90 backdrop-blur-sm rounded-xl p-2 shadow-xl border border-white/10 flex flex-col gap-1 z-50"
+                  onMouseLeave={() => setShowSpeedMenu(false)}
+                >
+                  {[0.75, 1, 1.25, 1.5, 2].map((speed) => (
+                    <button
+                      key={speed}
+                      onClick={(e) => { e.stopPropagation(); handleSpeedChange(speed); }}
+                      className={`text-xs px-4 py-1.5 rounded-lg text-left transition-colors ${playbackRate === speed ? 'bg-brand-primary text-white font-bold' : 'text-white/70 hover:bg-white/10 hover:text-white'}`}
+                    >
+                      {speed}x
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+              </div>
             </div>
           </div>
         </div>
