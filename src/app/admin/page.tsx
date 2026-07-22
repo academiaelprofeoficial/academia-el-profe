@@ -524,7 +524,7 @@ export default function PaginaAdmin() {
             <BarChart3 className="h-5 w-5" />
             <span>Resumen</span>
           </button>
-          <button onClick={() => setActiveTab('usuarios')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'usuarios' ? 'bg-brand-primary text-white font-semibold shadow-lg shadow-brand-primary/20' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}>
+          <button onClick={() => setActiveTab('estudiantes')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'estudiantes' ? 'bg-brand-primary text-white font-semibold shadow-lg shadow-brand-primary/20' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}>
             <Users className="h-5 w-5" />
             <span>Usuarios</span>
           </button>
@@ -532,7 +532,7 @@ export default function PaginaAdmin() {
             <ShoppingCart className="h-5 w-5" />
             <span>Compras</span>
           </button>
-          <button onClick={() => setActiveTab('soporte')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'soporte' ? 'bg-brand-primary text-white font-semibold shadow-lg shadow-brand-primary/20' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}>
+          <button onClick={() => setActiveTab('tickets')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'tickets' ? 'bg-brand-primary text-white font-semibold shadow-lg shadow-brand-primary/20' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}>
             <MessageSquare className="h-5 w-5" />
             <span>Soporte</span>
           </button>
