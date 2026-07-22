@@ -311,6 +311,13 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
       }
     }, []);
 
+    const handleSpeedChange = useCallback((speed: number) => {
+      setPlaybackRate(speed);
+      const v = videoRef.current;
+      if (v) v.playbackRate = speed;
+      setShowSpeedMenu(false);
+    }, []);
+
     const toggleFullscreen = useCallback(async () => {
       const video = videoRef.current;
       if (!video) return;
@@ -340,39 +347,45 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
     }, [isIOS]);
 
     // ── Seek helpers (shared by mouse + touch) ──
-    const seekToPosition = useCallback((clientX: number, element: HTMLElement) => {
-      const v = videoRef.current;
-      if (!v || !duration) return;
+    const getSeekTime = useCallback((clientX: number, element: HTMLElement) => {
+      if (!duration) return 0;
       const rect = element.getBoundingClientRect();
       const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-      v.currentTime = x * duration;
+      return x * duration;
     }, [duration]);
 
     const handleSeek = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
       e.stopPropagation();
-      seekToPosition(e.clientX, e.currentTarget);
-    }, [seekToPosition]);
+      const newTime = getSeekTime(e.clientX, e.currentTarget);
+      setCurrentTime(newTime);
+      const v = videoRef.current;
+      if (v) v.currentTime = newTime;
+    }, [getSeekTime]);
 
     const handleSeekTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
       e.stopPropagation();
       isSeekingTouch.current = true;
       if (hideControlsTimer.current) clearTimeout(hideControlsTimer.current);
       const touch = e.touches[0];
-      seekToPosition(touch.clientX, e.currentTarget);
-    }, [seekToPosition]);
+      const newTime = getSeekTime(touch.clientX, e.currentTarget);
+      setCurrentTime(newTime);
+    }, [getSeekTime]);
 
     const handleSeekTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
       if (!isSeekingTouch.current) return;
       e.stopPropagation();
       const touch = e.touches[0];
       if (seekBarRef.current) {
-        seekToPosition(touch.clientX, seekBarRef.current);
+        const newTime = getSeekTime(touch.clientX, seekBarRef.current);
+        setCurrentTime(newTime);
       }
-    }, [seekToPosition]);
+    }, [getSeekTime]);
 
     const handleSeekTouchEnd = useCallback(() => {
       isSeekingTouch.current = false;
-    }, []);
+      const v = videoRef.current;
+      if (v) v.currentTime = currentTime;
+    }, [currentTime]);
 
     const resetControlsTimer = useCallback(() => {
       setShowControls(true);
@@ -560,16 +573,18 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
           controlsList="nodownload"
           disableRemotePlayback
           preload="metadata"
-          onClick={handleVideoClick}
+          
           onDoubleClick={handleVideoDoubleClick}
-          onTouchEnd={handleVideoTouch}
+          
           onContextMenu={(e) => e.preventDefault()}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           onTimeUpdate={() => {
             const v = videoRef.current;
             if (!v) return;
-            setCurrentTime(v.currentTime);
+            if (!isSeekingTouch.current) {
+              setCurrentTime(v.currentTime);
+            }
             onProgress?.(v.currentTime, v.duration);
           }}
           onLoadedMetadata={() => {

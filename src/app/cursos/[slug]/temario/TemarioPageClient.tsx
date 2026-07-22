@@ -136,6 +136,17 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
   const [sendingComment, setSendingComment] = useState(false);
   const [loadingComments, setLoadingComments] = useState(false);
   const [loadingPay, setLoadingPay] = useState<Record<string, boolean>>({});
+
+  const [isDesktop, setIsDesktop] = useState(true);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mql = window.matchMedia('(min-width: 1024px)');
+    setIsDesktop(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
+  
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Course data from CMS (must be BEFORE callbacks that use them)

@@ -138,6 +138,15 @@ export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
   const [expandedTopic, setExpandedTopic] = useState<string | null>(null);
   const [showQr, setShowQr] = useState(false);
 
+  const [isDesktop, setIsDesktop] = useState(true);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mql = window.matchMedia('(min-width: 1024px)');
+    setIsDesktop(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
   const slug = course.slug;
   const title = course.title;
   const courseType = course.courseType || 'paid';
@@ -474,11 +483,13 @@ export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
             ) : (
               /* ---- VIDEO PLAYER ---- */
               <div className="rounded-2xl overflow-hidden bg-black">
-                <VideoPlayer
-                  videoUrl={videoUrl}
-                  webmUrl={webmUrl}
-                  titulo={currentVideo.title}
-                />
+                {isDesktop && (
+                  <VideoPlayer
+                    videoUrl={videoUrl}
+                    webmUrl={webmUrl}
+                    titulo={currentVideo.title}
+                  />
+                )}
               </div>
             )}
           </div>
@@ -721,7 +732,9 @@ export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
           </div>
         ) : (
           <div className="rounded-xl overflow-hidden bg-black mb-4">
-            <VideoPlayer videoUrl={videoUrl} webmUrl={webmUrl} titulo={currentVideo.title} />
+            {!isDesktop && (
+              <VideoPlayer videoUrl={videoUrl} webmUrl={webmUrl} titulo={currentVideo.title} />
+            )}
           </div>
         )}
 
