@@ -631,7 +631,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
           className={`absolute inset-0 transition-opacity duration-300 z-40 ${
             showControls || !isPlaying ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
-          onClick={(e) => { togglePlay(e); setShowControls(true); resetControlsTimer(); }}
+          onClick={(e) => { setShowControls(true); resetControlsTimer(); }}
         >
           {/* Centro: Skip -10s | Play/Pause | Skip +10s */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
