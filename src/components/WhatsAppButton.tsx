@@ -17,8 +17,10 @@ export function WhatsAppButton() {
   const settings = useSiteSettings();
 
   const visible = settings?.whatsappVisible !== false;
-  const phone = settings?.whatsapp || WHATSAPP_NUMBER;
-  const message = settings?.whatsappMessage || WHATSAPP_DEFAULT_MSG;
+  // Forzamos el uso de este número exacto y mensaje como fue solicitado, 
+  // ignorando posibles datos antiguos en el CMS
+  const phone = WHATSAPP_NUMBER;
+  const message = WHATSAPP_DEFAULT_MSG;
 
   if (!visible) return null;
 
