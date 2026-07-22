@@ -1255,11 +1255,13 @@ export default function PaginaAdmin() {
       </main>
 
       {/* ===== BOTTOM NAV ===== */}
-      <BottomNav
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        newTickets={m?.newTickets}
-      />
+      <div className="lg:hidden">
+        <BottomNav
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          newTickets={m?.newTickets}
+        />
+      </div>
 
       {/* ===== MODAL / BOTTOM SHEET: DETALLE DE USUARIO ===== */}
       {showUserModal && selectedUser && (
@@ -1455,6 +1457,8 @@ export default function PaginaAdmin() {
           padding-bottom: env(safe-area-inset-bottom, 0px);
         }
       `}</style>
+      
+      </div>
     </div>
   );
 }
