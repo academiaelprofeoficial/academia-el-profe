@@ -1269,18 +1269,18 @@ export default function PaginaAdmin() {
           {/* Backdrop */}
           <div className="absolute inset-0 bg-black/40 lg:bg-black/50 transition-opacity" />
 
-          {/* Bottom Sheet (mobile) / Centered Modal (desktop) */}
+          {/* Bottom Sheet (mobile) / Centered Modal (tablet/desktop) */}
           <div
-            className="absolute bottom-0 left-0 right-0 lg:bottom-auto lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 bg-[#111827] rounded-t-3xl lg:rounded-2xl w-full lg:max-w-2xl max-h-[90vh] lg:max-h-[85vh] overflow-hidden shadow-2xl z-10"
+            className="absolute bottom-0 left-0 right-0 md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 bg-[#111827] rounded-t-3xl md:rounded-2xl w-full md:max-w-2xl max-h-[90vh] md:max-h-[85vh] flex flex-col overflow-hidden shadow-2xl z-10"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drag handle (mobile) */}
-            <div className="lg:hidden flex justify-center pt-3 pb-1">
+            <div className="md:hidden shrink-0 flex justify-center pt-3 pb-1">
               <div className="h-1 w-10 rounded-full bg-slate-700" />
             </div>
 
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-5 lg:px-6 py-3 lg:py-4 border-b border-slate-800">
+            <div className="flex items-center justify-between px-5 md:px-6 py-3 md:py-4 border-b border-slate-800 shrink-0">
               <h2 className="text-base font-bold text-white">Detalle del Usuario</h2>
               <button
                 onClick={() => setShowUserModal(false)}
@@ -1290,7 +1290,7 @@ export default function PaginaAdmin() {
               </button>
             </div>
 
-            <div className="overflow-y-auto p-5 lg:p-6 space-y-5 pb-24 lg:pb-6">
+            <div className="flex-1 min-h-0 overflow-y-auto p-5 md:p-6 space-y-5 pb-24 md:pb-6">
               {/* Info principal */}
               <div className="flex items-center gap-4">
                 {selectedUser.photoURL ? (
