@@ -584,12 +584,28 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
             if (!v) return;
             if (!isSeekingTouch.current) {
               setCurrentTime(v.currentTime);
+              if (v.currentTime > 0 && v.duration > 0) {
+                const key = `video_progress_${videoUrl || webmUrl}`;
+                localStorage.setItem(key, v.currentTime.toString());
+              }
             }
             onProgress?.(v.currentTime, v.duration);
           }}
           onLoadedMetadata={() => {
             const v = videoRef.current;
-            if (v) setDuration(v.duration);
+            if (v) {
+              setDuration(v.duration);
+              // Recuperar progreso
+              const key = `video_progress_${videoUrl || webmUrl}`;
+              const saved = localStorage.getItem(key);
+              if (saved) {
+                const savedTime = parseFloat(saved);
+                if (savedTime > 0 && savedTime < v.duration - 5) {
+                  v.currentTime = savedTime;
+                  setCurrentTime(savedTime);
+                }
+              }
+            }
           }}
           onProgress={() => {
             const v = videoRef.current;
@@ -598,6 +614,8 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
             }
           }}
           onEnded={() => {
+            const key = `video_progress_${videoUrl || webmUrl}`;
+            localStorage.removeItem(key);
             setIsPlaying(false);
             onComplete?.();
           }}
