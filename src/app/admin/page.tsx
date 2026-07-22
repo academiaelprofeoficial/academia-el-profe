@@ -520,19 +520,19 @@ export default function PaginaAdmin() {
           <h1 className="text-base font-bold text-white tracking-tight">Admin Panel</h1>
         </div>
         <nav className="flex-1 p-4 flex flex-col gap-2">
-          <button onClick={() => setActiveTab('resumen')} className={lex items-center gap-3 px-4 py-3 rounded-xl transition-all }>
+          <button onClick={() => setActiveTab('resumen')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'resumen' ? 'bg-brand-primary text-white font-semibold shadow-lg shadow-brand-primary/20' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}>
             <BarChart3 className="h-5 w-5" />
             <span>Resumen</span>
           </button>
-          <button onClick={() => setActiveTab('usuarios')} className={lex items-center gap-3 px-4 py-3 rounded-xl transition-all }>
+          <button onClick={() => setActiveTab('usuarios')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'usuarios' ? 'bg-brand-primary text-white font-semibold shadow-lg shadow-brand-primary/20' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}>
             <Users className="h-5 w-5" />
             <span>Usuarios</span>
           </button>
-          <button onClick={() => setActiveTab('compras')} className={lex items-center gap-3 px-4 py-3 rounded-xl transition-all }>
+          <button onClick={() => setActiveTab('compras')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'compras' ? 'bg-brand-primary text-white font-semibold shadow-lg shadow-brand-primary/20' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}>
             <ShoppingCart className="h-5 w-5" />
             <span>Compras</span>
           </button>
-          <button onClick={() => setActiveTab('soporte')} className={lex items-center gap-3 px-4 py-3 rounded-xl transition-all }>
+          <button onClick={() => setActiveTab('soporte')} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'soporte' ? 'bg-brand-primary text-white font-semibold shadow-lg shadow-brand-primary/20' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}>
             <MessageSquare className="h-5 w-5" />
             <span>Soporte</span>
           </button>
