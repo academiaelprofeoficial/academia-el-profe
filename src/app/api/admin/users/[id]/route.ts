@@ -25,6 +25,7 @@ export async function GET(
         purchases: { orderBy: { id: 'desc' } },
         progress: { orderBy: { updatedAt: 'desc' } },
         wishlist: { orderBy: { createdAt: 'desc' } },
+        courseAccesses: { orderBy: { grantedAt: 'desc' } },
       },
     });
 
@@ -43,6 +44,7 @@ export async function GET(
       stats: {
         totalCompras: user.purchases.length,
         comprasAprobadas: user.purchases.filter((p) => p.status === 'approved').length,
+        accesosManuales: user.courseAccesses.filter((a) => a.isActive).length,
         totalGastado: user.purchases
           .filter((p) => p.status === 'approved')
           .reduce((sum, p) => sum + p.amount, 0),
@@ -60,6 +62,14 @@ export async function GET(
         status: p.status,
         payerEmail: p.payerEmail,
         approvedAt: p.approvedAt?.toISOString() || null,
+      })),
+      accesosManuales: user.courseAccesses.map((a) => ({
+        id: a.id,
+        courseId: a.courseId,
+        grantedBy: a.grantedBy,
+        grantedAt: a.grantedAt.toISOString(),
+        note: a.note,
+        isActive: a.isActive,
       })),
       progress: user.progress.map((p) => ({
         id: p.id,

@@ -912,7 +912,7 @@ export default function PaginaAdmin() {
                       </div>
                       <div className="grid grid-cols-3 gap-2 mb-3">
                         <div className="bg-slate-800/50/80 rounded-xl px-3 py-2 text-center">
-                          <div className="text-sm font-bold text-white">{s.stats.cursosComprados}</div>
+                          <div className="text-sm font-bold text-white">{((s.stats?.cursosComprados || 0) + (s.stats?.accesosManuales || 0))}</div>
                           <div className="text-[10px] text-slate-400 font-medium">Cursos</div>
                         </div>
                         <div className="bg-slate-800/50/80 rounded-xl px-3 py-2 text-center">
@@ -980,7 +980,7 @@ export default function PaginaAdmin() {
                           </td>
                           <td className="px-5 py-3"><RoleBadge role={s.role} /></td>
                           <td className="px-5 py-3 text-center">
-                            <span className="text-sm font-semibold text-white">{s.stats.cursosComprados}</span>
+                            <span className="text-sm font-semibold text-white">{((s.stats?.cursosComprados || 0) + (s.stats?.accesosManuales || 0))}</span>
                           </td>
                           <td className="px-5 py-3 text-center">
                             <span className="text-sm font-mono font-medium text-slate-300">{fmtSoles(s.totalGastado)}</span>
@@ -1313,7 +1313,7 @@ export default function PaginaAdmin() {
               {/* Stats grid */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {[
-                  { label: 'Cursos comprados', value: selectedUser.stats.comprasAprobadas, icon: BookOpen, color: 'text-brand-primary-text', bg: 'bg-brand-primary-bg-light' },
+                  { label: 'Cursos con acceso', value: (selectedUser.stats?.comprasAprobadas || 0) + (selectedUser.stats?.accesosManuales || 0), icon: BookOpen, color: 'text-brand-primary-text', bg: 'bg-brand-primary-bg-light' },
                   { label: 'Total gastado', value: fmtSoles(selectedUser.stats.totalGastado), icon: DollarSign, color: 'text-blue-600', bg: 'bg-blue-900/20' },
                   { label: 'Clases vistas', value: selectedUser.stats.clasesCompletadas, icon: CheckCircle2, color: 'text-purple-600', bg: 'bg-purple-900/20' },
                   { label: 'Wishlist', value: selectedUser.stats.enWishlist, icon: CreditCard, color: 'text-pink-600', bg: 'bg-pink-50' },
@@ -1331,8 +1331,32 @@ export default function PaginaAdmin() {
                 })}
               </div>
 
+              {/* Accesos manuales */}
+              {selectedUser.accesosManuales?.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-3">
+                    Accesos Manuales ({selectedUser.accesosManuales.length})
+                  </p>
+                  <div className="space-y-2">
+                    {selectedUser.accesosManuales.map((a: any) => (
+                      <div key={a.id} className="bg-slate-800/50/80 rounded-xl p-3 flex items-center justify-between">
+                        <div className="flex-1 min-w-0 mr-3">
+                          <div className="text-sm font-medium text-white truncate">{a.courseId}</div>
+                          <div className="text-xs text-slate-400">{a.grantedAt ? fmtFecha(a.grantedAt) : '-'}</div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${a.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                            {a.isActive ? 'Activo' : 'Revocado'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Compras del usuario */}
-              {selectedUser.purchases.length > 0 && (
+              {selectedUser.purchases?.length > 0 && (
                 <div>
                   <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-3">
                     Historial de compras ({selectedUser.purchases.length})
