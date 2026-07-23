@@ -468,94 +468,6 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
               setShowControls(prev => !prev);
             }, []);
 
-    // ── Canvas overlay anti-grabación ──
-    useEffect(() => {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      const container = containerRef.current;
-      if (!video || !canvas || !container) return;
-
-      const ctx = canvas.getContext('2d', {
-        alpha: false,
-        willReadFrequently: true,
-      });
-      if (!ctx) return;
-
-      const fillBlack = () => {
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      };
-
-      const drawVideoFrame = () => {
-        if (isRecording || !video.videoWidth) {
-          fillBlack();
-        } else {
-          try {
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          } catch {
-            fillBlack();
-          }
-        }
-      };
-
-      const resize = () => {
-        const w = container.clientWidth || video.clientWidth || 1280;
-        const h = container.clientHeight || video.clientHeight || 720;
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        const bufferW = Math.round(w * dpr);
-        const bufferH = Math.round(h * dpr);
-        if (canvas.width !== bufferW || canvas.height !== bufferH) {
-          canvas.width = bufferW;
-          canvas.height = bufferH;
-          drawVideoFrame();
-        }
-      };
-
-      resize();
-      const ro = new ResizeObserver(() => resize());
-      ro.observe(container);
-      video.addEventListener('loadedmetadata', resize);
-
-      const render = () => {
-        if (!video.paused && !video.ended) {
-          if (!isRecording) {
-            try {
-              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            } catch {
-              // drawImage falla en iOS con grabación nativa → canvas se queda negro
-              fillBlack();
-            }
-          } else {
-            fillBlack();
-          }
-        }
-        animRef.current = requestAnimationFrame(render);
-      };
-
-      const onPlay = () => {
-        resize();
-        animRef.current = requestAnimationFrame(render);
-      };
-
-      const onPause = () => {
-        cancelAnimationFrame(animRef.current);
-        drawVideoFrame();
-      };
-
-      video.addEventListener('play', onPlay);
-      video.addEventListener('pause', onPause);
-      video.addEventListener('seeked', onPause);
-
-      return () => {
-        cancelAnimationFrame(animRef.current);
-        ro.disconnect();
-        video.removeEventListener('loadedmetadata', resize);
-        video.removeEventListener('play', onPlay);
-        video.removeEventListener('pause', onPause);
-        video.removeEventListener('seeked', onPause);
-      };
-    }, [isRecording]);
-
     return (
       <div
         ref={containerRef}
@@ -624,14 +536,6 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
           <source src={videoUrl} type={videoUrl?.endsWith('.webm') ? 'video/webm' : 'video/mp4'} />
         </video>
 
-        {/* Canvas overlay anti-grabación: dibuja frames del video o negro si grabando */}
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 w-full h-full pointer-events-none"
-          style={{ zIndex: 5, background: '#000' }}
-          aria-hidden="true"
-        />
-
         {/* Gran botón de play inicial (solo cuando está pausado y al inicio) — Netflix rounded rectangle */}
         {!isPlaying && currentTime === 0 && (
           <button
@@ -644,7 +548,7 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
           </button>
         )}
 
-        {/* ===== CONTROLES MOBILE (< 1024px) — NETFLIX STYLE ===== */}
+        {/* ====== NATIVE PLAYBACK (Canvas rendering removed to fix iOS black screen issue) ====== */}
         <div
           className={`absolute inset-0 transition-opacity duration-300 z-40 ${
             showControls || !isPlaying ? 'opacity-100' : 'opacity-0 pointer-events-none'
