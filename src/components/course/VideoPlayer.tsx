@@ -146,9 +146,20 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
     const video = videoRef.current;
     if (!video) return;
 
+    // Reset state for component reuse (when key is removed)
+    setIsPlaying(false);
+    setCurrentTime(0);
+    setDuration(0);
+    setShowControls(true);
+
     // Assign the best available src
     const srcToUse = videoUrl || webmUrl || '';
-    if (!srcToUse) return;
+    if (!srcToUse) {
+      video.removeAttribute('src');
+      video.src = '';
+      video.load();
+      return;
+    }
 
     video.src = srcToUse;
     video.load(); // Tells the browser to reset (but not decode — preload=none)

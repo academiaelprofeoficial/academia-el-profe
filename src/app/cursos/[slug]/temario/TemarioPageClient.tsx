@@ -678,9 +678,50 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-            {/* LEFT: Module accordion (3 cols) */}
-            <div className="lg:col-span-2 space-y-3 max-h-[70vh] overflow-y-auto pr-1">
+          <div className="flex flex-col">
+            {/* GLOBAL MOBILE VIDEO PLAYER: rendered once at the top to prevent unmounts and iOS decoder leaks */}
+            {!isDesktop && selectedVideo && (
+              <div className="lg:hidden mb-6">
+                <div className="video-player-container relative bg-black aspect-video overflow-hidden rounded-xl">
+                  {(() => {
+                    let activeVideoObj: SanityClassVideo | undefined;
+                    for (const group of topicGroups) {
+                      const found = group.videos.find(v => (v.videoUrl || v.video?.asset?.url || v.sharedVideo?.videoFile?.asset?.url || v.sharedVideo?.videoUrl) === selectedVideo.url);
+                      if (found) { activeVideoObj = found; break; }
+                    }
+                    const isAccessible = activeVideoObj ? canAccessLesson(activeVideoObj) : false;
+                    
+                    if (!isAccessible) {
+                      return (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 p-4 text-center">
+                          <Lock className="h-10 w-10 text-amber-500 mb-2 shrink-0" />
+                          <p className="text-sm font-bold text-white">Clase Bloqueada</p>
+                          <p className="text-xs text-slate-400 mt-1">Adquiere el curso para ver esta clase.</p>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="relative w-full h-full" onContextMenu={(e) => e.preventDefault()}>
+                        <VideoPlayer
+                          videoUrl={selectedVideo.url}
+                          titulo={selectedVideo.title}
+                          posterUrl={selectedVideo.poster}
+                          isFree={selectedVideo.isFree}
+                          onProgress={(seconds) => handleTimeUpdate(seconds)}
+                        />
+                      </div>
+                    );
+                  })()}
+                </div>
+                <div className="px-2 py-3">
+                  <h3 className="text-base font-bold text-foreground">{selectedVideo.title}</h3>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+              {/* LEFT: Module accordion (3 cols) */}
+              <div className="lg:col-span-2 space-y-3 max-h-[70vh] overflow-y-auto pr-1">
               {topicGroups.map((group, groupIndex) => {
                 const isExpanded = expandedTopics.has(group.title) || topicGroups.length === 1;
                 const isActive = activeTopicTitle === group.title;
@@ -798,36 +839,9 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                           );
                         })}
 
-                        {/* 📱 MOBILE: Inline video player + materials inside module */}
+                        {/* 📱 MOBILE: Inline materials + comments inside module (Video is now global above) */}
                         {groupHasSelectedVideo && (
                           <div className="lg:hidden border-t border-border/10 my-1 pt-2 px-1">
-                            {/* Video Player — Netflix: no border, full width, clean */}
-                            <div className="video-player-container relative bg-black aspect-video overflow-hidden mb-3">
-                              <div className="relative w-full h-full" onContextMenu={(e) => e.preventDefault()}>
-                                {!isGroupVideoAccessible ? (
-                                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 p-4 text-center">
-                                    <Lock className="h-10 w-10 text-amber-500 mb-2 shrink-0" />
-                                    <p className="text-sm font-bold text-white">Clase Bloqueada</p>
-                                    <p className="text-xs text-slate-400 mt-1">Adquiere el curso para ver esta clase.</p>
-                                  </div>
-                                ) : (
-                                  <>
-                                    {!isDesktop && (
-                                      <VideoPlayer
-                                        key={`mobile-${selectedVideo.url}`}
-                                        videoUrl={selectedVideo.url}
-                                        titulo={selectedVideo.title}
-                                        posterUrl={selectedVideo.poster}
-                                        isFree={selectedVideo.isFree}
-                                      />
-                                    )}
-                                  </>
-                                )}
-                              </div>
-                              <div className="px-4 py-3">
-                                <h3 className="text-sm font-bold text-foreground">{selectedVideo.title}</h3>
-                              </div>
-                            </div>
                             {/* Materials inline on mobile */}
                             {activeGroup && activeGroup.materials.length > 0 && (
                               <div className="rounded-xl border border-border/40 bg-card p-4">
@@ -1022,7 +1036,6 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                         <>
                           {isDesktop && (
                             <VideoPlayer
-                              key={selectedVideo.url}
                               videoUrl={selectedVideo.url}
                               titulo={selectedVideo.title}
                               posterUrl={selectedVideo.poster}
