@@ -470,10 +470,8 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
               if (!video) return;
               if (video.paused) {
                 video.play().catch(() => {});
-                setIsPlaying(true);
               } else {
                 video.pause();
-                setIsPlaying(false);
               }
               resetControlsTimer();
             }, [resetControlsTimer]);

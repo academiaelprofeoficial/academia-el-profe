@@ -82,6 +82,7 @@ function _releaseDecoder(video: HTMLVideoElement) {
     }
     // Removing src + calling load() tells the browser to tear down the decoder
     video.removeAttribute('src');
+    video.src = ''; // CRITICAL: Clear the property because we set it imperatively
     // Remove <source> children too
     while (video.firstChild) {
       video.removeChild(video.firstChild);
