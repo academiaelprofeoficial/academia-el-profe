@@ -117,6 +117,10 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
     return () => {
       video.removeEventListener('enterpictureinpicture', onEnter);
       video.removeEventListener('leavepictureinpicture', onLeave);
+      // Forzar liberación del hardware decoder en iOS al desmontar
+      video.pause();
+      video.removeAttribute('src');
+      video.load();
     };
   }, []);
 

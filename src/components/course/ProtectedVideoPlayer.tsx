@@ -58,6 +58,20 @@ export function ProtectedVideoPlayer({
   // Usar ref externa si se proporciona, sino la interna
   const videoRef = (externalVideoRef as React.RefObject<HTMLVideoElement | null>) || internalVideoRef;
 
+  // ── Limpieza estricta de memoria para iOS ──
+  useEffect(() => {
+    const video = videoRef.current;
+    return () => {
+      if (video) {
+        // En iOS, si no se limpia explícitamente el src, se agotan
+        // los decodificadores por hardware y los videos se quedan en negro.
+        video.pause();
+        video.removeAttribute('src');
+        video.load();
+      }
+    };
+  }, [videoRef]);
+
 
 
   return (
