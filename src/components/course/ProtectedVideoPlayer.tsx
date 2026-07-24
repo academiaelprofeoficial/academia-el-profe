@@ -31,8 +31,9 @@
 // NO agrega iconos, textos ni elementos visuales nuevos.
 // ============================================================
 
-import { useRef, useEffect, useCallback, type VideoHTMLAttributes, type ReactNode, type RefObject } from 'react';
+import { useRef, useEffect, type VideoHTMLAttributes, type ReactNode, type RefObject } from 'react';
 import { useGlobalRecordingDetection } from '@/hooks/useGlobalRecordingDetection';
+import { registerVideo, unregisterVideo } from '@/lib/videoPlaybackManager';
 
 export interface ProtectedVideoPlayerProps
   extends VideoHTMLAttributes<HTMLVideoElement> {
@@ -58,21 +59,33 @@ export function ProtectedVideoPlayer({
   // Usar ref externa si se proporciona, sino la interna
   const videoRef = (externalVideoRef as React.RefObject<HTMLVideoElement | null>) || internalVideoRef;
 
-  // ── Limpieza estricta de memoria para iOS ──
+  // ── Register with global playback manager + cleanup on unmount ──
+  // This handles the iOS hardware decoder limit:
+  // when another video starts, this one's decoder is freed.
   useEffect(() => {
     const video = videoRef.current;
+    if (!video) return;
+    const srcStr = typeof src === 'string' ? src : '';
+    registerVideo(video, srcStr);
     return () => {
-      if (video) {
-        // En iOS, si no se limpia explícitamente el src, se agotan
-        // los decodificadores por hardware y los videos se quedan en negro.
-        video.pause();
-        video.removeAttribute('src');
-        video.load();
-      }
+      unregisterVideo(video);
     };
-  }, [videoRef]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-
+  // ── Assign src imperatively — critical for iOS decoder management ──
+  // Using video.src (not <source> children) + preload="none" means iOS
+  // won't allocate a hardware decoder slot until the user presses play.
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !src) return;
+    if (typeof src !== 'string') return;
+    // Only reassign if src actually changed to avoid unnecessary resets
+    if (video.src !== src) {
+      video.src = src;
+      video.load();
+    }
+  }, [src, videoRef]);
 
   return (
     <div
@@ -80,17 +93,15 @@ export function ProtectedVideoPlayer({
       className={`relative w-full h-full overflow-hidden ${className}`}
       style={{ background: '#000', ...(style as React.CSSProperties) }}
     >
-      {/* Video real: se reproduce con audio debajo del canvas */}
+      {/* Video real: src asignado imperativemente via useEffect */}
       <video
         ref={videoRef}
-        src={src}
         poster={poster}
         className="w-full h-full"
         playsInline
+        preload="none"
         {...videoProps}
       />
-
-
 
       {/* Children (controles personalizados, etc.) van encima del canvas */}
       {children && (

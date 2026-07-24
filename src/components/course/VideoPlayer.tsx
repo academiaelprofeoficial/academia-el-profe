@@ -9,6 +9,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Play, Pause, Maximize, Minimize, Volume2, VolumeX, RotateCcw, RotateCw, PictureInPicture2 } from 'lucide-react';
 import { useGlobalRecordingDetection } from '@/hooks/useGlobalRecordingDetection';
+import { registerVideo, unregisterVideo } from '@/lib/videoPlaybackManager';
 
 interface VideoPlayerProps {
   readonly videoUrl?: string;
@@ -123,6 +124,37 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
       video.load();
     };
   }, []);
+
+  // Register video with global playback manager to avoid iOS decoder limits
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const src = videoUrl || webmUrl || '';
+    registerVideo(video, src, webmUrl);
+    return () => {
+      unregisterVideo(video);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Assign src imperatively (critical for iOS) ──────────────────────
+  // Setting video.src via JS (not <source>) and using preload="none"
+  // prevents iOS Safari from allocating a hardware decoder until the
+  // user explicitly presses play. This avoids the black-screen issue
+  // that occurs when >3 decoder slots are consumed simultaneously.
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    // Assign the best available src
+    const srcToUse = videoUrl || webmUrl || '';
+    if (!srcToUse) return;
+
+    video.src = srcToUse;
+    video.load(); // Tells the browser to reset (but not decode — preload=none)
+  }, [videoUrl, webmUrl]);
+
+
 
   // Close menus when clicking outside
   useEffect(() => {
@@ -488,10 +520,8 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
           playsInline
           controlsList="nodownload"
           disableRemotePlayback
-          preload="metadata"
-          
+          preload="none"
           onDoubleClick={handleVideoDoubleClick}
-          
           onContextMenu={(e) => e.preventDefault()}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
@@ -535,10 +565,8 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
             setIsPlaying(false);
             onComplete?.();
           }}
-        >
-          {webmUrl && <source src={webmUrl} type="video/webm" />}
-          <source src={videoUrl} type={videoUrl?.endsWith('.webm') ? 'video/webm' : 'video/mp4'} />
-        </video>
+        />
+        {/* src is assigned imperatively via useEffect to control decoder lifecycle on iOS */}
 
         {/* Gran botón de play inicial (solo cuando está pausado y al inicio) — Netflix rounded rectangle */}
         {!isPlaying && currentTime === 0 && (
