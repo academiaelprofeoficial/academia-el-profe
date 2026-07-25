@@ -78,13 +78,28 @@ export function ProtectedVideoPlayer({
   // won't allocate a hardware decoder slot until the user presses play.
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !src) return;
-    if (typeof src !== 'string') return;
-    // Only reassign if src actually changed to avoid unnecessary resets
-    if (video.src !== src) {
-      video.src = src;
-      video.load();
+    if (!video) return;
+
+    // 1. Explicitly TEARDOWN the previous decoder slot first
+    if (!video.paused) {
+      video.pause();
     }
+    video.removeAttribute('src');
+    video.src = '';
+    video.load();
+
+    const srcToUse = typeof src === 'string' ? src : '';
+    if (!srcToUse) return;
+
+    // 2. Wait a brief moment to let iOS AVFoundation GC the old stream before allocating a new one
+    const timer = setTimeout(() => {
+      if (videoRef.current) {
+        videoRef.current.src = srcToUse;
+        videoRef.current.load(); // Tells browser to reset but not decode (preload=none)
+      }
+    }, 150);
+
+    return () => clearTimeout(timer);
   }, [src, videoRef]);
 
   return (

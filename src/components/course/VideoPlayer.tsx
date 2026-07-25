@@ -152,17 +152,28 @@ export function VideoPlayer({ videoUrl, webmUrl, titulo, posterUrl, isFree = fal
     setDuration(0);
     setShowControls(true);
 
+    // 1. Explicitly TEARDOWN the previous decoder slot first
+    if (!video.paused) {
+      video.pause();
+    }
+    video.removeAttribute('src');
+    video.src = '';
+    video.load(); 
+
     // Assign the best available src
     const srcToUse = videoUrl || webmUrl || '';
-    if (!srcToUse) {
-      video.removeAttribute('src');
-      video.src = '';
-      video.load();
-      return;
-    }
+    if (!srcToUse) return;
 
-    video.src = srcToUse;
-    video.load(); // Tells the browser to reset (but not decode — preload=none)
+    // 2. Wait a brief moment to let iOS AVFoundation GC the old stream before allocating a new one
+    const timer = setTimeout(() => {
+      // In case the component unmounted during the timeout
+      if (videoRef.current) {
+        videoRef.current.src = srcToUse;
+        videoRef.current.load(); // Tells the browser to reset (but not decode — preload=none)
+      }
+    }, 150);
+
+    return () => clearTimeout(timer);
   }, [videoUrl, webmUrl]);
 
 
