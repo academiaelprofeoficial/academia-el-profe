@@ -1192,8 +1192,9 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
               )}
             </div>
           </div>
+          </div>
         )}
-              </div>
+      </div>
 
       {/* ===== CERTIFICATE SECTION ===== */}
       <div className="rounded-xl border border-border/40 bg-card p-4 flex items-center gap-3">
