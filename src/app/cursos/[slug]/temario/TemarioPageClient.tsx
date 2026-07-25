@@ -360,11 +360,10 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
               poster: coverImg || undefined,
               isFree: !!firstVideo.isFree,
             });
-            // Scroll into view on mobile
+            // Scroll to top on mobile so they see the player
             if (window.innerWidth < 1024) {
               setTimeout(() => {
-                const el = document.getElementById(`topic-${topicTitle?.replace(/\s+/g, '-')}`);
-                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                window.scrollTo({ top: 0, behavior: 'smooth' });
               }, 150);
             }
           }
@@ -386,18 +385,9 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
     });
     // Scroll topic into view on mobile (use topic title, not video title)
     if (window.innerWidth < 1024) {
-      const matchingGroup = topicGroups.find((g) =>
-        g.videos.some((v) => {
-          const url = v.videoUrl || v.video?.asset?.url || v.sharedVideo?.videoFile?.asset?.url || v.sharedVideo?.videoUrl;
-          return url === videoUrl;
-        })
-      );
-      if (matchingGroup) {
-        const topicEl = document.getElementById(`topic-${matchingGroup.title?.replace(/\s+/g, '-')}`);
-        if (topicEl) {
-          setTimeout(() => topicEl.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
-        }
-      }
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 100);
     }
   }, [coverImg, topicGroups]);
 
@@ -413,6 +403,9 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
       if (videoUrl) {
         setActiveTopicTitle(firstGroup.title);
         setSelectedVideo({ url: videoUrl, title: firstVideo.title, poster: coverImg || undefined, isFree: !!firstVideo.isFree });
+        if (window.innerWidth < 1024) {
+          setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
+        }
       }
     }
   }, [topicGroups, coverImg]);
@@ -681,7 +674,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
           <div className="flex flex-col">
             {/* GLOBAL MOBILE VIDEO PLAYER: rendered once at the top to prevent unmounts and iOS decoder leaks */}
             {!isDesktop && selectedVideo && (
-              <div className="lg:hidden mb-6">
+              <div className="lg:hidden mb-6 sticky top-16 z-40 bg-background/95 backdrop-blur-md pt-2 pb-3 -mx-4 px-4 shadow-sm border-b border-border/40">
                 <div className="video-player-container relative bg-black aspect-video overflow-hidden rounded-xl">
                   {(() => {
                     let activeVideoObj: SanityClassVideo | undefined;
