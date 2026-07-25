@@ -49,56 +49,27 @@ interface MergedCourse {
 }
 
 function mergeCourses(sanityCourses: SanityCourse[] | null): MergedCourse[] {
-  // Start with hardcoded UTP courses as base
-  const merged = UTP_COURSES.map((dc) => {
-    const sanity = sanityCourses?.find((s) => s.slug === dc.id || s.group === 'utp' || s.group === 'ambos');
-    // Prefer Sanity data if exists for this slug
-    if (sanity && sanity.slug === dc.id) {
-      return {
-        id: dc.id,
-        title: sanity.title || dc.title,
-        desc: sanity.description ? plainText(sanity.description).substring(0, 100) : dc.desc,
-        formula: dc.formula,
-        color: 'bg-brand-primary',
-        cardColor: sanity.cardColor || '#10B981',
-        price: sanity.pricePEN || dc.price,
-        priceUSD: sanity.priceUSD || dc.priceUSD,
-        slug: sanity.slug,
-      };
-    }
+  if (!sanityCourses || sanityCourses.length === 0) return [];
+
+  // Filter only courses that are meant for UTP (or both)
+  const utpCourses = sanityCourses.filter((sc) => sc.group === 'utp' || sc.group === 'ambos');
+
+  return utpCourses.map((sc) => {
+    // We can still try to grab cosmetic data (like the formula string) from UTP_COURSES if slugs match
+    const mock = UTP_COURSES.find((m) => m.id === sc.slug);
+    
     return {
-      id: dc.id,
-      title: dc.title,
-      desc: dc.desc,
-      formula: dc.formula,
+      id: sc.slug,
+      title: sc.title,
+      desc: sc.description ? plainText(sc.description).substring(0, 100) : '',
+      formula: mock?.formula || '📚',
       color: 'bg-brand-primary',
-      cardColor: '#10B981',
-      price: dc.price,
-      priceUSD: dc.priceUSD,
-      slug: dc.id,
+      cardColor: sc.cardColor || '#10B981',
+      price: sc.pricePEN || 0,
+      priceUSD: sc.priceUSD || 0,
+      slug: sc.slug,
     };
   });
-
-  // Also add Sanity-only UTP courses (created in CMS with group=utp/ambos but not in UTP_COURSES)
-  if (sanityCourses) {
-    for (const sc of sanityCourses) {
-      if ((sc.group === 'utp' || sc.group === 'ambos') && !merged.find((m) => m.slug === sc.slug)) {
-        merged.push({
-          id: sc.slug,
-          title: sc.title,
-          desc: sc.description ? plainText(sc.description).substring(0, 100) : '',
-          formula: '📚',
-          color: 'bg-brand-primary',
-          cardColor: sc.cardColor || '#10B981',
-          price: sc.pricePEN || 0,
-          priceUSD: sc.priceUSD || 0,
-          slug: sc.slug,
-        });
-      }
-    }
-  }
-
-  return merged;
 }
 
 // ----------------------------------------------------------------
