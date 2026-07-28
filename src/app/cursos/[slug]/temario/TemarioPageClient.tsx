@@ -630,7 +630,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
 
       {/* ===== DESCRIPTION (collapsed by default) ===== */}
       {description && description.length > 0 && (
-        <details className="rounded-xl border border-border/40 bg-card group">
+        <details className="rounded-xl border border-border/40 bg-card group mb-8">
           <summary className="px-4 py-3 text-sm font-bold text-foreground cursor-pointer hover:bg-muted/20 transition-colors flex items-center justify-between">
             Descripcion del Curso
             <ChevronDown className="h-4 w-4 text-muted-foreground group-open:rotate-180 transition-transform" />
@@ -641,9 +641,31 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
         </details>
       )}
 
-
-
-
+      {/* ===== PROMO VIDEO (Standalone section) ===== */}
+      {(course?.videoUrl || course?.courseVideo?.asset?.url) && (
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+              <MonitorPlay className="h-5 w-5 text-brand-primary" />
+              Video de Presentacion
+            </h2>
+          </div>
+          <div className="rounded-2xl bg-card border border-border/40 overflow-hidden shadow-sm">
+            <div className="video-player-container relative bg-black aspect-video">
+              <VideoPlayer
+                videoUrl={course.videoUrl || course.courseVideo?.asset?.url}
+                titulo={`Video de presentacion — ${title}`}
+                posterUrl={coverImg || undefined}
+                isFree={true}
+              />
+            </div>
+            <div className="px-5 py-4 bg-card">
+              <h3 className="text-base font-bold text-foreground">Introducción al Curso</h3>
+              <p className="text-sm text-muted-foreground mt-1">Conoce todo lo que vas a aprender en este curso.</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ===== COURSE CURRICULUM — SPLIT VIEW ===== */}
       <div>
@@ -673,57 +695,41 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
         ) : (
           <div className="flex flex-col">
             {/* GLOBAL MOBILE VIDEO PLAYER: rendered once at the top to prevent unmounts and iOS decoder leaks */}
-            {!isDesktop && (selectedVideo || course?.videoUrl || course?.courseVideo?.asset?.url) && (
+            {!isDesktop && selectedVideo && (
               <div className="lg:hidden mb-6 sticky top-16 z-40 bg-background/95 backdrop-blur-md pt-2 pb-3 -mx-4 px-4 shadow-sm border-b border-border/40">
                 <div className="video-player-container relative bg-black aspect-video overflow-hidden rounded-xl">
                   {(() => {
-                    if (selectedVideo) {
-                      let activeVideoObj: SanityClassVideo | undefined;
-                      for (const group of topicGroups) {
-                        const found = group.videos.find(v => (v.videoUrl || v.video?.asset?.url || v.sharedVideo?.videoFile?.asset?.url || v.sharedVideo?.videoUrl) === selectedVideo.url);
-                        if (found) { activeVideoObj = found; break; }
-                      }
-                      const isAccessible = activeVideoObj ? canAccessLesson(activeVideoObj) : false;
-                      
-                      if (!isAccessible) {
-                        return (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 p-4 text-center">
-                            <Lock className="h-10 w-10 text-amber-500 mb-2 shrink-0" />
-                            <p className="text-sm font-bold text-white">Clase Bloqueada</p>
-                            <p className="text-xs text-slate-400 mt-1">Adquiere el curso para ver esta clase.</p>
-                          </div>
-                        );
-                      }
+                    let activeVideoObj: SanityClassVideo | undefined;
+                    for (const group of topicGroups) {
+                      const found = group.videos.find(v => (v.videoUrl || v.video?.asset?.url || v.sharedVideo?.videoFile?.asset?.url || v.sharedVideo?.videoUrl) === selectedVideo.url);
+                      if (found) { activeVideoObj = found; break; }
+                    }
+                    const isAccessible = activeVideoObj ? canAccessLesson(activeVideoObj) : false;
+                    
+                    if (!isAccessible) {
                       return (
-                        <div className="relative w-full h-full" onContextMenu={(e) => e.preventDefault()}>
-                          <VideoPlayer
-                            videoUrl={selectedVideo.url}
-                            titulo={selectedVideo.title}
-                            posterUrl={selectedVideo.poster}
-                            isFree={selectedVideo.isFree}
-                            onProgress={(seconds) => handleTimeUpdate(seconds)}
-                          />
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 p-4 text-center">
+                          <Lock className="h-10 w-10 text-amber-500 mb-2 shrink-0" />
+                          <p className="text-sm font-bold text-white">Clase Bloqueada</p>
+                          <p className="text-xs text-slate-400 mt-1">Adquiere el curso para ver esta clase.</p>
                         </div>
                       );
                     }
-
-                    // Fallback to Promo Video
                     return (
                       <div className="relative w-full h-full" onContextMenu={(e) => e.preventDefault()}>
                         <VideoPlayer
-                          videoUrl={course.videoUrl || course.courseVideo?.asset?.url}
-                          titulo={`Video de presentacion — ${title}`}
-                          posterUrl={coverImg || undefined}
-                          isFree={true}
+                          videoUrl={selectedVideo.url}
+                          titulo={selectedVideo.title}
+                          posterUrl={selectedVideo.poster}
+                          isFree={selectedVideo.isFree}
+                          onProgress={(seconds) => handleTimeUpdate(seconds)}
                         />
                       </div>
                     );
                   })()}
                 </div>
                 <div className="px-2 py-3">
-                  <h3 className="text-base font-bold text-foreground">
-                    {selectedVideo ? selectedVideo.title : 'Video de Presentacion'}
-                  </h3>
+                  <h3 className="text-base font-bold text-foreground">{selectedVideo.title}</h3>
                 </div>
               </div>
             )}
@@ -1190,18 +1196,6 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                         ))}
                       </div>
                     )}
-                  </div>
-                </div>
-              ) : course?.videoUrl || course?.courseVideo?.asset?.url ? (
-                <div className="video-player-container relative bg-card overflow-hidden rounded-xl border border-border/40">
-                  <VideoPlayer
-                    videoUrl={course.videoUrl || course.courseVideo?.asset?.url}
-                    titulo={`Video de presentacion — ${title}`}
-                    posterUrl={coverImg || undefined}
-                  />
-                  <div className="px-5 py-4">
-                    <h3 className="text-base font-bold text-foreground">Video de Presentacion</h3>
-                    <p className="text-xs text-muted-foreground mt-1">{title}</p>
                   </div>
                 </div>
               ) : (
