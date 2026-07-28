@@ -59,7 +59,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Academia El Profe | Cursos Universitarios",
     description:
-      "ACADEMIA EL PROFE : CURSOS UNIVERSITARIOS. Cursos de Cálculo, Física, Estática, Química y más. Clases grabadas, material PDF descargable y certificado al finalizar.",
+      "ACADEMIA EL PROFE : CURSOS UNIVERSITARIOS. Cursos de Cálculo, Física, Estática, Química y más. Clases grabadas y material PDF descargable.",
     url: "https://academiaelprofe.com",
     siteName: "Academia El Profe",
     locale: "es_PE",
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Academia El Profe | Cursos Universitarios",
     description:
-      "ACADEMIA EL PROFE : CURSOS UNIVERSITARIOS. Cursos online con clases grabadas, material PDF y certificado.",
+      "ACADEMIA EL PROFE : CURSOS UNIVERSITARIOS. Cursos online con clases grabadas y material PDF.",
     images: ["/og-image.webp"],
   },
   robots: {

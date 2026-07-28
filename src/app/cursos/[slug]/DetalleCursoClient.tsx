@@ -320,21 +320,7 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
             <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-brand-primary transition-colors" />
           </Link>
 
-          {/* Certificate Section */}
-          <div className="rounded-xl border border-border/40 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 p-6">
-            <div className="flex items-start gap-4">
-              <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-amber-100 dark:bg-amber-900/30 shrink-0">
-                <GraduationCap className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-foreground mb-1">Certificado de Finalizacion</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Al completar todas las lecciones del curso, obtendras un certificado digital verificado
-                  que podras agregar a tu perfil profesional y redes sociales.
-                </p>
-              </div>
-            </div>
-          </div>
+          {/* Certificate Section Removed */}
         </div>
 
         {/* Sidebar Column */}
@@ -405,10 +391,7 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
                 <CheckCircle2 className="h-3.5 w-3.5 text-brand-primary shrink-0" />
                 Material descargable (PDF, Word)
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle2 className="h-3.5 w-3.5 text-brand-primary shrink-0" />
-                Certificado de finalizacion
-              </div>
+
             </div>
           </div>
 
@@ -457,9 +440,7 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowPurchase(false)}>
           <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-md w-full shadow-xl" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-foreground mb-2">Compra {title}</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Accede a todos los {totalClasses} videos, materiales descargables y obtiene tu certificado.
-            </p>
+              Accede a todos los {totalClasses} videos y materiales descargables.
             <div className="flex items-baseline gap-2 mb-5">
               <span className="text-3xl font-bold text-foreground">{formatoSoles(pricePEN)}</span>
               <span className="text-sm text-muted-foreground">{formatoUSD(priceUSD)}</span>
@@ -473,10 +454,7 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
                 <CheckCircle2 className="h-4 w-4 text-brand-primary shrink-0" />
                 Todos los videos y materiales descargables
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle2 className="h-4 w-4 text-brand-primary shrink-0" />
-                Certificado digital de finalizacion
-              </div>
+
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <CheckCircle2 className="h-4 w-4 text-brand-primary shrink-0" />
                 Soporte del profesor

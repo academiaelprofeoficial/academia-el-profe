@@ -51,7 +51,7 @@ const MAIN_NAV = [
 const DASHBOARD_NAV = [
   { etiqueta: 'Mi perfil', href: '/perfil', icon: UserCircle },
   { etiqueta: 'Mis cursos', href: '/dashboard/cursos', icon: BookOpen },
-  { etiqueta: 'Mis certificados', href: '/dashboard/certificados', icon: Award },
+
   { etiqueta: 'Lista de deseos', href: '/dashboard/deseos', icon: Heart },
   { etiqueta: 'Historial de clases', href: '/dashboard/historial', icon: Clock },
 ] as const;
@@ -210,7 +210,7 @@ function UserDropdown({ user, signOut, profileName, profilePhoto }: { user: any;
               {[
                 { icon: UserCircle, label: 'Mi perfil', href: '/perfil' },
                 { icon: BookOpen, label: 'Mis cursos', href: '/dashboard/cursos' },
-                { icon: Award, label: 'Mis certificados', href: '/dashboard/certificados' },
+
                 { icon: Heart, label: 'Lista de deseos', href: '/dashboard/deseos' },
                 { icon: Clock, label: 'Historial de clases', href: '/dashboard/historial' },
               ].map((item) => (

@@ -203,7 +203,7 @@ async function handleSeed() {
     heroSubtitle: [{ _type: "block", _key: "pc2b", children: [{ _type: "span", _key: "pc2s", text: "Profesor de ingeniería con años de experiencia ayudando a estudiantes." }], style: "normal" }],
     bodyContent: [
       { _type: "block", _key: "nb1", children: [{ _type: "span", _key: "ns1", text: "Academia El Profe Oficial fue fundada por el Prof. Kall Bruno Díaz, docente universitario con una pasión inquebrantable por la enseñanza de las ciencias básicas para ingeniería." }], style: "normal" },
-      { _type: "block", _key: "nb2", children: [{ _type: "span", _key: "ns2", text: "Lo que comenzó como grabaciones compartidas por WhatsApp se transformó en una plataforma educativa completa con video-lecciones estructuradas y certificados." }], style: "normal" },
+      { _type: "block", _key: "nb2", children: [{ _type: "span", _key: "ns2", text: "Lo que comenzó como grabaciones compartidas por WhatsApp se transformó en una plataforma educativa completa con video-lecciones estructuradas y material de apoyo en PDF." }], style: "normal" },
     ],
   }, "page-nosotros");
 

@@ -142,7 +142,7 @@ export function TemarioModal({ curso, open, onOpenChange }: TemarioModalProps) {
                   Desbloquea todo el contenido
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Acceso de por vida + certificado incluido
+                  Acceso de por vida
                 </p>
               </div>
               <Badge

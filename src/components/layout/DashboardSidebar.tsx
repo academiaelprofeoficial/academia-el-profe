@@ -22,7 +22,7 @@ import { Button } from '@/components/ui/button';
 const SIDEBAR_ITEMS = [
   { label: 'Mi perfil', icon: UserCircle, href: '/perfil' },
   { label: 'Mis cursos', icon: BookOpen, href: '/dashboard/cursos' },
-  { label: 'Mis certificados', icon: Award, href: '/dashboard/certificados' },
+
   { label: 'Lista de deseos', icon: Heart, href: '/dashboard/deseos' },
   { label: 'Historial de clases', icon: Clock, href: '/dashboard/historial' },
 ] as const;

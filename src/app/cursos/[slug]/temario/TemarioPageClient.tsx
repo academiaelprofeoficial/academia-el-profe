@@ -1211,13 +1211,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
         )}
       </div>
 
-      {/* ===== CERTIFICATE SECTION ===== */}
-      <div className="rounded-xl border border-border/40 bg-card p-4 flex items-center gap-3">
-        <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-amber-100 dark:bg-amber-900/30 shrink-0">
-          <GraduationCap className="h-5 w-5 text-amber-600 dark:amber-400" />
-        </div>
-        <p className="text-sm text-foreground font-semibold">Certificado Incluido</p>
-      </div>
+
     </div>
   );
 }

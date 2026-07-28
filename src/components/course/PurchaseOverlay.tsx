@@ -140,7 +140,7 @@ export function PurchaseOverlay({
     { icono: Video, texto: `${curso.numeroLecciones} clases grabadas en HD` },
     { icono: FileText, texto: 'Material descargable en PDF' },
     { icono: Clock, texto: 'Acceso de por vida' },
-    { icono: Award, texto: 'Certificado al completar' },
+
     { icono: Users, texto: `${curso.numeroEstudiantes.toLocaleString('es-PE')} estudiantes ya inscritos` },
   ];
 

@@ -87,7 +87,7 @@ export function CourseAccessGuard({ courseId, courseTitle, children }: CourseAcc
               { icon: Video, label: 'Clases grabadas en video' },
               { icon: FileText, label: 'Material PDF descargable' },
               { icon: CheckCircle2, label: 'Acceso de por vida' },
-              { icon: ShoppingCart, label: 'Certificado de completion' },
+
             ].map((benefit) => {
               const Icon = benefit.icon;
               return (

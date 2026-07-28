@@ -62,7 +62,7 @@ export const CATEGORIAS: readonly CourseCategory[] = [
 export const SIDEBAR_NAV: readonly SidebarNavItem[] = [
   { etiqueta: 'Volver al inicio', href: '/', icono: 'Home' },
   { etiqueta: 'Mis cursos', href: '/dashboard/cursos', icono: 'BookOpen' },
-  { etiqueta: 'Mis certificados', href: '/dashboard/certificados', icono: 'Award' },
+
   { etiqueta: 'Lista de deseos', href: '/dashboard/deseos', icono: 'Heart' },
   { etiqueta: 'Historial de clases', href: '/dashboard/historial', icono: 'Clock' },
 ] as const;

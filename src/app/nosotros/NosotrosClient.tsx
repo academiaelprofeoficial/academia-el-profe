@@ -174,7 +174,7 @@ export function NosotrosClient({ pageContent, teamMembers }: NosotrosClientProps
             ) : (
               <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
                 <p>Academia El Profe Oficial fue fundada por el Prof. Kall Bruno Díaz, docente universitario con una pasión inquebrantable por la enseñanza de las ciencias básicas para ingeniería.</p>
-                <p>Lo que comenzó como grabaciones compartidas por WhatsApp se transformó en una plataforma educativa completa con video-lecciones estructuradas, material de apoyo en PDF, sistemas de evaluación y certificados.</p>
+                <p>Lo que comenzó como grabaciones compartidas por WhatsApp se transformó en una plataforma educativa completa con video-lecciones estructuradas y material de apoyo en PDF.</p>
               </div>
             )}
           </div>

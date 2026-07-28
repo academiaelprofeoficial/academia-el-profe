@@ -21,7 +21,7 @@ const CANALES_CONTACTO = [
 const FAQ_DEFAULT = [
   { pregunta: '¿Cómo accedo a un curso comprado?', respuesta: 'Ingresa a "Mis Cursos" desde el menú principal. Allí verás todos los cursos que has adquirido con acceso completo.' },
   { pregunta: '¿Puedo ver las clases en mi celular?', respuesta: 'Sí. Puedes descargar nuestra app móvil o acceder desde el navegador de tu teléfono. Las clases son 100% compatibles con dispositivos móviles.' },
-  { pregunta: '¿Los certificados tienen validez oficial?', respuesta: 'Los certificados de Academia El Profe Oficial respaldan la completion exitosa del curso. Son reconocidos por el cuerpo docente y avalados por el Prof. Kall Bruno Díaz.' },
+
   { pregunta: '¿Qué métodos de pago aceptan?', respuesta: 'Aceptamos Mercado Pago (soles peruanos), PayPal (dólares para pagos internacionales), y transferencia bancaria. Todos los pagos son seguros y están protegidos.' },
 ];
 

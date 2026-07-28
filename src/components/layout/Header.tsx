@@ -36,7 +36,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 const NAV_LINKS: readonly { etiqueta: string; href: string }[] = [
   { etiqueta: 'Inicio', href: '/' },
   { etiqueta: 'Mis Cursos', href: '/cursos' },
-  { etiqueta: 'Certificados', href: '/certificados' },
+
   { etiqueta: 'Soporte', href: '/soporte' },
 ] as const;
 

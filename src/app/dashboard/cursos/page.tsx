@@ -357,7 +357,7 @@ function DashboardCursosContent() {
       {/* Subtitle */}
       <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
         <PlayCircle className="h-4 w-4 shrink-0" />
-        <span>Tus cursos adquiridos. Accede a las clases, materiales y certificados.</span>
+        <span>Tus cursos adquiridos. Accede a las clases y materiales descargables.</span>
       </div>
 
       {/* Payment status banner */}

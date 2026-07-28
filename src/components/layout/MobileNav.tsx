@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 const MOBILE_TABS: readonly { etiqueta: string; href: string; icono: React.ComponentType<{ className?: string }> }[] = [
   { etiqueta: 'Inicio', href: '/', icono: Home },
   { etiqueta: 'Mis Cursos', href: '/cursos', icono: BookOpen },
-  { etiqueta: 'Certificados', href: '/certificados', icono: Award },
+
   { etiqueta: 'Soporte', href: '/soporte', icono: Headphones },
 ] as const;
 
