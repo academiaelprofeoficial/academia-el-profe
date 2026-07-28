@@ -694,46 +694,6 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
           </div>
         ) : (
           <div className="flex flex-col">
-            {/* GLOBAL MOBILE VIDEO PLAYER: rendered once at the top to prevent unmounts and iOS decoder leaks */}
-            {!isDesktop && selectedVideo && (
-              <div className="lg:hidden mb-6 sticky top-16 z-40 bg-background/95 backdrop-blur-md pt-2 pb-3 -mx-4 px-4 shadow-sm border-b border-border/40">
-                <div className="video-player-container relative bg-black aspect-video overflow-hidden rounded-xl">
-                  {(() => {
-                    let activeVideoObj: SanityClassVideo | undefined;
-                    for (const group of topicGroups) {
-                      const found = group.videos.find(v => (v.videoUrl || v.video?.asset?.url || v.sharedVideo?.videoFile?.asset?.url || v.sharedVideo?.videoUrl) === selectedVideo.url);
-                      if (found) { activeVideoObj = found; break; }
-                    }
-                    const isAccessible = activeVideoObj ? canAccessLesson(activeVideoObj) : false;
-                    
-                    if (!isAccessible) {
-                      return (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 p-4 text-center">
-                          <Lock className="h-10 w-10 text-amber-500 mb-2 shrink-0" />
-                          <p className="text-sm font-bold text-white">Clase Bloqueada</p>
-                          <p className="text-xs text-slate-400 mt-1">Adquiere el curso para ver esta clase.</p>
-                        </div>
-                      );
-                    }
-                    return (
-                      <div className="relative w-full h-full" onContextMenu={(e) => e.preventDefault()}>
-                        <VideoPlayer
-                          videoUrl={selectedVideo.url}
-                          titulo={selectedVideo.title}
-                          posterUrl={selectedVideo.poster}
-                          isFree={selectedVideo.isFree}
-                          onProgress={(seconds) => handleTimeUpdate(seconds)}
-                        />
-                      </div>
-                    );
-                  })()}
-                </div>
-                <div className="px-2 py-3">
-                  <h3 className="text-base font-bold text-foreground">{selectedVideo.title}</h3>
-                </div>
-              </div>
-            )}
-
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
               {/* LEFT: Module accordion (3 cols) */}
               <div className="lg:col-span-2 space-y-3 max-h-[70vh] overflow-y-auto pr-1">
@@ -833,12 +793,22 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                                   </div>
                                 </button>
                               ) : (
-                                <div className="flex items-center gap-3 px-3 py-2 rounded-lg opacity-70">
+                                <button
+                                  onClick={() => selectVideo(video)}
+                                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left opacity-70 ${
+                                    isSelected
+                                      ? 'bg-brand-primary/10 dark:bg-brand-primary/20 border border-brand-primary/30'
+                                      : 'hover:bg-muted/40 border border-transparent'
+                                  }`}
+                                >
                                   <div className="flex items-center justify-center h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 shrink-0">
-                                    {!accessible ? <Lock className="h-4 w-4" /> : <PlayCircle className="h-4 w-4" />}
+                                    <Lock className="h-4 w-4" />
                                   </div>
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-muted-foreground truncate">{video.title}</p>
+                                    <p className={`text-sm font-medium truncate ${isSelected ? 'text-brand-primary' : 'text-foreground'}`}>{video.title}</p>
+                                    {video.description && (
+                                      <p className="text-xs text-muted-foreground truncate mt-0.5">{video.description}</p>
+                                    )}
                                   </div>
                                   <div className="flex items-center gap-2 shrink-0">
                                     {video.duration && (
@@ -846,8 +816,31 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                                         <Clock className="h-3 w-3" />{video.duration}
                                       </span>
                                     )}
-                                    {!accessible && <Lock className="h-3.5 w-3.5 text-amber-500" />}
+                                    <Lock className="h-3.5 w-3.5 text-amber-500" />
                                   </div>
+                                </button>
+                              )}
+
+                              {/* INLINE MOBILE VIDEO PLAYER */}
+                              {isSelected && !isDesktop && hasVideo && (
+                                <div className="mt-2 mb-4 mx-1 rounded-xl overflow-hidden bg-black aspect-video relative shadow-md border border-border/40 lg:hidden">
+                                  {accessible ? (
+                                    <div className="relative w-full h-full" onContextMenu={(e) => e.preventDefault()}>
+                                      <VideoPlayer
+                                        videoUrl={videoUrl}
+                                        titulo={video.title}
+                                        posterUrl={video.posterImg?.asset?.url || undefined}
+                                        isFree={video.isFree}
+                                        onProgress={(seconds) => handleTimeUpdate(seconds)}
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 p-4 text-center z-10">
+                                      <Lock className="h-10 w-10 text-amber-500 mb-2 shrink-0" />
+                                      <p className="text-sm font-bold text-white">Clase Bloqueada</p>
+                                      <p className="text-xs text-slate-400 mt-1">Adquiere el curso para ver esta clase.</p>
+                                    </div>
+                                  )}
                                 </div>
                               )}
                             </div>
