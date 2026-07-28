@@ -80,10 +80,8 @@ export function Footer() {
   const anioActual = new Date().getFullYear();
 
   const socials = [
-    { url: settings?.tiktokUrl || '#', icon: TikTokIcon, label: 'TikTok', color: 'hover:text-[#ff0050]' },
-    { url: settings?.facebookUrl || '#', icon: FacebookIcon, label: 'Facebook', color: 'hover:text-[#1877F2]' },
-    { url: settings?.instagramUrl || '#', icon: InstagramIcon, label: 'Instagram', color: 'hover:text-[#E4405F]' },
-    { url: settings?.youtubeUrl || '#', icon: YouTubeIcon, label: 'YouTube', color: 'hover:text-[#FF0000]' },
+    { url: 'https://www.tiktok.com/@academiaelprofe20?_r=1&_t=ZS-97oVpcWj285', icon: TikTokIcon, label: 'TikTok', color: 'hover:text-[#ff0050]' },
+    { url: 'https://www.facebook.com/share/1KcKtAFkzV/?mibextid=wwXIfr', icon: FacebookIcon, label: 'Facebook', color: 'hover:text-[#1877F2]' },
   ];
 
   return (
@@ -91,27 +89,18 @@ export function Footer() {
       <div className="max-w-7xl mx-auto flex flex-col items-center gap-6">
         {/* Top row: Logo + Social Icons */}
         <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-4">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap justify-center sm:justify-start">
+          <div className="flex flex-col sm:flex-row items-center gap-2 text-sm text-muted-foreground text-center sm:text-left">
             <FooterLogo />
-            <span className="text-xs text-muted-foreground/60">
+            <span className="text-xs text-muted-foreground/60 mt-2 sm:mt-0">
               © {anioActual} {settings?.companyName || 'Academia El Profe Oficial'}. Todos los derechos reservados.
             </span>
           </div>
 
           {/* Social Media Icons */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2 mt-4 sm:mt-0">
             {socials.map((s) => {
               const Icon = s.icon;
-              const isPlaceholder = s.url === '#';
-              return isPlaceholder ? (
-                <span
-                  key={s.label}
-                  aria-label={s.label}
-                  className={`p-2 rounded-full text-muted-foreground/40 cursor-default ${s.color}`}
-                >
-                  <Icon size={20} />
-                </span>
-              ) : (
+              return (
                 <a
                   key={s.label}
                   href={s.url}
@@ -131,7 +120,7 @@ export function Footer() {
         <div className="w-full h-px bg-border/30" />
 
         {/* Contact Info (Culqi Requirement) */}
-        <div className="flex flex-col sm:flex-row items-center justify-center w-full gap-8 text-xs text-muted-foreground">
+        <div className="flex flex-col sm:flex-row items-center justify-center w-full gap-2 sm:gap-8 text-xs text-muted-foreground text-center sm:text-left">
           <div className="flex items-center gap-1">
             <strong>Teléfono:</strong> 
             <a href="tel:+51922737951" className="hover:text-brand-primary transition-colors">+51 922 737 951</a>
@@ -141,7 +130,7 @@ export function Footer() {
             <a href="mailto:contacto@academiaelprofeoficial.com" className="hover:text-brand-primary transition-colors">contacto@academiaelprofeoficial.com</a>
           </div>
           <div className="flex items-center gap-1">
-            <strong>Dirección:</strong> Lima, Perú
+            <strong>Ubicación:</strong> Santa Rosa, Lima, Perú
           </div>
         </div>
 
