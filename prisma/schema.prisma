@@ -144,3 +144,34 @@ model Comment {
   @@index([userId])
   @@index([createdAt])
 }
+
+// --- Libro de Reclamaciones (INDECOPI) ---
+
+model Claim {
+  id              String   @id @default(cuid())
+  correlative     String   @unique // Ej: 2024-000001
+  
+  // 1. Datos del Consumidor
+  consumerName    String
+  consumerIdType  String   // DNI, CE, Pasaporte
+  consumerId      String
+  consumerPhone   String
+  consumerEmail   String
+  consumerAddress String
+  isMinor         Boolean  @default(false)
+  parentName      String?
+  parentId        String?
+
+  // 2. Identificación del Bien/Servicio Contratado
+  contractType    String   // Producto o Servicio
+  amount          Float
+  description     String
+
+  // 3. Detalle de la Reclamación y Pedido
+  claimType       String   // Reclamo o Queja
+  claimDetail     String   @db.Text
+  consumerRequest String   @db.Text
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

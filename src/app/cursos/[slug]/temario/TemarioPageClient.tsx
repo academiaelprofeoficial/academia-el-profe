@@ -360,12 +360,6 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
               poster: coverImg || undefined,
               isFree: !!firstVideo.isFree,
             });
-            // Scroll to top on mobile so they see the player
-            if (window.innerWidth < 1024) {
-              setTimeout(() => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }, 150);
-            }
           }
         }
       }
@@ -383,13 +377,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
       poster: coverImg || undefined,
       isFree: !!video.isFree,
     });
-    // Scroll topic into view on mobile (use topic title, not video title)
-    if (window.innerWidth < 1024) {
-      setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }, 100);
-    }
-  }, [coverImg, topicGroups]);
+  }, [coverImg]);
 
   // Expand all / collapse all
   const expandAll = useCallback(() => {

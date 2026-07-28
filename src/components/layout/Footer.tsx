@@ -12,8 +12,9 @@ import { useSiteSettings } from '@/components/SiteSettingsProvider';
 import { urlFor } from '@/lib/sanity.client';
 
 const FOOTER_LINKS: readonly { etiqueta: string; href: string }[] = [
-  { etiqueta: 'Términos y Condiciones', href: '#' },
-  { etiqueta: 'Política de Privacidad', href: '#' },
+  { etiqueta: 'Términos y Condiciones', href: '/terminos' },
+  { etiqueta: 'Políticas de Devolución', href: '/politicas-de-devolucion' },
+  { etiqueta: 'Libro de Reclamaciones', href: '/libro-de-reclamaciones' },
   { etiqueta: 'Contáctanos', href: '/soporte' },
   { etiqueta: 'Sobre Nosotros', href: '/nosotros' },
 ] as const;
@@ -123,6 +124,22 @@ export function Footer() {
                 </a>
               );
             })}
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="w-full h-px bg-border/30" />
+
+        {/* Contact Info (Culqi Requirement) */}
+        <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-4 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1">
+            <strong>Teléfono:</strong> {settings?.phone || settings?.whatsapp || '+51 999 999 999'}
+          </div>
+          <div className="flex items-center gap-1">
+            <strong>Correo:</strong> {settings?.email || 'contacto@academiaelprofeoficial.com'}
+          </div>
+          <div className="flex items-center gap-1">
+            <strong>Dirección:</strong> Av. Arequipa 1234, Lima, Perú
           </div>
         </div>
 
