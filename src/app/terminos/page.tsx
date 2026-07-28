@@ -46,7 +46,7 @@ export default function TerminosPage() {
 
             <h2>5. Pagos y Precios</h2>
             <p>
-              Todos los precios están indicados en Soles Peruanos (PEN) y Dólares Estadounidenses (USD). Nos reservamos el derecho de modificar los precios en cualquier momento. Los pagos se procesan a través de pasarelas de pago seguras (MercadoPago, PayPal, Culqi).
+              Todos los precios están indicados en Soles Peruanos (PEN) y Dólares Estadounidenses (USD). Nos reservamos el derecho de modificar los precios en cualquier momento. Los pagos se procesan de forma segura a través de la pasarela de pagos Culqi.
             </p>
 
             <h2>6. Licencia de Uso</h2>

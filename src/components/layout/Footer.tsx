@@ -23,7 +23,7 @@ function FooterLogo() {
   const settings = useSiteSettings();
 
   const cmsLogo = settings?.logo?.asset
-    ? urlFor(settings.logo).width(160).height(60).fit('clip').url()
+    ? urlFor(settings.logo).width(160).height(60).fit('clip').auto('format').url()
     : null;
 
   if (cmsLogo) {
@@ -131,15 +131,17 @@ export function Footer() {
         <div className="w-full h-px bg-border/30" />
 
         {/* Contact Info (Culqi Requirement) */}
-        <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-4 text-xs text-muted-foreground">
+        <div className="flex flex-col sm:flex-row items-center justify-center w-full gap-8 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
-            <strong>Teléfono:</strong> {settings?.phone || settings?.whatsapp || '+51 999 999 999'}
+            <strong>Teléfono:</strong> 
+            <a href="tel:+51922737951" className="hover:text-brand-primary transition-colors">+51 922 737 951</a>
           </div>
           <div className="flex items-center gap-1">
-            <strong>Correo:</strong> {settings?.email || 'contacto@academiaelprofeoficial.com'}
+            <strong>Correo:</strong> 
+            <a href="mailto:contacto@academiaelprofeoficial.com" className="hover:text-brand-primary transition-colors">contacto@academiaelprofeoficial.com</a>
           </div>
           <div className="flex items-center gap-1">
-            <strong>Dirección:</strong> Av. Arequipa 1234, Lima, Perú
+            <strong>Dirección:</strong> Lima, Perú
           </div>
         </div>
 

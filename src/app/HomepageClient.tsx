@@ -763,7 +763,7 @@ export function HomepageClient({ sanityData }: Props) {
           >
             {partners && partners.filter((p) => p.abbreviation !== 'USS').map((p) => {
               const logoUrl = p.logo?.asset
-                ? urlFor(p.logo).width(300).fit('max').url()
+                ? urlFor(p.logo).width(300).fit('max').auto('format').url()
                 : null;
               return (
                 <motion.div
@@ -859,7 +859,7 @@ export function HomepageClient({ sanityData }: Props) {
               Resultados reales de estudiantes como tú
             </motion.p>
             <motion.div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6"
               variants={containerVariants}
               initial="hidden"
               whileInView="visible"

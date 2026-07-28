@@ -94,5 +94,5 @@ export function plainText(blocks: PortableTextBlock[] | undefined | null): strin
 
 export function getImageUrl(image: SanityImage | null | undefined, width = 800, height = 600): string | null {
   if (!image || !image.asset) return null;
-  try { return urlFor(image).width(width).height(height).fit("crop").url(); } catch { return null; }
+  try { return urlFor(image).width(width).height(height).fit("crop").auto('format').url(); } catch { return null; }
 }

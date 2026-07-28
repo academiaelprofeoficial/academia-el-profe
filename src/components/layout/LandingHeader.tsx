@@ -100,11 +100,11 @@ function Logo({ className }: { readonly className?: string }) {
   const settings = useSiteSettings();
 
   const cmsLogoLight = settings?.logo?.asset
-    ? urlFor(settings.logo).width(400).height(150).fit('clip').url()
+    ? urlFor(settings.logo).width(400).height(150).fit('clip').auto('format').url()
     : null;
 
   const cmsLogoDark = settings?.logoWhite?.asset
-    ? urlFor(settings.logoWhite).width(400).height(150).fit('clip').url()
+    ? urlFor(settings.logoWhite).width(400).height(150).fit('clip').auto('format').url()
     : null;
 
   // If CMS has logos, use them

@@ -11,7 +11,7 @@ import { useSiteSettings } from '@/components/SiteSettingsProvider';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const WHATSAPP_NUMBER = '51922737951';
-const WHATSAPP_DEFAULT_MSG = 'Hola, quiero información sobre los cursos de Academia El Profe.';
+const WHATSAPP_DEFAULT_MSG = 'Hola, necesito ayuda y más información de los cursos.';
 
 export function WhatsAppButton() {
   const settings = useSiteSettings();
