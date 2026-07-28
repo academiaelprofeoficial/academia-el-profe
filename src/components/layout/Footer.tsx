@@ -88,16 +88,16 @@ export function Footer() {
     <footer className="border-t border-border/40 bg-muted/20 px-6 py-8">
       <div className="max-w-7xl mx-auto flex flex-col items-center gap-6">
         {/* Top row: Logo + Social Icons */}
-        <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-4">
-          <div className="flex flex-col sm:flex-row items-center gap-2 text-sm text-muted-foreground text-center sm:text-left">
+        <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-6">
+          <div className="flex flex-col sm:flex-row items-center gap-3 text-sm text-muted-foreground text-center sm:text-left">
             <FooterLogo />
-            <span className="text-xs text-muted-foreground/60 mt-2 sm:mt-0">
+            <span className="text-xs text-muted-foreground/60">
               © {anioActual} {settings?.companyName || 'Academia El Profe Oficial'}. Todos los derechos reservados.
             </span>
           </div>
 
           {/* Social Media Icons */}
-          <div className="flex items-center gap-2 mt-4 sm:mt-0">
+          <div className="flex items-center gap-2">
             {socials.map((s) => {
               const Icon = s.icon;
               return (
@@ -120,17 +120,18 @@ export function Footer() {
         <div className="w-full h-px bg-border/30" />
 
         {/* Contact Info (Culqi Requirement) */}
-        <div className="flex flex-col sm:flex-row items-center justify-center w-full gap-2 sm:gap-8 text-xs text-muted-foreground text-center sm:text-left">
-          <div className="flex items-center gap-1">
-            <strong>Teléfono:</strong> 
+        <div className="flex flex-col sm:flex-row items-center justify-center w-full gap-4 sm:gap-8 text-xs text-muted-foreground text-center sm:text-left">
+          <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2">
+            <strong className="block sm:inline">Teléfono:</strong> 
             <a href="tel:+51922737951" className="hover:text-brand-primary transition-colors">+51 922 737 951</a>
           </div>
-          <div className="flex items-center gap-1">
-            <strong>Correo:</strong> 
+          <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2">
+            <strong className="block sm:inline">Correo:</strong> 
             <a href="mailto:contacto@academiaelprofeoficial.com" className="hover:text-brand-primary transition-colors">contacto@academiaelprofeoficial.com</a>
           </div>
-          <div className="flex items-center gap-1">
-            <strong>Ubicación:</strong> Santa Rosa, Lima, Perú
+          <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2">
+            <strong className="block sm:inline">Ubicación:</strong> 
+            <span>Santa Rosa, Lima, Perú</span>
           </div>
         </div>
 
@@ -138,20 +139,20 @@ export function Footer() {
         <div className="w-full h-px bg-border/30" />
 
         {/* Bottom row: Links + Credits */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
-          <nav className="flex items-center gap-4" aria-label="Enlaces del pie de página">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-5 w-full mt-2">
+          <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3" aria-label="Enlaces del pie de página">
             {FOOTER_LINKS.map((link) => (
               <Link
                 key={link.etiqueta}
                 href={link.href}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors text-center"
               >
                 {link.etiqueta}
               </Link>
             ))}
           </nav>
 
-          <span className="text-[11px] text-muted-foreground/50">
+          <span className="text-[11px] text-muted-foreground/50 text-center">
             Diseñado por{' '}
             <a
               href="https://www.fastpagepro.com"
