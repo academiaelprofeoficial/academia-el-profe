@@ -38,6 +38,7 @@ import type { SanityCourse, SanityClassVideo, SanityTopic } from '@/lib/sanity.c
 import { useAuth } from '@/lib/auth-context';
 import { VideoPlayer } from '@/components/course/VideoPlayer';
 import { QrPaymentModal } from '@/components/QrPaymentModal';
+import { PurchaseOverlay } from '@/components/course/PurchaseOverlay';
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
@@ -136,8 +137,27 @@ export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
   const { user, purchasedCourseIds, isOwner, isGoogleUser } = useAuth();
   const [comentario, setComentario] = useState('');
   const [expandedTopic, setExpandedTopic] = useState<string | null>(null);
+  const [showPurchase, setShowPurchase] = useState(false);
   const [showQr, setShowQr] = useState(false);
 
+  const mappedCourse = {
+    id: course.slug,
+    titulo: course.title,
+    subtitulo: '',
+    slug: course.slug,
+    categoria: {
+      nombre: course.category || '',
+      color: 'bg-brand-primary',
+    },
+    nivel: (course.level || '') as any,
+    precio: course.pricePEN || 0,
+    precioUSD: course.priceUSD || 0,
+    numeroLecciones: course.totalClasses || 0,
+    numeroEstudiantes: 1250,
+    calificacion: 4.9,
+    portadaUrl: '',
+    descripcion: '',
+  };
   const [isDesktop, setIsDesktop] = useState(true);
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -456,26 +476,12 @@ export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
                   </div>
                 ) : (
                 <div className="flex flex-col sm:flex-row gap-2 w-full">
-                  <Link
-                    href={`/api/checkout?courseId=${slug}&provider=mercadopago`}
-                    className="flex-1 bg-[#009ee3] hover:bg-[#007ab8] text-white font-bold text-sm py-2.5 px-6 rounded-xl transition-colors flex items-center justify-center gap-2"
-                  >
-                    <ShoppingCart className="h-4 w-4" />
-                    Pagar con MercadoPago
-                  </Link>
-                  <Link
-                    href={`/api/checkout/paypal?courseId=${slug}`}
-                    className="flex-1 bg-[#ffc439] hover:bg-[#f0b020] text-[#003087] font-bold text-sm py-2.5 px-6 rounded-xl transition-colors flex items-center justify-center gap-2"
-                  >
-                    <ShoppingCart className="h-4 w-4" />
-                    Pagar con PayPal
-                  </Link>
                   <button
-                    onClick={() => setShowQr(true)}
-                    className="bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white font-bold text-sm py-2.5 px-6 rounded-xl transition-colors flex items-center justify-center gap-2"
+                    onClick={() => setShowPurchase(true)}
+                    className="flex-1 bg-brand-primary-hover hover:bg-brand-primary text-white font-bold text-sm py-2.5 px-6 rounded-xl transition-colors flex items-center justify-center gap-2"
                   >
-                    <QrCode className="h-4 w-4" />
-                    Pagar con QR
+                    <ShoppingCart className="h-4 w-4" />
+                    Pagar con Tarjeta (Culqi)
                   </button>
                 </div>
                 )}
@@ -715,18 +721,12 @@ export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
               </div>
             ) : (
             <div className="flex gap-2 w-full">
-              <Link
-                href={`/api/checkout?courseId=${slug}&provider=mercadopago`}
-                className="flex-1 bg-[#009ee3] text-white font-bold text-sm py-2.5 rounded-xl text-center"
+              <button
+                onClick={() => setShowPurchase(true)}
+                className="flex-1 bg-brand-primary-hover hover:bg-brand-primary text-white font-bold text-sm py-2.5 rounded-xl text-center"
               >
-                Pagar con MercadoPago
-              </Link>
-              <Link
-                href={`/api/checkout/paypal?courseId=${slug}`}
-                className="flex-1 bg-[#ffc439] text-[#003087] font-bold text-sm py-2.5 rounded-xl text-center"
-              >
-                Pagar con PayPal
-              </Link>
+                Pagar con Tarjeta (Culqi)
+              </button>
             </div>
             )}
           </div>
@@ -828,6 +828,12 @@ export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
       pricePEN={pricePEN}
       priceUSD={priceUSD}
       slug={slug}
+    />
+
+    <PurchaseOverlay 
+      curso={mappedCourse as any}
+      open={showPurchase}
+      onOpenChange={setShowPurchase}
     />
     </div>
   );

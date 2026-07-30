@@ -39,6 +39,7 @@ import type { SanityCourse, SanityImage, PortableTextBlock } from '@/lib/sanity.
 import { getImageUrl } from '@/lib/sanity.client';
 import { PortableText } from '@portabletext/react';
 import { QrPaymentModal } from '@/components/QrPaymentModal';
+import { PurchaseOverlay } from '@/components/course/PurchaseOverlay';
 
 interface DetalleCursoClientProps {
   readonly course: SanityCourse;
@@ -101,81 +102,45 @@ const ptComponents = {
 };
 
 export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
-  const [loadingMP, setLoadingMP] = useState(false);
-  const [loadingPP, setLoadingPP] = useState(false);
-
-  const handleMercadoPago = async () => {
-    setLoadingMP(true);
-    try {
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cursoId: slug,
-          titulo: title,
-          precio: pricePEN,
-          userId: user?.uid || undefined,
-          userEmail: user?.email || undefined
-        })
-      });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-      else alert(data.error || 'Error al iniciar pago');
-    } catch (e) {
-      alert('Error de conexión');
-    } finally {
-      setLoadingMP(false);
-    }
-  };
-
-  const handlePayPal = async () => {
-    setLoadingPP(true);
-    try {
-      const res = await fetch('/api/checkout/paypal', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cursoId: slug,
-          titulo: title,
-          precioUSD: priceUSD,
-          userId: user?.uid || undefined,
-          userEmail: user?.email || undefined
-        })
-      });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-      else alert(data.error || 'Error al iniciar pago');
-    } catch (e) {
-      alert('Error de conexión');
-    } finally {
-      setLoadingPP(false);
-    }
-  };
-
   const { user, isGoogleUser } = useAuth();
   const [showPurchase, setShowPurchase] = useState(false);
   const [showQr, setShowQr] = useState(false);
 
-  // CMS Data
-  const title = course.title;
-  const slug = course.slug;
-  const category = course.category || '';
-
-  // Detect UTP context for back navigation
-  const isUTP = slug.includes('utp') || title.toLowerCase().includes('utp') || category === 'utp';
-  const backHref = isUTP ? '/cursos/utp' : '/cursos';
-  const backLabel = isUTP ? 'Volver a cursos UTP' : 'Volver al catalogo';
-
-  const cardColor = course.cardColor || '#10B981';
+  // Derive all data from the single 'course' prop (CMS)
+  const title = course?.title || 'Curso';
+  const description = course?.description as PortableTextBlock[] | undefined;
+  const slug = course?.slug || '';
+  const category = course?.category || '';
+  const cardColor = sanitizeHex(course?.cardColor || '#10B981');
   const categoryLabel = CATEGORY_LABELS[category] || category;
-  const professor = course.professor || '';
-  const pricePEN = course.pricePEN || 0;
-  const priceUSD = course.priceUSD || 0;
-  const totalClasses = course.totalClasses || 0;
-  const totalHours = course.totalHours || '0';
-  const level = course.level || '';
-  const courseType = course.courseType || 'paid';
+  const professor = course?.professor || '';
+  const pricePEN = course?.pricePEN || 0;
+  const priceUSD = course?.priceUSD || 0;
+  const totalClasses = course?.totalClasses || 0;
+  const totalHours = course?.totalHours || '0';
+  const level = course?.level || '';
+  const courseType = course?.courseType || 'paid';
   const isFreeCourse = courseType === 'free';
+  const coverImg = course?.coverImage ? getImageUrl(course.coverImage, 800, 500) : null;
+
+  const mappedCourse = {
+    id: slug,
+    titulo: title,
+    subtitulo: '',
+    slug,
+    categoria: {
+      nombre: categoryLabel,
+      color: 'bg-brand-primary',
+    },
+    nivel: level as any,
+    precio: pricePEN,
+    precioUSD: priceUSD,
+    numeroLecciones: totalClasses,
+    numeroEstudiantes: 1250,
+    calificacion: 4.9,
+    portadaUrl: coverImg || '',
+    descripcion: '',
+  };
   const topics = course.topics || [];
   // Count all class videos across all topics
   const classVideos = topics.flatMap(t => t.classVideos || []);
@@ -351,16 +316,31 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground">Pago unico, acceso de por vida</p>
-                <Button
+                {!isFreeCourse && !hasFullAccess && (
+              <div className="flex flex-col gap-2 mt-2 md:mt-0">
+                <Button 
                   className={cn(
-                    'w-full h-11 text-sm font-bold rounded-xl',
-                    'bg-brand-primary hover:bg-brand-primary-hover text-white'
+                    'w-full h-11 text-xs md:text-sm font-bold gap-2',
+                    'bg-brand-primary-hover hover:bg-brand-primary text-white',
+                    'shadow-[0_4px_14px_0_rgba(16,185,129,0.39)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.23)]'
                   )}
-                  onClick={handleComprar}
+                  onClick={() => setShowPurchase(true)}
                 >
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  Comprar Ahora
+                  <ShoppingCart className="h-4 w-4" />
+                  Pagar con Tarjeta (Culqi)
                 </Button>
+                <PurchaseOverlay 
+                  curso={mappedCourse as any}
+                  open={showPurchase}
+                  onOpenChange={setShowPurchase}
+                />
+                {freeVideoCount > 0 && (
+                  <p className="text-xs text-center text-muted-foreground">
+                    {freeVideoCount} {freeVideoCount === 1 ? 'clase gratuita' : 'clases gratuitas'} de preview incluidas
+                  </p>
+                )}
+              </div>
+            )}
                 {freeVideoCount > 0 && (
                   <p className="text-xs text-center text-muted-foreground">
                     {freeVideoCount} {freeVideoCount === 1 ? 'clase gratuita' : 'clases gratuitas'} de preview incluidas
@@ -435,95 +415,7 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
         </div>
       </div>
 
-      {/* Purchase Overlay */}
-      {showPurchase && !isFreeCourse && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowPurchase(false)}>
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-md w-full shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-foreground mb-2">Compra {title}</h3>
-              Accede a todos los {totalClasses} videos y materiales descargables.
-            <div className="flex items-baseline gap-2 mb-5">
-              <span className="text-3xl font-bold text-foreground">{formatoSoles(pricePEN)}</span>
-              <span className="text-sm text-muted-foreground">{formatoUSD(priceUSD)}</span>
-            </div>
-            <div className="space-y-2 mb-5">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle2 className="h-4 w-4 text-brand-primary shrink-0" />
-                Acceso de por vida a todo el contenido
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle2 className="h-4 w-4 text-brand-primary shrink-0" />
-                Todos los videos y materiales descargables
-              </div>
 
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle2 className="h-4 w-4 text-brand-primary shrink-0" />
-                Soporte del profesor
-              </div>
-            </div>
-            {/* Auth Gate: require Google login to purchase */}
-            {!user ? (
-              <div className="space-y-3">
-                <div className="rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-900/20 p-4 text-center">
-                  <ShieldAlert className="h-8 w-8 text-amber-500 mx-auto mb-2" />
-                  <p className="text-sm font-bold text-amber-800 dark:text-amber-300 mb-1">
-                    Debes iniciar sesion para comprar
-                  </p>
-                  <p className="text-xs text-amber-600/80 dark:text-amber-500/60">
-                    Inicia sesion con tu cuenta de Google para continuar con el pago
-                  </p>
-                </div>
-                <Link
-                  href="/iniciar-sesion"
-                  className="flex-1 bg-brand-primary hover:bg-brand-primary-hover text-white font-bold text-sm py-3 rounded-xl text-center transition-colors flex items-center justify-center gap-2 w-full"
-                >
-                  <LogIn className="h-4 w-4" />
-                  Iniciar Sesion con Google
-                </Link>
-              </div>
-            ) : !isGoogleUser ? (
-              <div className="space-y-3">
-                <div className="rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-900/20 p-4 text-center">
-                  <ShieldAlert className="h-8 w-8 text-amber-500 mx-auto mb-2" />
-                  <p className="text-sm font-bold text-amber-800 dark:text-amber-300 mb-1">
-                    Se requiere cuenta de Google
-                  </p>
-                  <p className="text-xs text-amber-600/80 dark:text-amber-500/60">
-                    Para comprar cursos debes iniciar sesion con tu cuenta de Google. Cierra sesion y vuelve a entrar con Google.
-                  </p>
-                </div>
-              </div>
-            ) : (
-            <div className="flex flex-col gap-2">
-              <Link
-                href={`/api/checkout?courseId=${slug}&provider=mercadopago`}
-                className="flex-1 bg-[#009ee3] hover:bg-[#007ab8] text-white font-bold text-sm py-3 rounded-xl text-center transition-colors"
-              >
-                Pagar con MercadoPago
-              </Link>
-              <Link
-                href={`/api/checkout/paypal?courseId=${slug}`}
-                className="flex-1 bg-[#ffc439] hover:bg-[#f0b020] text-[#003087] font-bold text-sm py-3 rounded-xl text-center transition-colors"
-              >
-                Pagar con PayPal
-              </Link>
-              <button
-                onClick={() => { setShowPurchase(false); setShowQr(true); }}
-                className="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-sm py-3 rounded-xl text-center transition-colors flex items-center justify-center gap-2"
-              >
-                <QrCode className="h-4 w-4" />
-                Pagar con QR
-              </button>
-            </div>
-            )}
-            <button
-              onClick={() => setShowPurchase(false)}
-              className="w-full mt-3 text-sm text-muted-foreground hover:text-foreground py-2"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* QR Payment Modal */}
       <QrPaymentModal

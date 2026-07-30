@@ -39,6 +39,7 @@ import { getImageUrl } from '@/lib/sanity.client';
 import { PortableText } from '@portabletext/react';
 import { useAuth } from '@/lib/auth-context';
 import { VideoPlayer } from '@/components/course/VideoPlayer';
+import { PurchaseOverlay } from '@/components/course/PurchaseOverlay';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -137,6 +138,8 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
   const [loadingComments, setLoadingComments] = useState(false);
   const [loadingPay, setLoadingPay] = useState<Record<string, boolean>>({});
 
+  const [showPurchase, setShowPurchase] = useState(false);
+
   const [isDesktop, setIsDesktop] = useState(true);
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -166,6 +169,25 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
   const coverImg = course?.coverImage ? getImageUrl(course.coverImage, 800, 500) : null;
   const isFreeCourse = courseType === 'free';
   const hasFullAccess = isOwner || purchasedCourseIds.includes('__ALL_COURSES__') || purchasedCourseIds.includes(slug);
+
+  const mappedCourse = useMemo(() => ({
+    id: slug,
+    titulo: title,
+    subtitulo: '',
+    slug,
+    categoria: {
+      nombre: categoryLabel,
+      color: 'bg-brand-primary',
+    },
+    nivel: level as any,
+    precio: pricePEN,
+    precioUSD: priceUSD,
+    numeroLecciones: totalClasses,
+    numeroEstudiantes: 1250,
+    calificacion: 4.9,
+    portadaUrl: coverImg || '',
+    descripcion: '',
+  }), [slug, title, categoryLabel, level, pricePEN, priceUSD, totalClasses, coverImg]);
 
   // Payment handlers — POST como en /cursos (no GET que da 405)
   const safeTitle = title.replace(/[\u200B-\u200D\uFEFF\u2060-\u2064\u00AD]/g, '').trim();
@@ -575,32 +597,20 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                 </div>
               ) : (
                 <>
-                {/* Botones de pago directo — MP y PayPal con POST */}
+                {/* Botón de pago unificado (Culqi) */}
                 <div className="flex flex-col gap-1.5 mt-3">
                 <button
-                  onClick={handleMP}
-                  disabled={loadingPay[`${slug}-mp`] || loadingPay[`${slug}-pp`]}
+                  onClick={() => setShowPurchase(true)}
                   className="w-full h-10 text-xs font-bold tracking-wide text-white gap-1.5 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-brand-primary-hover hover:bg-brand-primary"
                 >
-                  {loadingPay[`${slug}-mp`] ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <ShoppingCart className="h-4 w-4 shrink-0" />
-                  )}
-                  Pagar con MercadoPago
+                  <ShoppingCart className="h-4 w-4 shrink-0" />
+                  Pagar con Tarjeta (Culqi)
                 </button>
-                <button
-                  onClick={handlePayPal}
-                  disabled={loadingPay[`${slug}-mp`] || loadingPay[`${slug}-pp`]}
-                  className="w-full h-10 text-xs font-bold tracking-wide gap-1.5 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-[#ffc439] hover:bg-[#f2ba36] text-[#003087]"
-                >
-                  {loadingPay[`${slug}-pp`] ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <img src="/images/paypal-logo.png" alt="PP" className="h-4 w-4 object-contain shrink-0" />
-                  )}
-                  Pagar con PayPal
-                </button>
+                <PurchaseOverlay 
+                  curso={mappedCourse as any}
+                  open={showPurchase}
+                  onOpenChange={setShowPurchase}
+                />
                 <Link
                   href={`/cursos/${slug}/temario`}
                   className="w-full h-9 text-xs font-bold tracking-wide gap-1.5 rounded-lg flex items-center justify-center border border-white/40 text-white hover:bg-white/10 transition-colors"
