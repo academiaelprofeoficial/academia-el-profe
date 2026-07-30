@@ -147,7 +147,6 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
   // Use real video count from topics (matches temario page)
   const realVideoCount = classVideos.length || totalClasses;
   const topicMaterials = topics.flatMap(t => t.materials || []);
-  const coverImg = course.coverImage ? getImageUrl(course.coverImage, 800, 500) : null;
 
   // Video
   const videoSourceUrl = course.videoUrl || course.courseVideo?.asset?.url || undefined;
