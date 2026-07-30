@@ -69,22 +69,22 @@ export function FixedBuyBar({
           alignItems: 'center',
           gap: '8px',
         }}>
-          {/* MP */}
+          {/* Checkout Button */}
           {showPay && (
             <button
               onClick={() => { onMP(); setPurchased(true); }}
-              disabled={loadingPay[`${slug}-mp`] || loadingPay[`${slug}-pp`]}
+              disabled={loadingPay[`${slug}-mp`]}
               style={{
-                flex: 1,
+                flex: 2,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '6px',
+                gap: '8px',
                 padding: '12px 6px',
                 borderRadius: '10px',
                 border: 'none',
                 fontWeight: 700,
-                fontSize: '12px',
+                fontSize: '13px',
                 color: '#fff',
                 cursor: 'pointer',
                 opacity: loadingPay[`${slug}-mp`] ? 0.6 : 1,
@@ -97,43 +97,9 @@ export function FixedBuyBar({
               {loadingPay[`${slug}-mp`] ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <span>💳</span>
+                <span className="text-sm">💳</span>
               )}
-              <span>S/ {pricePEN.toLocaleString('es-PE')}</span>
-            </button>
-          )}
-
-          {/* PayPal */}
-          {showPay && (
-            <button
-              onClick={() => { onPayPal(); setPurchased(true); }}
-              disabled={loadingPay[`${slug}-mp`] || loadingPay[`${slug}-pp`]}
-              style={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                padding: '12px 6px',
-                borderRadius: '10px',
-                border: 'none',
-                fontWeight: 700,
-                fontSize: '12px',
-                color: '#fff',
-                cursor: 'pointer',
-                opacity: loadingPay[`${slug}-pp`] ? 0.6 : 1,
-                background: 'linear-gradient(135deg, #0070BA, #005c9e)',
-                boxShadow: '0 4px 10px rgba(0, 112, 186, 0.4)',
-                transition: 'all 0.2s',
-                whiteSpace: 'nowrap' as const,
-              }}
-            >
-              {loadingPay[`${slug}-pp`] ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <img src="/images/paypal-logo.png" alt="PP" style={{ height: 16, width: 16 }} />
-              )}
-              <span>${priceUSD.toFixed(2)}</span>
+              <span>Comprar (S/ {pricePEN.toLocaleString('es-PE')})</span>
             </button>
           )}
 

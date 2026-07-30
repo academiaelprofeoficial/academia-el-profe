@@ -92,7 +92,8 @@ export function Footer() {
           <div className="flex flex-col sm:flex-row items-center gap-3 text-sm text-muted-foreground text-center sm:text-left">
             <FooterLogo />
             <span className="text-xs text-muted-foreground/60">
-              © {anioActual} {settings?.companyName || 'Academia El Profe Oficial'}. Todos los derechos reservados.
+              © {anioActual} {settings?.companyName || 'Academia El Profe Oficial'}. Todos los derechos reservados.<br className="hidden sm:block" />
+              RUC: [TU_RUC_AQUI] - Razón Social: [TU_RAZON_SOCIAL_AQUI]
             </span>
           </div>
 
