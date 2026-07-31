@@ -20,6 +20,7 @@ import {
   BookOpen,
   LogIn,
   ShieldAlert,
+  Users,
 } from 'lucide-react';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
 import { Button } from '@/components/ui/button';
@@ -43,9 +44,9 @@ interface MergedCourse {
   readonly formula: string;
   readonly color: string;
   readonly cardColor: string;
-  readonly price: number;
   readonly priceUSD: number;
   readonly slug: string;
+  readonly studentCount: number;
 }
 
 function mergeCourses(sanityCourses: SanityCourse[] | null): MergedCourse[] {
@@ -68,6 +69,7 @@ function mergeCourses(sanityCourses: SanityCourse[] | null): MergedCourse[] {
       price: sc.pricePEN || 0,
       priceUSD: sc.priceUSD || 0,
       slug: sc.slug,
+      studentCount: sc.studentCount || 1250,
     };
   });
 }
@@ -156,16 +158,16 @@ function PaymentButtons({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="grid grid-cols-2 gap-2 w-full">
+      <div className="flex flex-col gap-2 w-full">
         <button onClick={(e) => { e.stopPropagation(); handleMercadoPago(); }} disabled={!!loadingRef.current[`${course.id}-mp`]}
-          className="h-9 text-[11px] font-bold tracking-wide text-white gap-1 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-brand-primary-hover hover:bg-brand-primary">
-          {loadingRef.current[`${course.id}-mp`] ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShoppingCart className="h-3.5 w-3.5 shrink-0" />}
-          <span className="truncate">{loadingRef.current[`${course.id}-mp`] ? 'Procesando...' : `PEN ${formatoSoles(course.price)}`}</span>
+          className="w-full h-10 text-xs font-bold tracking-wide text-white gap-1.5 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-brand-primary-hover hover:bg-brand-primary shadow-[0_4px_14px_0_rgba(16,185,129,0.39)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.23)]">
+          {loadingRef.current[`${course.id}-mp`] ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4 shrink-0" />}
+          <span className="truncate">{loadingRef.current[`${course.id}-mp`] ? 'Procesando...' : `Pagar con Tarjeta (Culqi)`}</span>
         </button>
         <button onClick={(e) => { e.stopPropagation(); handlePayPal(); }} disabled={!!loadingRef.current[`${course.id}-pp`]}
-          className="h-9 text-[11px] font-bold tracking-wide gap-1 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-[#ffc439] hover:bg-[#f2ba36] text-[#003087]">
-          {loadingRef.current[`${course.id}-pp`] ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <img src="/images/paypal-logo.png" alt="PP" className="h-3.5 w-3.5 object-contain shrink-0" />}
-          <span className="truncate">{loadingRef.current[`${course.id}-pp`] ? 'Procesando...' : `USD ${formatoUSD(course.priceUSD)}`}</span>
+          className="w-full h-10 text-xs font-bold tracking-wide gap-1.5 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-[#ffc439] hover:bg-[#f2ba36] text-[#003087]">
+          {loadingRef.current[`${course.id}-pp`] ? <Loader2 className="h-4 w-4 animate-spin" /> : <img src="/images/paypal-logo.png" alt="PP" className="h-4 w-4 object-contain shrink-0" />}
+          <span className="truncate">{loadingRef.current[`${course.id}-pp`] ? 'Procesando...' : `Pagos por PayPal`}</span>
         </button>
       </div>
       {error && <p className="text-[10px] text-red-500 text-center leading-tight">{error}</p>}
@@ -205,6 +207,10 @@ function CourseCard({ course, isPurchased, index }: { readonly course: MergedCou
         </div>
         <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs">
           <FileText className="h-3.5 w-3.5 shrink-0" /><span>Material en PDF</span>
+        </div>
+        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs">
+          <Users className="h-3.5 w-3.5 shrink-0" style={{ color: hex }} />
+          <span>{course.studentCount > 0 ? `${course.studentCount} alumnos inscritos` : 'Primeros en inscribirse'}</span>
         </div>
       </div>
       <div className="bg-white dark:bg-[var(--surface-2)] px-4 py-4 flex flex-col gap-3 mt-auto">

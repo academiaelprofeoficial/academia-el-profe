@@ -93,7 +93,7 @@ export function Footer() {
             <FooterLogo />
             <span className="text-xs text-muted-foreground/60">
               © {anioActual} {settings?.companyName || 'Academia El Profe Oficial'}. Todos los derechos reservados.<br className="hidden sm:block" />
-              RUC: [TU_RUC_AQUI] - Razón Social: [TU_RAZON_SOCIAL_AQUI]
+              RUC: 10766497026 - Razón Social: Academia El Profe Oficial
             </span>
           </div>
 

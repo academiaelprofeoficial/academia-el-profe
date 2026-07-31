@@ -303,36 +303,33 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
                           <span className="text-xs text-slate-400 font-medium">{formatoUSD(curso.priceUSD)}</span>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-2 w-full">
+                        <div className="flex flex-col gap-2 w-full">
                           <button
                             disabled={isLoadingMP || isLoadingPP}
                             onClick={(e) => { e.stopPropagation(); handleMercadoPagoDirect(curso); }}
-                            className="h-9 text-[11px] font-bold tracking-wide text-white gap-1 rounded-lg flex items-center justify-center transition-all disabled:opacity-70"
-                            style={{ backgroundColor: bgColor }}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = hoverBg; }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = bgColor; }}
+                            className="w-full h-10 text-xs font-bold tracking-wide text-white gap-1.5 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-brand-primary-hover hover:bg-brand-primary shadow-[0_4px_14px_0_rgba(16,185,129,0.39)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.23)]"
                           >
                             {isLoadingMP ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
-                              <ShoppingCart className="h-3.5 w-3.5 shrink-0" />
+                              <ShoppingCart className="h-4 w-4 shrink-0" />
                             )}
                             <span className="truncate">
-                              {isLoadingMP ? 'Procesando...' : `PEN ${formatoSoles(curso.price)}`}
+                              {isLoadingMP ? 'Procesando...' : `Pagar con Tarjeta (Culqi)`}
                             </span>
                           </button>
                           <button
                             disabled={isLoadingMP || isLoadingPP}
                             onClick={(e) => { e.stopPropagation(); handlePayPalDirect(curso); }}
-                            className="h-9 text-[11px] font-bold tracking-wide gap-1 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-[#ffc439] hover:bg-[#f2ba36] text-[#003087]"
+                            className="w-full h-10 text-xs font-bold tracking-wide gap-1.5 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-[#ffc439] hover:bg-[#f2ba36] text-[#003087]"
                           >
                             {isLoadingPP ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
-                              <img src="/images/paypal-logo.png" alt="PP" className="h-3.5 w-3.5 object-contain shrink-0" />
+                              <img src="/images/paypal-logo.png" alt="PP" className="h-4 w-4 object-contain shrink-0" />
                             )}
                             <span className="truncate">
-                              {isLoadingPP ? 'Procesando...' : `USD ${formatoUSD(curso.priceUSD)}`}
+                              {isLoadingPP ? 'Procesando...' : `Pagos por PayPal`}
                             </span>
                           </button>
                         </div>
