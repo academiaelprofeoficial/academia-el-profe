@@ -179,13 +179,9 @@ export function LeccionClient({ course, videoOrder, studentCount }: LeccionClien
     mql.addEventListener('change', handler);
     return () => mql.removeEventListener('change', handler);
   }, []);
-  const slug = course.slug;
-  const title = course.title;
   const courseType = course.courseType || 'paid';
   const isFreeCourse = courseType === 'free';
   const hasFullAccess = isOwner || purchasedCourseIds.includes('__ALL_COURSES__') || purchasedCourseIds.includes(slug);
-  const pricePEN = course.pricePEN || 0;
-  const priceUSD = course.priceUSD || 0;
 
   // Flatten all class videos from nested topics, sorted by order globally
   const sortedVideos = useMemo(() => {
