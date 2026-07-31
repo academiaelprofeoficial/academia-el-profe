@@ -37,7 +37,8 @@ import { motion } from 'framer-motion';
 import { LandingHeader } from '@/components/layout/LandingHeader';
 import { Footer } from '@/components/layout/Footer';
 import { AnimatedSection } from '@/components/AnimatedSection';
-import { PurchaseOverlay } from '@/components/course/PurchaseOverlay';
+import Script from 'next/script';
+import { useCulqi } from '@/hooks/useCulqi';
 import { CURSOS_LANDING, COLOR_MAP, CURSOS_MOCK, CATEGORIAS } from '@/lib/data';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
 import { cn, sanitizeHex } from '@/lib/utils';
@@ -60,9 +61,8 @@ const FORMULA_ICONS: Record<string, React.ComponentType<{ className?: string }>>
 
 export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCourse[] | null }) {
   const { user, purchasedCourseIds, isGoogleUser } = useAuth();
-  const [cursoCompra, setCursoCompra] = useState<Course | null>(null);
-  const [compraAbierta, setCompraAbierta] = useState(false);
   const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>({});
+  const { openCulqi } = useCulqi();
 
   // CMS data is authoritative. Mock only provides cosmetic display hints (colorKey, formulaIcon).
   const displayCourses = useMemo(() => {
@@ -100,9 +100,8 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
   }, []);
 
   const handleComprar = useCallback((cursoId: string) => {
-    const cursoMock = CURSOS_MOCK.find((c) => c.slug === cursoId) || null;
-    setCursoCompra(cursoMock);
-    setCompraAbierta(true);
+    // Legacy handleComprar
+    console.warn("Legacy handleComprar called");
   }, []);
 
   // Compra directa PayPal desde la tarjeta (sin abrir modal)
@@ -137,50 +136,14 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
 
   // Compra directa con Culqi (abrir modal) – use full mock data when available
   const handleCulqiDirect = useCallback((cursoLanding: any) => {
-    // 1️⃣ Try to find full course definition in the mock catalog (includes categoria)
-    const mockFull = CURSOS_MOCK.find((c) => c.slug === cursoLanding.id);
-    if (mockFull) {
-      setCursoCompra(mockFull as any);
-    } else {
-      // 2️⃣ If not in mock, look for the limited display data and enrich it
-      const display = displayCourses.find((c) => c.id === cursoLanding.id);
-      if (display) {
-        // Attempt to infer category from colorKey using CATEGORIAS lookup
-        const cat = CATEGORIAS.find((cat) => cat.slug === cursoLanding.id) || null;
-        setCursoCompra({
-          id: display.id,
-          slug: display.id,
-          titulo: display.title,
-          subtitulo: display.description,
-          descripcion: '',
-          precio: display.price,
-          precioUSD: display.priceUSD,
-          categoria: cat as any,
-          tieneClasesGrabadas: true,
-          tieneMaterialPDF: true,
-          estaBloqueado: true,
-          numeroLecciones: 0,
-          numeroHoras: 0,
-          calificacion: 0,
-          numeroEstudiantes: display.studentCount,
-          imagenUrl: display.coverImage,
-          createdAt: new Date().toISOString(),
-        } as any);
-      } else {
-        // 3️⃣ Final fallback: minimal placeholder
-        setCursoCompra({
-          id: cursoLanding.id,
-          titulo: cursoLanding.title,
-          precio: cursoLanding.price,
-          precioUSD: cursoLanding.priceUSD,
-          portadaUrl: cursoLanding.coverImage,
-        } as any);
-      }
-    }
-    setCompraAbierta(true);
-  }, [displayCourses]);
+    // 1️⃣ Obtener el título y precio
+    const title = cursoLanding.title || cursoLanding.titulo;
+    const price = cursoLanding.price || cursoLanding.precio;
+    openCulqi(title, price);
+  }, [openCulqi]);
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950">
+      <Script src="https://checkout.culqi.com/js/v4" strategy="lazyOnload" />
       <LandingHeader />
 
       <main className="flex-1">
@@ -480,12 +443,6 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
         </div>
       </main>
 
-      {/* Overlay de Compra */}
-      <PurchaseOverlay
-        curso={cursoCompra}
-        open={compraAbierta}
-        onOpenChange={setCompraAbierta}
-      />
       <Footer />
     </div>
   );

@@ -39,7 +39,8 @@ import { getImageUrl } from '@/lib/sanity.client';
 import { PortableText } from '@portabletext/react';
 import { useAuth } from '@/lib/auth-context';
 import { VideoPlayer } from '@/components/course/VideoPlayer';
-import { PurchaseOverlay } from '@/components/course/PurchaseOverlay';
+import Script from 'next/script';
+import { useCulqi } from '@/hooks/useCulqi';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -139,7 +140,8 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl, 
   const [loadingComments, setLoadingComments] = useState(false);
   const [loadingPay, setLoadingPay] = useState<Record<string, boolean>>({});
 
-  const [showPurchase, setShowPurchase] = useState(false);
+  const [showQr, setShowQr] = useState(false);
+  const { openCulqi } = useCulqi();
 
   const [isDesktop, setIsDesktop] = useState(true);
   useEffect(() => {
@@ -502,6 +504,7 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl, 
 
   return (
     <div className="space-y-6" style={colorStyle}>
+      <Script src="https://checkout.culqi.com/js/v4" strategy="lazyOnload" />
       {/* ===== BACK LINK ===== */}
       <Link
         href={backUrl}
@@ -601,17 +604,12 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl, 
                 {/* Botón de pago unificado (Culqi) */}
                 <div className="flex flex-col gap-1.5 mt-3">
                 <button
-                  onClick={() => setShowPurchase(true)}
+                  onClick={() => openCulqi(title, pricePEN)}
                   className="w-full h-10 text-xs font-bold tracking-wide text-white gap-1.5 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-brand-primary-hover hover:bg-brand-primary"
                 >
                   <ShoppingCart className="h-4 w-4 shrink-0" />
                   Pagar con Tarjeta (Culqi)
                 </button>
-                <PurchaseOverlay 
-                  curso={mappedCourse as any}
-                  open={showPurchase}
-                  onOpenChange={setShowPurchase}
-                />
                 <button
                   onClick={handlePayPal}
                   disabled={loadingPay[`${slug}-pp`]}

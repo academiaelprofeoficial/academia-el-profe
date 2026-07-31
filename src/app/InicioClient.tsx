@@ -9,24 +9,18 @@ import { useState, useCallback } from 'react';
 import { Lock } from 'lucide-react';
 import { CourseCard } from '@/components/course/CourseCard';
 import { TemarioModal } from '@/components/course/TemarioModal';
-import { PurchaseOverlay } from '@/components/course/PurchaseOverlay';
 import { CURSOS_MOCK } from '@/lib/data';
 import type { Course } from '@/types';
 
 export function InicioClient() {
   const [temarioAbierto, setTemarioAbierto] = useState(false);
   const [cursoTemario, setCursoTemario] = useState<Course | null>(null);
-  const [compraAbierta, setCompraAbierta] = useState(false);
-  const [cursoCompra, setCursoCompra] = useState<Course | null>(null);
 
   const handleVerTemario = useCallback((curso: Course) => {
     setCursoTemario(curso);
     setTemarioAbierto(true);
   }, []);
 
-  const handleComprar = useCallback((curso: Course) => {
-    setCursoCompra(curso);
-    setCompraAbierta(true);
   }, []);
 
   return (
@@ -65,11 +59,6 @@ export function InicioClient() {
         onOpenChange={setTemarioAbierto}
       />
 
-      {/* Overlay de Compra */}
-      <PurchaseOverlay
-        curso={cursoCompra}
-        open={compraAbierta}
-        onOpenChange={setCompraAbierta}
       />
     </section>
   );

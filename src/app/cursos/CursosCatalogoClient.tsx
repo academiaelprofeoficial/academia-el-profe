@@ -10,7 +10,6 @@ import { BookOpen, SearchX } from 'lucide-react';
 import { SearchFilter } from '@/components/course/SearchFilter';
 import { CourseCard } from '@/components/course/CourseCard';
 import { TemarioModal } from '@/components/course/TemarioModal';
-import { PurchaseOverlay } from '@/components/course/PurchaseOverlay';
 import { CURSOS_MOCK } from '@/lib/data';
 import type { Course } from '@/types';
 
@@ -20,17 +19,12 @@ export function CursosCatalogoClient() {
   );
   const [temarioAbierto, setTemarioAbierto] = useState(false);
   const [cursoTemario, setCursoTemario] = useState<Course | null>(null);
-  const [compraAbierta, setCompraAbierta] = useState(false);
-  const [cursoCompra, setCursoCompra] = useState<Course | null>(null);
 
   const handleVerTemario = useCallback((curso: Course) => {
     setCursoTemario(curso);
     setTemarioAbierto(true);
   }, []);
 
-  const handleComprar = useCallback((curso: Course) => {
-    setCursoCompra(curso);
-    setCompraAbierta(true);
   }, []);
 
   const handleResults = useCallback((cursos: readonly Course[]) => {
@@ -87,11 +81,6 @@ export function CursosCatalogoClient() {
         onOpenChange={setTemarioAbierto}
       />
 
-      {/* Overlay de Compra */}
-      <PurchaseOverlay
-        curso={cursoCompra}
-        open={compraAbierta}
-        onOpenChange={setCompraAbierta}
       />
     </section>
   );

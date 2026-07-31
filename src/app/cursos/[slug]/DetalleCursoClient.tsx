@@ -39,7 +39,8 @@ import type { SanityCourse, SanityImage, PortableTextBlock } from '@/lib/sanity.
 import { getImageUrl } from '@/lib/sanity.client';
 import { PortableText } from '@portabletext/react';
 import { QrPaymentModal } from '@/components/QrPaymentModal';
-import { PurchaseOverlay } from '@/components/course/PurchaseOverlay';
+import Script from 'next/script';
+import { useCulqi } from '@/hooks/useCulqi';
 
 interface DetalleCursoClientProps {
   readonly course: SanityCourse;
@@ -104,8 +105,8 @@ const ptComponents = {
 
 export function DetalleCursoClient({ course, studentCount }: DetalleCursoClientProps) {
   const { user, isGoogleUser, purchasedCourseIds, isOwner } = useAuth();
-  const [showPurchase, setShowPurchase] = useState(false);
   const [showQr, setShowQr] = useState(false);
+  const { openCulqi } = useCulqi();
 
   // Derive all data from the single 'course' prop (CMS)
   const title = course?.title || 'Curso';
@@ -162,10 +163,11 @@ export function DetalleCursoClient({ course, studentCount }: DetalleCursoClientP
   // Stats
   const freeVideoCount = classVideos.filter(v => v.isFree).length;
 
-  const handleComprar = useCallback(() => setShowPurchase(true), []);
+  const handleComprar = useCallback(() => openCulqi(title, pricePEN), [openCulqi, title, pricePEN]);
 
   return (
     <section style={courseColorVars(cardColor)}>
+      <Script src="https://checkout.culqi.com/js/v4" strategy="lazyOnload" />
       {/* Back Navigation */}
       <Link
         href={backHref}
@@ -331,16 +333,11 @@ export function DetalleCursoClient({ course, studentCount }: DetalleCursoClientP
                     'bg-brand-primary-hover hover:bg-brand-primary text-white',
                     'shadow-[0_4px_14px_0_rgba(16,185,129,0.39)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.23)]'
                   )}
-                  onClick={() => setShowPurchase(true)}
+                  onClick={() => openCulqi(title, pricePEN)}
                 >
                   <ShoppingCart className="h-4 w-4" />
                   Pagar con Tarjeta (Culqi)
                 </Button>
-                <PurchaseOverlay 
-                  curso={mappedCourse as any}
-                  open={showPurchase}
-                  onOpenChange={setShowPurchase}
-                />
                 {freeVideoCount > 0 && (
                   <p className="text-xs text-center text-muted-foreground">
                     {freeVideoCount} {freeVideoCount === 1 ? 'clase gratuita' : 'clases gratuitas'} de preview incluidas

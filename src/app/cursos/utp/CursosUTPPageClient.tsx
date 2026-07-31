@@ -29,10 +29,11 @@ import { plainText } from '@/lib/sanity.client';
 import { useAuth } from '@/lib/auth-context';
 import { LandingHeader } from '@/components/layout/LandingHeader';
 import { Footer } from '@/components/layout/Footer';
-import { PurchaseOverlay } from '@/components/course/PurchaseOverlay';
 import { getImageUrl } from '@/lib/sanity.client';
 import { motion } from 'framer-motion';
 import type { SanityCourse } from '@/lib/sanity.client';
+import Script from 'next/script';
+import { useCulqi } from '@/hooks/useCulqi';
 
 // Color from Sanity cardColor field
 function extractHex(color?: string): string {
@@ -240,9 +241,7 @@ function CourseCard({ course, isPurchased, index, onCulqiClick }: { readonly cou
 function CursosUTPContent({ sanityCourses }: { readonly sanityCourses: SanityCourse[] | null }) {
   const [busqueda, setBusqueda] = useState('');
   const { purchasedCourseIds } = useAuth();
-  
-  const [cursoCompra, setCursoCompra] = useState<any>(null);
-  const [compraAbierta, setCompraAbierta] = useState(false);
+  const { openCulqi } = useCulqi();
 
   const courses = mergeCourses(sanityCourses);
   const cursosFiltrados = courses.filter(
@@ -313,25 +312,12 @@ function CursosUTPContent({ sanityCourses }: { readonly sanityCourses: SanityCou
               isPurchased={purchasedCourseIds.includes(course.id)}
               index={idx}
               onCulqiClick={() => {
-                setCursoCompra({
-                  id: course.id,
-                  titulo: course.title,
-                  precio: course.price,
-                  precioUSD: course.priceUSD,
-                  portadaUrl: course.coverImage,
-                });
-                setCompraAbierta(true);
+                const title = course.title;
+                const price = course.price;
+                openCulqi(title, price);
               }}
             />
           ))}
-        </div>
-      )}
-      
-      <PurchaseOverlay
-        curso={cursoCompra}
-        open={compraAbierta}
-        onOpenChange={setCompraAbierta}
-      />
     </div>
   );
 }
@@ -343,6 +329,7 @@ function CursosUTPContent({ sanityCourses }: { readonly sanityCourses: SanityCou
 export function CursosUTPPageClient({ sanityCourses }: { readonly sanityCourses: SanityCourse[] | null }) {
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-[var(--surface-0)]">
+      <Script src="https://checkout.culqi.com/js/v4" strategy="lazyOnload" />
       <LandingHeader />
       <main className="flex-1">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">

@@ -38,7 +38,8 @@ import type { SanityCourse, SanityClassVideo, SanityTopic } from '@/lib/sanity.c
 import { useAuth } from '@/lib/auth-context';
 import { VideoPlayer } from '@/components/course/VideoPlayer';
 import { QrPaymentModal } from '@/components/QrPaymentModal';
-import { PurchaseOverlay } from '@/components/course/PurchaseOverlay';
+import Script from 'next/script';
+import { useCulqi } from '@/hooks/useCulqi';
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
@@ -148,7 +149,7 @@ export function LeccionClient({ course, videoOrder, studentCount }: LeccionClien
   const { user, purchasedCourseIds, isOwner, isGoogleUser } = useAuth();
   const [comentario, setComentario] = useState('');
   const [expandedTopic, setExpandedTopic] = useState<string | null>(null);
-  const [showPurchase, setShowPurchase] = useState(false);
+  const { openCulqi } = useCulqi();
   const [showQr, setShowQr] = useState(false);
 
   const mappedCourse = useMemo(() => ({
@@ -283,7 +284,9 @@ export function LeccionClient({ course, videoOrder, studentCount }: LeccionClien
 
   if (!currentVideo) {
     return (
-      <div className="text-center py-20">
+      <div className="min-h-screen bg-slate-950 flex flex-col">
+        <Script src="https://checkout.culqi.com/js/v4" strategy="lazyOnload" />
+        <LandingHeader />
         <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground/40" />
         <h2 className="text-xl font-bold text-foreground mb-2">Clase no encontrada</h2>
         <p className="text-sm text-muted-foreground mb-6">La clase que buscas no existe.</p>
@@ -485,7 +488,7 @@ export function LeccionClient({ course, videoOrder, studentCount }: LeccionClien
                 ) : (
                 <div className="flex flex-col sm:flex-row gap-2 w-full">
                   <button
-                    onClick={() => setShowPurchase(true)}
+                    onClick={() => openCulqi(title, pricePEN)}
                     className="flex-1 bg-brand-primary-hover hover:bg-brand-primary text-white font-bold text-sm py-2.5 px-6 rounded-xl transition-colors flex items-center justify-center gap-2"
                   >
                     <ShoppingCart className="h-4 w-4" />
@@ -730,7 +733,7 @@ export function LeccionClient({ course, videoOrder, studentCount }: LeccionClien
             ) : (
             <div className="flex gap-2 w-full">
               <button
-                onClick={() => setShowPurchase(true)}
+                onClick={() => openCulqi(title, pricePEN)}
                 className="flex-1 bg-brand-primary-hover hover:bg-brand-primary text-white font-bold text-sm py-2.5 rounded-xl text-center"
               >
                 Pagar con Tarjeta (Culqi)
@@ -838,11 +841,6 @@ export function LeccionClient({ course, videoOrder, studentCount }: LeccionClien
       slug={slug}
     />
 
-    <PurchaseOverlay 
-      curso={mappedCourse as any}
-      open={showPurchase}
-      onOpenChange={setShowPurchase}
-    />
     </div>
   );
 }
