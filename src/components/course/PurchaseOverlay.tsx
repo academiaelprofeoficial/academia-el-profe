@@ -103,11 +103,13 @@ export function PurchaseOverlay({
 
   if (!curso) return null;
 
+  if (!curso) return null;
+
   const beneficios = [
     { icono: Video, texto: `${curso.numeroLecciones} clases grabadas en HD` },
     { icono: FileText, texto: 'Material descargable en PDF' },
     { icono: Clock, texto: 'Acceso de por vida' },
-    { icono: Users, texto: `${curso.numeroEstudiantes.toLocaleString('es-PE')} estudiantes ya inscritos` },
+    { icono: Users, texto: `${curso.numeroEstudiantes?.toLocaleString('es-PE') ?? '0'} estudiantes ya inscritos` },
   ];
 
   return (

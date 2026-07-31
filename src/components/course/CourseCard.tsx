@@ -101,7 +101,7 @@ export function CourseCard({ curso, onVerTemario }: CourseCardProps) {
             )}
             <span className="flex items-center gap-1">
               <Users className="h-3.5 w-3.5" />
-              {curso.numeroEstudiantes.toLocaleString('es-PE')}
+              {curso.numeroEstudiantes?.toLocaleString('es-PE') ?? '0'}
             </span>
           </div>
 
