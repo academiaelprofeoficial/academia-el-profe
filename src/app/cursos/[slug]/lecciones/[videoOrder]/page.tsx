@@ -73,7 +73,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export const dynamic = 'force-dynamic';
 
 export default async function LeccionPage({ params }: PageProps) {
   const { slug, videoOrder } = await params;

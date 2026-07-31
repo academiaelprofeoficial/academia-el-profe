@@ -147,7 +147,7 @@ export function DetalleCursoClient({ course, studentCount }: DetalleCursoClientP
     calificacion: 4.9,
     portadaUrl: coverImg || '',
     descripcion: '',
-  }), [slug, title, categoryLabel, level, pricePEN, priceUSD, totalClasses, studentCount, coverImg]);
+  };
 
   // Count all class videos across all topics
   const classVideos = topics.flatMap(t => t.classVideos || []);
