@@ -149,6 +149,7 @@ export function DetalleCursoClient({ course, studentCount }: DetalleCursoClientP
     descripcion: '',
   };
 
+  const topics = course.topics || [];
   // Count all class videos across all topics
   const classVideos = topics.flatMap(t => t.classVideos || []);
   // Use real video count from topics (matches temario page)
