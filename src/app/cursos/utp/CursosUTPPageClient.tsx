@@ -29,6 +29,8 @@ import { plainText } from '@/lib/sanity.client';
 import { useAuth } from '@/lib/auth-context';
 import { LandingHeader } from '@/components/layout/LandingHeader';
 import { Footer } from '@/components/layout/Footer';
+import { PurchaseOverlay } from '@/components/course/PurchaseOverlay';
+import { getImageUrl } from '@/lib/sanity.client';
 import { motion } from 'framer-motion';
 import type { SanityCourse } from '@/lib/sanity.client';
 
@@ -44,7 +46,9 @@ interface MergedCourse {
   readonly formula: string;
   readonly color: string;
   readonly cardColor: string;
+  readonly price: number;
   readonly priceUSD: number;
+  readonly coverImage: string;
   readonly slug: string;
   readonly studentCount: number;
 }
@@ -68,6 +72,7 @@ function mergeCourses(sanityCourses: SanityCourse[] | null): MergedCourse[] {
       cardColor: sc.cardColor || '#10B981',
       price: sc.pricePEN || 0,
       priceUSD: sc.priceUSD || 0,
+      coverImage: getImageUrl(sc.coverImage, 400, 250) || '',
       slug: sc.slug,
       studentCount: sc.studentCount || 1250,
     };
@@ -81,9 +86,11 @@ function mergeCourses(sanityCourses: SanityCourse[] | null): MergedCourse[] {
 function PaymentButtons({
   course,
   userId,
+  onCulqiClick,
 }: {
   readonly course: MergedCourse;
   readonly userId?: string;
+  readonly onCulqiClick: () => void;
 }) {
   const { user, isGoogleUser } = useAuth();
   const loadingRef = useRef<Record<string, boolean>>({});
@@ -120,23 +127,7 @@ function PaymentButtons({
     );
   }
 
-  const handleMercadoPago = async () => {
-    const key = `${course.id}-mp`;
-    if (loadingRef.current[key]) return;
-    loadingRef.current[key] = true;
-    setError(null);
-    try {
-      const r = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cursoId: course.id, titulo: course.title, precio: course.price, userId: userId || undefined }),
-      });
-      const d = await r.json();
-      if (!r.ok) { setError(d.error || 'Error al iniciar el pago.'); return; }
-      if (d.url) window.location.href = d.url;
-      else setError('No se recibió la URL de pago.');
-    } catch { setError('Error de conexión.'); } finally { loadingRef.current[key] = false; }
-  };
+  }
 
   const handlePayPal = async () => {
     const key = `${course.id}-pp`;
@@ -159,10 +150,10 @@ function PaymentButtons({
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex flex-col gap-2 w-full">
-        <button onClick={(e) => { e.stopPropagation(); handleMercadoPago(); }} disabled={!!loadingRef.current[`${course.id}-mp`]}
+        <button onClick={(e) => { e.stopPropagation(); onCulqiClick(); }}
           className="w-full h-10 text-xs font-bold tracking-wide text-white gap-1.5 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-brand-primary-hover hover:bg-brand-primary shadow-[0_4px_14px_0_rgba(16,185,129,0.39)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.23)]">
-          {loadingRef.current[`${course.id}-mp`] ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4 shrink-0" />}
-          <span className="truncate">{loadingRef.current[`${course.id}-mp`] ? 'Procesando...' : `Pagar con Tarjeta (Culqi)`}</span>
+          <ShoppingCart className="h-4 w-4 shrink-0" />
+          <span className="truncate">Pagar con Tarjeta (Culqi)</span>
         </button>
         <button onClick={(e) => { e.stopPropagation(); handlePayPal(); }} disabled={!!loadingRef.current[`${course.id}-pp`]}
           className="w-full h-10 text-xs font-bold tracking-wide gap-1.5 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-[#ffc439] hover:bg-[#f2ba36] text-[#003087]">
@@ -179,7 +170,7 @@ function PaymentButtons({
 // Course Card
 // ----------------------------------------------------------------
 
-function CourseCard({ course, isPurchased, index }: { readonly course: MergedCourse; readonly isPurchased: boolean; readonly index: number }) {
+function CourseCard({ course, isPurchased, index, onCulqiClick }: { readonly course: MergedCourse; readonly isPurchased: boolean; readonly index: number; readonly onCulqiClick: () => void }) {
   const hex = extractHex(course.cardColor);
 
   return (
@@ -229,7 +220,7 @@ function CourseCard({ course, isPurchased, index }: { readonly course: MergedCou
               <span className="text-xl font-bold text-orange-500">{formatoSoles(course.price)}</span>
               <span className="text-xs text-slate-400 font-medium">{formatoUSD(course.priceUSD)}</span>
             </div>
-            <PaymentButtons course={course} userId={undefined} />
+            <PaymentButtons course={course} userId={undefined} onCulqiClick={onCulqiClick} />
             <Link href={`/cursos/${course.slug}/temario`}>
               <Button variant="outline" size="sm" className="w-full h-9 text-xs font-bold tracking-wide gap-1.5 rounded-lg" style={{ borderColor: hex, color: hex }}>
                 <ListChecks className="h-3.5 w-3.5" /> TEMARIO
@@ -249,6 +240,9 @@ function CourseCard({ course, isPurchased, index }: { readonly course: MergedCou
 function CursosUTPContent({ sanityCourses }: { readonly sanityCourses: SanityCourse[] | null }) {
   const [busqueda, setBusqueda] = useState('');
   const { purchasedCourseIds } = useAuth();
+  
+  const [cursoCompra, setCursoCompra] = useState<any>(null);
+  const [compraAbierta, setCompraAbierta] = useState(false);
 
   const courses = mergeCourses(sanityCourses);
   const cursosFiltrados = courses.filter(
@@ -312,16 +306,32 @@ function CursosUTPContent({ sanityCourses }: { readonly sanityCourses: SanityCou
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-          {cursosFiltrados.map((course, index) => (
+          {cursosFiltrados.map((course, idx) => (
             <CourseCard
               key={course.id}
               course={course}
               isPurchased={purchasedCourseIds.includes(course.id)}
-              index={index}
+              index={idx}
+              onCulqiClick={() => {
+                setCursoCompra({
+                  id: course.id,
+                  titulo: course.title,
+                  precio: course.price,
+                  precioUSD: course.priceUSD,
+                  portadaUrl: course.coverImage,
+                });
+                setCompraAbierta(true);
+              }}
             />
           ))}
         </div>
       )}
+      
+      <PurchaseOverlay
+        curso={cursoCompra}
+        open={compraAbierta}
+        onOpenChange={setCompraAbierta}
+      />
     </div>
   );
 }
@@ -339,6 +349,7 @@ export function CursosUTPPageClient({ sanityCourses }: { readonly sanityCourses:
           <CursosUTPContent sanityCourses={sanityCourses} />
         </div>
       </main>
+
       <Footer />
     </div>
   );

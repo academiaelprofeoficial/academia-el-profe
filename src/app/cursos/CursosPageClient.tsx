@@ -135,35 +135,17 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
     }
   }, [loadingMap]);
 
-  // Compra directa MP desde la tarjeta (sin abrir modal)
-  const handleMercadoPagoDirect = useCallback(async (cursoLanding: { id: string; title: string; price: number }) => {
-    const key = `${cursoLanding.id}-mp`;
-    if (loadingMap[key]) return;
-    setLoadingMap((prev) => ({ ...prev, [key]: true }));
-
-    try {
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cursoId: cursoLanding.id,
-          titulo: cursoLanding.title,
-          precio: cursoLanding.price,
-          userId: user?.uid || undefined,
-          userEmail: user?.email || undefined,
-        }),
-      });
-
-      const data = await response.json();
-      if (data.url) {
-        window.location.href = data.url;
-      }
-    } catch {
-      // silently fail
-    } finally {
-      setLoadingMap((prev) => ({ ...prev, [key]: false }));
-    }
-  }, [loadingMap]);
+  // Compra directa con Culqi (abrir modal)
+  const handleCulqiDirect = useCallback((cursoLanding: any) => {
+    setCursoCompra({
+      id: cursoLanding.id,
+      titulo: cursoLanding.title,
+      precio: cursoLanding.price,
+      precioUSD: cursoLanding.priceUSD,
+      portadaUrl: cursoLanding.coverImage,
+    } as any);
+    setCompraAbierta(true);
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950">
@@ -305,17 +287,13 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
 
                         <div className="flex flex-col gap-2 w-full">
                           <button
-                            disabled={isLoadingMP || isLoadingPP}
-                            onClick={(e) => { e.stopPropagation(); handleMercadoPagoDirect(curso); }}
+                            disabled={isLoadingPP}
+                            onClick={(e) => { e.stopPropagation(); handleCulqiDirect(curso); }}
                             className="w-full h-10 text-xs font-bold tracking-wide text-white gap-1.5 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-brand-primary-hover hover:bg-brand-primary shadow-[0_4px_14px_0_rgba(16,185,129,0.39)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.23)]"
                           >
-                            {isLoadingMP ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <ShoppingCart className="h-4 w-4 shrink-0" />
-                            )}
+                            <ShoppingCart className="h-4 w-4 shrink-0" />
                             <span className="truncate">
-                              {isLoadingMP ? 'Procesando...' : `Pagar con Tarjeta (Culqi)`}
+                              Pagar con Tarjeta (Culqi)
                             </span>
                           </button>
                           <button
