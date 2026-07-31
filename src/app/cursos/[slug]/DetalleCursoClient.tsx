@@ -102,7 +102,7 @@ const ptComponents = {
 };
 
 export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
-  const { user, isGoogleUser } = useAuth();
+  const { user, isGoogleUser, purchasedCourseIds, isOwner } = useAuth();
   const [showPurchase, setShowPurchase] = useState(false);
   const [showQr, setShowQr] = useState(false);
 
@@ -122,6 +122,7 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
   const courseType = course?.courseType || 'paid';
   const isFreeCourse = courseType === 'free';
   const coverImg = course?.coverImage ? getImageUrl(course.coverImage, 800, 500) : null;
+  const hasFullAccess = isOwner || purchasedCourseIds.includes('__ALL_COURSES__') || purchasedCourseIds.includes(slug);
 
   // Detect UTP context for back navigation
   const isUTP = slug.includes('utp') || title.toLowerCase().includes('utp') || category === 'utp';

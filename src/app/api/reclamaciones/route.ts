@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/db';
 
 export async function POST(req: Request) {
   try {
@@ -7,7 +7,7 @@ export async function POST(req: Request) {
     
     // Generar correlativo (ej: 2024-000001)
     const year = new Date().getFullYear().toString();
-    const lastClaim = await prisma.claim.findFirst({
+    const lastClaim = await db.claim.findFirst({
       where: { correlative: { startsWith: `${year}-` } },
       orderBy: { createdAt: 'desc' },
     });
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     }
 
     // Guardar en la BD
-    const claim = await prisma.claim.create({
+    const claim = await db.claim.create({
       data: {
         correlative,
         consumerName: body.consumerName,
