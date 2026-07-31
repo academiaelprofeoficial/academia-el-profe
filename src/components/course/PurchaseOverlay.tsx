@@ -101,9 +101,7 @@ export function PurchaseOverlay({
     }
   }, [curso]);
 
-  if (!curso) return null;
-
-  if (!curso) return null;
+  if (!curso || !curso.categoria) return null;
 
   const beneficios = [
     { icono: Video, texto: `${curso.numeroLecciones} clases grabadas en HD` },
@@ -118,13 +116,13 @@ export function PurchaseOverlay({
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-[480px] p-0 gap-0 overflow-hidden">
           {/* Cabecera con color de categoría */}
-          <div className={cn('p-6 pb-5 text-white relative', curso.categoria.color)}>
+          <div className={cn('p-6 pb-5 text-white relative', curso.categoria?.color ?? 'bg-gray-500')}>
             <div className="flex items-center justify-between mb-3">
               <Badge
                 variant="secondary"
                 className="bg-white/20 text-white border-0 text-xs"
               >
-                {curso.categoria.nombre}
+                {curso.categoria?.nombre ?? 'Sin categoría'}
               </Badge>
               <div className="flex items-center gap-1">
                 <Star className="h-4 w-4 fill-yellow-300 text-yellow-300" />

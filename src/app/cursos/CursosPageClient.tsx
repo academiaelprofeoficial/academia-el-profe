@@ -38,7 +38,7 @@ import { LandingHeader } from '@/components/layout/LandingHeader';
 import { Footer } from '@/components/layout/Footer';
 import { AnimatedSection } from '@/components/AnimatedSection';
 import { PurchaseOverlay } from '@/components/course/PurchaseOverlay';
-import { CURSOS_LANDING, COLOR_MAP, CURSOS_MOCK } from '@/lib/data';
+import { CURSOS_LANDING, COLOR_MAP, CURSOS_MOCK, CATEGORIAS } from '@/lib/data';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
 import { cn, sanitizeHex } from '@/lib/utils';
 import { useScrollSpy } from '@/hooks/useScrollSpy';
@@ -135,18 +135,50 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
     }
   }, [loadingMap]);
 
-  // Compra directa con Culqi (abrir modal)
+  // Compra directa con Culqi (abrir modal) – use full mock data when available
   const handleCulqiDirect = useCallback((cursoLanding: any) => {
-    setCursoCompra({
-      id: cursoLanding.id,
-      titulo: cursoLanding.title,
-      precio: cursoLanding.price,
-      precioUSD: cursoLanding.priceUSD,
-      portadaUrl: cursoLanding.coverImage,
-    } as any);
+    // 1️⃣ Try to find full course definition in the mock catalog (includes categoria)
+    const mockFull = CURSOS_MOCK.find((c) => c.slug === cursoLanding.id);
+    if (mockFull) {
+      setCursoCompra(mockFull as any);
+    } else {
+      // 2️⃣ If not in mock, look for the limited display data and enrich it
+      const display = displayCourses.find((c) => c.id === cursoLanding.id);
+      if (display) {
+        // Attempt to infer category from colorKey using CATEGORIAS lookup
+        const cat = CATEGORIAS.find((cat) => cat.slug === cursoLanding.id) || null;
+        setCursoCompra({
+          id: display.id,
+          slug: display.id,
+          titulo: display.title,
+          subtitulo: display.description,
+          descripcion: '',
+          precio: display.price,
+          precioUSD: display.priceUSD,
+          categoria: cat as any,
+          tieneClasesGrabadas: true,
+          tieneMaterialPDF: true,
+          estaBloqueado: true,
+          numeroLecciones: 0,
+          numeroHoras: 0,
+          calificacion: 0,
+          numeroEstudiantes: display.studentCount,
+          imagenUrl: display.coverImage,
+          createdAt: new Date().toISOString(),
+        } as any);
+      } else {
+        // 3️⃣ Final fallback: minimal placeholder
+        setCursoCompra({
+          id: cursoLanding.id,
+          titulo: cursoLanding.title,
+          precio: cursoLanding.price,
+          precioUSD: cursoLanding.priceUSD,
+          portadaUrl: cursoLanding.coverImage,
+        } as any);
+      }
+    }
     setCompraAbierta(true);
-  }, []);
-
+  }, [displayCourses]);
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950">
       <LandingHeader />
