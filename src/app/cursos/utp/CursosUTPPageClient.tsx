@@ -127,7 +127,7 @@ function PaymentButtons({
     );
   }
 
-  }
+
 
   const handlePayPal = async () => {
     const key = `${course.id}-pp`;
