@@ -8,6 +8,7 @@ import { COURSE_BY_SLUG_QUERY, ALL_COURSES_QUERY, SITE_SETTINGS_QUERY } from '@/
 import type { SanityCourse, SanitySiteSettings } from '@/lib/sanity.client';
 import { DASHBOARD_COURSES, UTP_COURSES } from '@/lib/data';
 import { formatoSoles, formatoUSD } from '@/lib/formato';
+import { getCourseStudentCount } from '@/lib/db';
 
 // ============================================================
 // Temario del Curso — Server Component (100% CMS-driven)
@@ -57,9 +58,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function TemarioPage({ params }: PageProps) {
   const { slug } = await params;
-  const [sanityCourse, siteSettings] = await Promise.all([
+  const [sanityCourse, siteSettings, studentCount] = await Promise.all([
     fetchCMS<SanityCourse>(COURSE_BY_SLUG_QUERY(slug)),
     fetchCMS<SanitySiteSettings>(SITE_SETTINGS_QUERY),
+    getCourseStudentCount(slug)
   ]);
 
   // Back link: UTP courses go to /cursos/utp, general to /cursos#titulo-cursos
@@ -107,7 +109,7 @@ export default async function TemarioPage({ params }: PageProps) {
       <LandingHeader />
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-4 md:py-10">
-          <TemarioPageClient course={sanityCourse} whatsapp={whatsapp} whatsappMessage={whatsappMsg} backUrl={backUrl} />
+          <TemarioPageClient course={sanityCourse} whatsapp={whatsapp} whatsappMessage={whatsappMsg} backUrl={backUrl} studentCount={studentCount} />
         </div>
       </main>
       <Footer />

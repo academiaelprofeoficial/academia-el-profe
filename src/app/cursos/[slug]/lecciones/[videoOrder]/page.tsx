@@ -6,6 +6,7 @@ import { LeccionClient } from './LeccionClient';
 import { fetchCMS } from '@/lib/fetchCMS';
 import { COURSE_BY_SLUG_QUERY, ALL_COURSES_QUERY } from '@/lib/sanity.queries';
 import type { SanityCourse } from '@/lib/sanity.client';
+import { getCourseStudentCount } from '@/lib/db';
 
 // ============================================================
 // Lesson Page — Server Component (100% CMS-driven)
@@ -72,9 +73,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+export const dynamic = 'force-dynamic';
+
 export default async function LeccionPage({ params }: PageProps) {
   const { slug, videoOrder } = await params;
-  const sanityCourse = await fetchCMS<SanityCourse>(COURSE_BY_SLUG_QUERY(slug));
+  const [sanityCourse, studentCount] = await Promise.all([
+    fetchCMS<SanityCourse>(COURSE_BY_SLUG_QUERY(slug)),
+    getCourseStudentCount(slug)
+  ]);
 
   if (!sanityCourse) {
     notFound();
@@ -85,7 +91,7 @@ export default async function LeccionPage({ params }: PageProps) {
       <LandingHeader />
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <LeccionClient course={sanityCourse} videoOrder={videoOrder} />
+          <LeccionClient course={sanityCourse} videoOrder={videoOrder} studentCount={studentCount} />
         </div>
       </main>
       <Footer />

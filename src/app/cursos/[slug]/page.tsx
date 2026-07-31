@@ -6,6 +6,9 @@ import { DetalleCursoClient } from './DetalleCursoClient';
 import { fetchCMS } from '@/lib/fetchCMS';
 import { ALL_COURSES_QUERY, COURSE_BY_SLUG_QUERY } from '@/lib/sanity.queries';
 import type { SanityCourse } from '@/lib/sanity.client';
+import { getCourseStudentCount } from '@/lib/db';
+
+export const revalidate = 60; // ISR for student count updates
 
 // ============================================================
 // Course Detail Page — Server Component (100% CMS-driven)
@@ -47,7 +50,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function PaginaDetalleCurso({ params }: PageProps) {
   const { slug } = await params;
-  const sanityCourse = await fetchCMS<SanityCourse>(COURSE_BY_SLUG_QUERY(slug));
+  const [sanityCourse, studentCount] = await Promise.all([
+    fetchCMS<SanityCourse>(COURSE_BY_SLUG_QUERY(slug)),
+    getCourseStudentCount(slug)
+  ]);
 
   if (!sanityCourse) notFound();
 
@@ -56,7 +62,7 @@ export default async function PaginaDetalleCurso({ params }: PageProps) {
       <LandingHeader />
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-10">
-          <DetalleCursoClient course={sanityCourse} />
+          <DetalleCursoClient course={sanityCourse} studentCount={studentCount} />
         </div>
       </main>
       <Footer />

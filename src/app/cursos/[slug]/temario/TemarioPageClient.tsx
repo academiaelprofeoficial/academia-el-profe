@@ -50,6 +50,7 @@ interface TemarioPageClientProps {
   readonly whatsapp: string;
   readonly whatsappMessage: string;
   readonly backUrl: string;
+  readonly studentCount?: number;
 }
 
 // Selected video for the right panel
@@ -127,7 +128,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
-export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }: TemarioPageClientProps) {
+export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl, studentCount }: TemarioPageClientProps) {
   const { user, purchasedCourseIds, isOwner, isGoogleUser } = useAuth();
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set());
   const [selectedVideo, setSelectedVideo] = useState<SelectedVideo | null>(null);
@@ -183,11 +184,11 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
     precio: pricePEN,
     precioUSD: priceUSD,
     numeroLecciones: totalClasses,
-    numeroEstudiantes: 1250,
+    numeroEstudiantes: studentCount ?? 1250,
     calificacion: 4.9,
     portadaUrl: coverImg || '',
     descripcion: '',
-  }), [slug, title, categoryLabel, level, pricePEN, priceUSD, totalClasses, coverImg]);
+  }), [slug, title, categoryLabel, level, pricePEN, priceUSD, totalClasses, studentCount, coverImg]);
 
   // Payment handlers — POST como en /cursos (no GET que da 405)
   const safeTitle = title.replace(/[\u200B-\u200D\uFEFF\u2060-\u2064\u00AD]/g, '').trim();
@@ -611,13 +612,18 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl }
                   open={showPurchase}
                   onOpenChange={setShowPurchase}
                 />
-                <Link
-                  href={`/cursos/${slug}/temario`}
+                <button
+                  onClick={handlePayPal}
+                  disabled={loadingPay[`${slug}-pp`]}
                   className="w-full h-9 text-xs font-bold tracking-wide gap-1.5 rounded-lg flex items-center justify-center border border-white/40 text-white hover:bg-white/10 transition-colors"
                 >
-                  <ListChecks className="h-3.5 w-3.5" />
-                  VER TEMARIO
-                </Link>
+                  {loadingPay[`${slug}-pp`] ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <img src="/images/paypal-logo.png" alt="PP" className="h-4 w-4 object-contain shrink-0" />
+                  )}
+                  Pagos por PayPal
+                </button>
               </div>
                 </>
               )}

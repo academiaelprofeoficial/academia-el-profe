@@ -76,15 +76,26 @@ interface TopicWithLessons {
 interface LeccionClientProps {
   readonly course: SanityCourse;
   readonly videoOrder: string;
+  readonly studentCount?: number;
 }
 
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
-export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
+export function LeccionClient({ course, videoOrder, studentCount }: LeccionClientProps) {
+  const router = useRouter();
   const [loadingMP, setLoadingMP] = useState(false);
   const [loadingPP, setLoadingPP] = useState(false);
+
+  const slug = course.slug;
+  const title = course.title;
+  const pricePEN = course.pricePEN || 0;
+  const priceUSD = course.priceUSD || 0;
+  const totalClasses = course.totalClasses || 0;
+  const categoryLabel = course.category || '';
+  const level = course.level;
+  const coverImg = ''; // Placeholder for asset URL
 
   const handleMercadoPago = async () => {
     setLoadingMP(true);
@@ -140,24 +151,25 @@ export function LeccionClient({ course, videoOrder }: LeccionClientProps) {
   const [showPurchase, setShowPurchase] = useState(false);
   const [showQr, setShowQr] = useState(false);
 
-  const mappedCourse = {
-    id: course.slug,
-    titulo: course.title,
+  const mappedCourse = useMemo(() => ({
+    id: slug,
+    titulo: title,
     subtitulo: '',
-    slug: course.slug,
+    slug: slug,
     categoria: {
-      nombre: course.category || '',
+      nombre: categoryLabel,
       color: 'bg-brand-primary',
     },
-    nivel: (course.level || '') as any,
-    precio: course.pricePEN || 0,
-    precioUSD: course.priceUSD || 0,
-    numeroLecciones: course.totalClasses || 0,
-    numeroEstudiantes: 1250,
+    nivel: (level || '') as any,
+    precio: pricePEN,
+    precioUSD: priceUSD,
+    numeroLecciones: totalClasses,
+    numeroEstudiantes: studentCount ?? 1250,
     calificacion: 4.9,
-    portadaUrl: '',
+    portadaUrl: coverImg || '',
     descripcion: '',
-  };
+  }), [slug, title, categoryLabel, level, pricePEN, priceUSD, totalClasses, studentCount, coverImg]);
+
   const [isDesktop, setIsDesktop] = useState(true);
   useEffect(() => {
     if (typeof window === 'undefined') return;

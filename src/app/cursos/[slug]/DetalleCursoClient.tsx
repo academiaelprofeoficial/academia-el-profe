@@ -43,6 +43,7 @@ import { PurchaseOverlay } from '@/components/course/PurchaseOverlay';
 
 interface DetalleCursoClientProps {
   readonly course: SanityCourse;
+  readonly studentCount?: number;
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -101,7 +102,7 @@ const ptComponents = {
   },
 };
 
-export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
+export function DetalleCursoClient({ course, studentCount }: DetalleCursoClientProps) {
   const { user, isGoogleUser, purchasedCourseIds, isOwner } = useAuth();
   const [showPurchase, setShowPurchase] = useState(false);
   const [showQr, setShowQr] = useState(false);
@@ -142,12 +143,12 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
     precio: pricePEN,
     precioUSD: priceUSD,
     numeroLecciones: totalClasses,
-    numeroEstudiantes: 1250,
+    numeroEstudiantes: studentCount ?? 1250,
     calificacion: 4.9,
     portadaUrl: coverImg || '',
     descripcion: '',
-  };
-  const topics = course.topics || [];
+  }), [slug, title, categoryLabel, level, pricePEN, priceUSD, totalClasses, studentCount, coverImg]);
+
   // Count all class videos across all topics
   const classVideos = topics.flatMap(t => t.classVideos || []);
   // Use real video count from topics (matches temario page)
