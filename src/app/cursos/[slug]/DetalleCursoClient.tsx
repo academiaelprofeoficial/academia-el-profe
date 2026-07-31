@@ -123,6 +123,11 @@ export function DetalleCursoClient({ course }: DetalleCursoClientProps) {
   const isFreeCourse = courseType === 'free';
   const coverImg = course?.coverImage ? getImageUrl(course.coverImage, 800, 500) : null;
 
+  // Detect UTP context for back navigation
+  const isUTP = slug.includes('utp') || title.toLowerCase().includes('utp') || category === 'utp';
+  const backHref = isUTP ? '/cursos/utp' : '/cursos';
+  const backLabel = isUTP ? 'Volver a cursos UTP' : 'Volver al catalogo';
+
   const mappedCourse = {
     id: slug,
     titulo: title,
