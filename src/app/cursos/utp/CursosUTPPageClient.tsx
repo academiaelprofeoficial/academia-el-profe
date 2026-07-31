@@ -318,6 +318,8 @@ function CursosUTPContent({ sanityCourses }: { readonly sanityCourses: SanityCou
               }}
             />
           ))}
+        </div>
+      )}
     </div>
   );
 }
