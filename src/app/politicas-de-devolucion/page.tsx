@@ -24,49 +24,48 @@ export default function PoliticasDevolucionPage() {
           </div>
 
           <div className="prose prose-slate dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-brand-primary">
-            <h2>1. Naturaleza de los Productos</h2>
-            <p>
-              Academia El Profe Oficial ofrece productos digitales intangibles (cursos en video pregrabados y materiales de estudio descargables). Debido a la naturaleza inmediata del acceso al contenido digital tras la compra, nuestra política de devoluciones se rige bajo condiciones estrictas para prevenir el fraude y abuso.
-            </p>
-
-            <h2>2. Condiciones para Reembolsos</h2>
-            <p>
-              Solo se emitirán reembolsos bajo las siguientes circunstancias excepcionales:
-            </p>
+            <h2>Introducción</h2>
             <ul>
-              <li><strong>Cobros Duplicados:</strong> Si por un error del sistema o de la pasarela de pagos se procesó el cobro más de una vez por el mismo curso.</li>
-              <li><strong>Problemas Técnicos Graves:</strong> Si el contenido del curso es inaccesible debido a problemas técnicos persistentes en nuestra plataforma que no puedan ser resueltos por nuestro equipo de soporte en un plazo de 72 horas hábiles.</li>
+              <li>Esta política establece las condiciones para cambios y devoluciones de productos.</li>
+              <li>Aplica a los productos y servicios adquiridos a través de nuestra tienda online.</li>
             </ul>
 
-            <h2>3. Exclusiones de Reembolso</h2>
-            <p>
-              <strong>NO</strong> se procesarán reembolsos en los siguientes casos:
-            </p>
+            <h2>Condiciones para cambios y devoluciones</h2>
             <ul>
-              <li>Cambio de opinión después de haber accedido o descargado el material del curso.</li>
-              <li>No contar con el tiempo suficiente para realizar el curso.</li>
-              <li>Falta de conocimientos previos requeridos explícitamente en la descripción del curso.</li>
-              <li>Violación de nuestros Términos y Condiciones (ej. compartir la cuenta con terceros).</li>
+              <li>Plazo para solicitar un cambio o devolución: [ej. 7, 15, 30 días] después de la compra.</li>
+              <li>El producto debe estar sin uso, en su empaque original, con etiquetas y sin daños.</li>
+              <li>No son elegibles para cambios o devoluciones: productos personalizados, ropa interior, alimentos, entre otros.</li>
             </ul>
 
-            <h2>4. Proceso de Solicitud</h2>
-            <p>
-              Para solicitar una evaluación de reembolso bajo las condiciones aprobadas, el usuario debe comunicarse a través de nuestros canales oficiales de soporte (correo electrónico) en un plazo máximo de <strong>7 días calendario</strong> desde la fecha de compra. La solicitud debe incluir:
-            </p>
+            <h2>Proceso para solicitar un cambio o devolución</h2>
             <ul>
-              <li>Nombre completo y correo electrónico de la cuenta.</li>
-              <li>Comprobante de pago o número de transacción.</li>
-              <li>Motivo detallado de la solicitud (incluyendo capturas de pantalla si se trata de un problema técnico).</li>
+              <li>Contactar al servicio de atención al cliente a través de [email/teléfono].</li>
+              <li>Completar el formulario de solicitud de devolución/cambio.</li>
+              <li>Enviar el producto con la documentación requerida: número de pedido, fotos del producto, comprobante de compra.</li>
             </ul>
 
-            <h2>5. Resolución y Tiempos</h2>
-            <p>
-              Nuestro equipo evaluará su caso y emitirá una respuesta en un plazo de hasta 7 días hábiles. De ser aprobado, el reembolso se procesará al mismo método de pago original en un plazo que dependerá de los tiempos bancarios y de la pasarela de pagos (habitualmente de 5 a 15 días hábiles).
-            </p>
+            <h2>Opciones de reembolso y cambios</h2>
+            <ul>
+              <li>Modalidades de reembolso: devolución de dinero, saldo a favor, tarjeta de regalo.</li>
+              <li>Tiempo estimado para procesar el reembolso: [ej. 5-10 días hábiles].</li>
+              <li>Opciones de cambio: reemplazo por el mismo producto, otro artículo de igual valor, reembolso parcial.</li>
+            </ul>
 
-            <h2>6. Cambios de Curso</h2>
+            <h2>Costos y responsabilidad del envío</h2>
+            <ul>
+              <li>Los costos de envío en cambios o devoluciones son responsabilidad del cliente, salvo error de la tienda.</li>
+              <li>En caso de productos defectuosos o errores en el pedido, el envío será gratuito para el cliente.</li>
+            </ul>
+
+            <h2>Excepciones y garantías</h2>
+            <ul>
+              <li>En casos de productos dañados, defectuosos o errores en el pedido, se aplicará una política especial.</li>
+              <li>Algunos productos pueden contar con garantías del fabricante, las cuales deben ser gestionadas directamente con el proveedor.</li>
+            </ul>
+
+            <h2>Contacto y Atención al cliente</h2>
             <p>
-              No se permiten cambios de un curso por otro una vez que el usuario ha ingresado al curso adquirido y consumido parte del material.
+              Incluir número de contacto y horario de atención, en caso de consulta o reclamo.
             </p>
           </div>
         </div>

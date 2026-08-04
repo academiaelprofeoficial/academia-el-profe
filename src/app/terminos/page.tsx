@@ -24,44 +24,85 @@ export default function TerminosPage() {
           </div>
 
           <div className="prose prose-slate dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-brand-primary">
-            <h2>1. Introducción</h2>
+            <h2>Información general del comercio</h2>
+            <ul>
+              <li><strong>Razón Social:</strong> Academia El Profe Oficial</li>
+              <li><strong>RUC:</strong> [RUC de la empresa]</li>
+              <li><strong>Dirección:</strong> [Dirección de la empresa]</li>
+              <li><strong>Teléfono:</strong> [Teléfono de la empresa]</li>
+              <li><strong>Correo Electrónico:</strong> [Correo electrónico de la empresa]</li>
+            </ul>
+
+            <h2>Aceptación de Términos y Condiciones</h2>
             <p>
-              Bienvenido a Academia El Profe Oficial. Estos términos y condiciones ("Términos") rigen tu uso de nuestro sitio web y los servicios de aprendizaje en línea que ofrecemos. Al acceder o utilizar nuestra plataforma, aceptas estar sujeto a estos Términos en su totalidad.
+              El uso de esta plataforma implica la aceptación de los presentes Términos y Condiciones. Indica que tu comercio se reserva el derecho de actualizar estos términos en cualquier momento, notificando a los usuarios a través de los medios correspondientes.
             </p>
 
-            <h2>2. Servicios Ofrecidos</h2>
-            <p>
-              Academia El Profe Oficial ofrece cursos digitales pregrabados, materiales de estudio en PDF y soporte académico relacionado con ciencias de la ingeniería. Todo el contenido es propiedad intelectual de la academia y sus profesores.
-            </p>
+            <h2>Registro y Cuenta de usuario</h2>
+            <ul>
+              <li>Para realizar compras, el usuario debe registrarse proporcionando datos verídicos.</li>
+              <li>Requisitos para el registro o uso de la web (ejm: ser mayor de edad).</li>
+              <li>Es responsabilidad del usuario mantener la confidencialidad de su cuenta.</li>
+              <li>Cualquier uso indebido de la cuenta será responsabilidad del usuario titular.</li>
+            </ul>
 
-            <h2>3. Cuentas de Usuario</h2>
-            <p>
-              Para acceder a los cursos adquiridos, debes registrarte y crear una cuenta. Eres responsable de mantener la confidencialidad de tu contraseña y de todas las actividades que ocurran bajo tu cuenta. Nos reservamos el derecho de suspender o cancelar cuentas que compartan credenciales de acceso con terceros (piratería).
-            </p>
+            <h2>Productos y servicios</h2>
+            <ul>
+              <li>Describe de forma clara los productos y servicios ofrecidos.</li>
+              <li>La disponibilidad de stock puede estar sujeta a cambios sin previo aviso.</li>
+              <li>Se pueden aplicar restricciones de venta según las políticas del comercio (ejm: cantidades mínimas o máximas).</li>
+              <li>En caso de periodo de prueba, detalla los plazos, la renovación automática (en caso aplique), las notificaciones al cliente, etc.</li>
+            </ul>
 
-            <h2>4. Propiedad Intelectual</h2>
-            <p>
-              Todo el contenido disponible en la plataforma (videos, textos, gráficos, logotipos, materiales descargables) es propiedad exclusiva de Academia El Profe Oficial y está protegido por las leyes de propiedad intelectual de la República del Perú. Queda estrictamente prohibida la reproducción, distribución, transmisión o venta no autorizada de cualquier contenido.
-            </p>
+            <h2>Precios y formas de pago</h2>
+            <ul>
+              <li>Los precios deben ser presentados en moneda local o extranjera.</li>
+              <li>Incluye métodos de pago aceptados: tarjetas, transferencias, billeteras digitales, etc.</li>
+              <li>Los precios incluyen o excluyen impuestos según corresponda.</li>
+              <li>Seguridad de la plataforma de pagos y responsabilidad del cliente.</li>
+            </ul>
 
-            <h2>5. Pagos y Precios</h2>
-            <p>
-              Todos los precios están indicados en Soles Peruanos (PEN) y Dólares Estadounidenses (USD). Nos reservamos el derecho de modificar los precios en cualquier momento. Los pagos se procesan de forma segura a través de la pasarela de pagos Culqi.
-            </p>
+            <h2>Proceso de compra</h2>
+            <ul>
+              <li>Detalla los pasos para realizar una compra en la plataforma.</li>
+              <li>Incluye la confirmación y validación del pedido y posibles motivos de cancelación por parte de tu comercio.</li>
+            </ul>
 
-            <h2>6. Licencia de Uso</h2>
-            <p>
-              Al adquirir un curso, te otorgamos una licencia limitada, no exclusiva y no transferible para acceder y ver el contenido del curso únicamente para tu uso personal y educativo. Esta licencia no te otorga ningún derecho de propiedad sobre el contenido.
-            </p>
+            <h2>Envíos y entrega</h2>
+            <ul>
+              <li>Incluye la cobertura de envíos y tiempos estimados de entrega.</li>
+              <li>Detalla los costos de envío y condiciones aplicables, además de la política sobre retrasos y problemas en la entrega.</li>
+            </ul>
 
-            <h2>7. Modificaciones de los Términos</h2>
-            <p>
-              Nos reservamos el derecho de actualizar o modificar estos Términos en cualquier momento sin previo aviso. Tu uso continuo de la plataforma después de cualquier cambio constituye tu aceptación de los nuevos Términos.
-            </p>
+            <h2>Protección de datos personales</h2>
+            <ul>
+              <li>Cumplimiento con la Ley N° 29733 de Protección de Datos Personales en Perú.</li>
+              <li>Detalla el uso y finalidad de los datos recolectados.</li>
+              <li>Incluye los derechos del usuario sobre su información y cómo ejercerlos.</li>
+            </ul>
 
-            <h2>8. Ley Aplicable y Jurisdicción</h2>
+            <h2>Propiedad intelectual</h2>
+            <ul>
+              <li>Todo el contenido del sitio (logos, imágenes, textos) está protegido por derechos de autor.</li>
+              <li>Incluye las restricciones en el uso de la información publicada en la plataforma.</li>
+            </ul>
+
+            <h2>Responsabilidad y limitaciones</h2>
+            <ul>
+              <li>El comercio no se hace responsable por fallos técnicos de la web.</li>
+              <li>Uso adecuado de los productos o servicios adquiridos.</li>
+              <li>Límites de responsabilidad en caso de inconvenientes ajenos al comercio.</li>
+            </ul>
+
+            <h2>Legislación aplicable y resolución de conflictos</h2>
+            <ul>
+              <li>Este documento se rige por la legislación peruana.</li>
+              <li>Los conflictos serán resueltos mediante conciliación, Indecopi o instancias judiciales correspondientes.</li>
+            </ul>
+
+            <h2>Contacto y soporte</h2>
             <p>
-              Estos Términos se rigen y se interpretan de acuerdo con las leyes de la República del Perú. Cualquier disputa que surja en relación con estos Términos estará sujeta a la jurisdicción exclusiva de los tribunales de la ciudad de Lima.
+              Incluye el número de contacto y horario de atención, en caso de consulta o reclamo.
             </p>
           </div>
         </div>
