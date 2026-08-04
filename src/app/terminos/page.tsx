@@ -27,10 +27,10 @@ export default function TerminosPage() {
             <h2>Información general del comercio</h2>
             <ul>
               <li><strong>Razón Social:</strong> Academia El Profe Oficial</li>
-              <li><strong>RUC:</strong> [RUC de la empresa]</li>
-              <li><strong>Dirección:</strong> [Dirección de la empresa]</li>
-              <li><strong>Teléfono:</strong> [Teléfono de la empresa]</li>
-              <li><strong>Correo Electrónico:</strong> [Correo electrónico de la empresa]</li>
+              <li><strong>RUC:</strong> 10766497026</li>
+              <li><strong>Dirección:</strong> Santa Rosa -Lima Perú</li>
+              <li><strong>Teléfono:</strong> 922737951</li>
+              <li><strong>Correo Electrónico:</strong> academiaelprofeoficial@gmail.com</li>
             </ul>
 
             <h2>Aceptación de Términos y Condiciones</h2>
@@ -102,7 +102,7 @@ export default function TerminosPage() {
 
             <h2>Contacto y soporte</h2>
             <p>
-              Incluye el número de contacto y horario de atención, en caso de consulta o reclamo.
+              Para consultas o reclamos, puedes contactarnos al 922737951 o al correo academiaelprofeoficial@gmail.com en nuestro horario de atención: de lunes a viernes de 9:00 am a 6:00 pm.
             </p>
           </div>
         </div>

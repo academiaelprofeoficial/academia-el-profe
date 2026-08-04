@@ -32,14 +32,14 @@ export default function PoliticasDevolucionPage() {
 
             <h2>Condiciones para cambios y devoluciones</h2>
             <ul>
-              <li>Plazo para solicitar un cambio o devolución: [ej. 7, 15, 30 días] después de la compra.</li>
+              <li>Plazo para solicitar un cambio o devolución: 7 días calendario después de la compra.</li>
               <li>El producto debe estar sin uso, en su empaque original, con etiquetas y sin daños.</li>
               <li>No son elegibles para cambios o devoluciones: productos personalizados, ropa interior, alimentos, entre otros.</li>
             </ul>
 
             <h2>Proceso para solicitar un cambio o devolución</h2>
             <ul>
-              <li>Contactar al servicio de atención al cliente a través de [email/teléfono].</li>
+              <li>Contactar al servicio de atención al cliente a través de academiaelprofeoficial@gmail.com o al 922737951.</li>
               <li>Completar el formulario de solicitud de devolución/cambio.</li>
               <li>Enviar el producto con la documentación requerida: número de pedido, fotos del producto, comprobante de compra.</li>
             </ul>
@@ -47,7 +47,7 @@ export default function PoliticasDevolucionPage() {
             <h2>Opciones de reembolso y cambios</h2>
             <ul>
               <li>Modalidades de reembolso: devolución de dinero, saldo a favor, tarjeta de regalo.</li>
-              <li>Tiempo estimado para procesar el reembolso: [ej. 5-10 días hábiles].</li>
+              <li>Tiempo estimado para procesar el reembolso: 5 a 15 días hábiles.</li>
               <li>Opciones de cambio: reemplazo por el mismo producto, otro artículo de igual valor, reembolso parcial.</li>
             </ul>
 
@@ -65,7 +65,7 @@ export default function PoliticasDevolucionPage() {
 
             <h2>Contacto y Atención al cliente</h2>
             <p>
-              Incluir número de contacto y horario de atención, en caso de consulta o reclamo.
+              Para consultas o reclamos, puedes contactarnos al 922737951 o al correo academiaelprofeoficial@gmail.com en nuestro horario de atención: de lunes a viernes de 9:00 am a 6:00 pm.
             </p>
           </div>
         </div>
