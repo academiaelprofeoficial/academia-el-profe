@@ -24,48 +24,111 @@ export default function PoliticasDevolucionPage() {
           </div>
 
           <div className="prose prose-slate dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-brand-primary">
-            <h2>Introducción</h2>
-            <ul>
-              <li>Esta política establece las condiciones para cambios y devoluciones de productos.</li>
-              <li>Aplica a los productos y servicios adquiridos a través de nuestra tienda online.</li>
-            </ul>
-
-            <h2>Condiciones para cambios y devoluciones</h2>
-            <ul>
-              <li>Plazo para solicitar un cambio o devolución: 7 días calendario después de la compra.</li>
-              <li>El producto debe estar sin uso, en su empaque original, con etiquetas y sin daños.</li>
-              <li>No son elegibles para cambios o devoluciones: productos personalizados, ropa interior, alimentos, entre otros.</li>
-            </ul>
-
-            <h2>Proceso para solicitar un cambio o devolución</h2>
-            <ul>
-              <li>Contactar al servicio de atención al cliente a través de academiaelprofeoficial@gmail.com o al 922737951.</li>
-              <li>Completar el formulario de solicitud de devolución/cambio.</li>
-              <li>Enviar el producto con la documentación requerida: número de pedido, fotos del producto, comprobante de compra.</li>
-            </ul>
-
-            <h2>Opciones de reembolso y cambios</h2>
-            <ul>
-              <li>Modalidades de reembolso: devolución de dinero, saldo a favor, tarjeta de regalo.</li>
-              <li>Tiempo estimado para procesar el reembolso: 5 a 15 días hábiles.</li>
-              <li>Opciones de cambio: reemplazo por el mismo producto, otro artículo de igual valor, reembolso parcial.</li>
-            </ul>
-
-            <h2>Costos y responsabilidad del envío</h2>
-            <ul>
-              <li>Los costos de envío en cambios o devoluciones son responsabilidad del cliente, salvo error de la tienda.</li>
-              <li>En caso de productos defectuosos o errores en el pedido, el envío será gratuito para el cliente.</li>
-            </ul>
-
-            <h2>Excepciones y garantías</h2>
-            <ul>
-              <li>En casos de productos dañados, defectuosos o errores en el pedido, se aplicará una política especial.</li>
-              <li>Algunos productos pueden contar con garantías del fabricante, las cuales deben ser gestionadas directamente con el proveedor.</li>
-            </ul>
-
-            <h2>Contacto y Atención al cliente</h2>
+            <h2>1. Introducción</h2>
             <p>
-              Para consultas o reclamos, puedes contactarnos al 922737951 o al correo academiaelprofeoficial@gmail.com en nuestro horario de atención: de lunes a viernes de 9:00 am a 6:00 pm.
+              En Academia El Profe Oficial nos comprometemos a brindar un servicio de calidad a nuestros estudiantes. La presente Política de Cambios y Devoluciones establece las condiciones aplicables a la compra de nuestros cursos virtuales, clases grabadas y material educativo digital ofrecidos a través de nuestra plataforma.
+            </p>
+            <p>
+              Al realizar una compra en nuestra página web, el cliente declara haber leído y aceptado esta política.
+            </p>
+
+            <hr />
+
+            <h2>2. Alcance</h2>
+            <p>
+              Esta política aplica a todos los cursos virtuales, clases grabadas, material en PDF y demás contenidos digitales adquiridos mediante la plataforma de Academia El Profe Oficial.
+            </p>
+
+            <hr />
+
+            <h2>3. Condiciones para cambios y devoluciones</h2>
+            <p>
+              Debido a que los productos comercializados corresponden a contenido digital de acceso inmediato, una vez confirmado el pago y habilitado el acceso al curso, no se aceptan cambios ni devoluciones, salvo en los siguientes casos:
+            </p>
+            <ul>
+              <li>Cobro duplicado.</li>
+              <li>Error comprobable en el procesamiento del pago.</li>
+              <li>Imposibilidad técnica atribuible a Academia El Profe que impida el acceso al curso y no pueda ser solucionada en un plazo razonable.</li>
+              <li>Entrega de un curso distinto al adquirido.</li>
+            </ul>
+            <p>
+              Las solicitudes deberán presentarse dentro de los 7 días calendario posteriores a la compra.
+            </p>
+
+            <hr />
+
+            <h2>4. Procedimiento para solicitar un cambio o devolución</h2>
+            <p>
+              El cliente deberá comunicarse con nuestro equipo de atención proporcionando:
+            </p>
+            <ul>
+              <li>Nombre completo.</li>
+              <li>Correo electrónico registrado.</li>
+              <li>Número de pedido o comprobante de pago.</li>
+              <li>Descripción detallada del inconveniente.</li>
+              <li>Capturas de pantalla u otra evidencia, de ser necesaria.</li>
+            </ul>
+            <p>
+              La solicitud podrá enviarse mediante:
+            </p>
+            <ul>
+              <li><strong>Correo electrónico:</strong> contacto@academiaelprofeoficial.com</li>
+              <li><strong>WhatsApp:</strong> +51 922 737 951</li>
+            </ul>
+
+            <hr />
+
+            <h2>5. Evaluación de la solicitud</h2>
+            <p>
+              Cada solicitud será evaluada de manera individual.
+            </p>
+            <p>
+              En caso corresponda una devolución, el reembolso se realizará utilizando el mismo medio de pago empleado por el cliente, dentro de un plazo aproximado de 5 a 10 días hábiles, dependiendo de la entidad financiera.
+            </p>
+            <p>
+              Cuando corresponda un cambio, Academia El Profe podrá:
+            </p>
+            <ul>
+              <li>Restablecer el acceso al curso.</li>
+              <li>Otorgar acceso al curso correcto adquirido.</li>
+              <li>Reembolsar el importe pagado cuando sea procedente.</li>
+            </ul>
+
+            <hr />
+
+            <h2>6. Excepciones</h2>
+            <p>
+              No procederán cambios ni devoluciones cuando:
+            </p>
+            <ul>
+              <li>El estudiante haya accedido al contenido digital y este funcione correctamente.</li>
+              <li>La compra haya sido realizada por error del cliente respecto al curso seleccionado.</li>
+              <li>El cliente manifieste simplemente un cambio de opinión luego de recibir acceso al contenido.</li>
+            </ul>
+
+            <hr />
+
+            <h2>7. Garantías</h2>
+            <p>
+              Academia El Profe garantiza que los cursos estarán disponibles para su acceso conforme a las condiciones ofrecidas en la plataforma.
+            </p>
+            <p>
+              Si existiera un inconveniente técnico atribuible a la plataforma, realizaremos las acciones necesarias para restablecer el servicio en el menor tiempo posible.
+            </p>
+
+            <hr />
+
+            <h2>8. Atención al Cliente</h2>
+            <p>
+              Para cualquier consulta relacionada con esta política puede comunicarse mediante:
+            </p>
+            <ul>
+              <li><strong>WhatsApp:</strong> +51 922 737 951</li>
+              <li><strong>Correo electrónico:</strong> contacto@academiaelprofeoficial.com</li>
+            </ul>
+            <p>
+              <strong>Horario de atención:</strong><br />
+              Lunes a sábado de 9:00 a.m. a 8:00 p.m.
             </p>
           </div>
         </div>
