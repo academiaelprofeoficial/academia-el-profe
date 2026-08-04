@@ -461,29 +461,20 @@ export function LeccionClient({ course, videoOrder, studentCount }: LeccionClien
                   <span className="text-2xl font-bold text-foreground">{formatoSoles(pricePEN)}</span>
                   <span className="text-sm text-muted-foreground">{formatoUSD(priceUSD)}</span>
                 </div>
-                {/* Auth Gate: require Google login */}
+                {/* Auth Gate: require login */}
                 {!user ? (
                   <div className="space-y-2 w-full">
                     <div className="rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-900/20 p-4 text-center">
                       <ShieldAlert className="h-8 w-8 text-amber-500 mx-auto mb-2" />
                       <p className="text-sm font-bold text-amber-800 dark:text-amber-300 mb-1">Debes iniciar sesion para comprar</p>
-                      <p className="text-xs text-amber-600/80 dark:text-amber-500/60">Usa tu cuenta de Google para continuar</p>
                     </div>
                     <Link
                       href="/iniciar-sesion"
                       className="flex-1 bg-brand-primary hover:bg-brand-primary-hover text-white font-bold text-sm py-2.5 px-6 rounded-xl transition-colors flex items-center justify-center gap-2 w-full"
                     >
                       <LogIn className="h-4 w-4" />
-                      Iniciar Sesion con Google
+                      Iniciar Sesion
                     </Link>
-                  </div>
-                ) : !isGoogleUser ? (
-                  <div className="w-full">
-                    <div className="rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-900/20 p-4 text-center">
-                      <ShieldAlert className="h-8 w-8 text-amber-500 mx-auto mb-2" />
-                      <p className="text-sm font-bold text-amber-800 dark:text-amber-300 mb-1">Se requiere cuenta de Google</p>
-                      <p className="text-xs text-amber-600/80 dark:text-amber-500/60">Cierra sesion y entra con Google</p>
-                    </div>
                   </div>
                 ) : (
                 <div className="flex flex-col sm:flex-row gap-2 w-full">
@@ -713,22 +704,15 @@ export function LeccionClient({ course, videoOrder, studentCount }: LeccionClien
               <div className="w-full space-y-2">
                 <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-900/20 p-3 text-center">
                   <ShieldAlert className="h-6 w-6 text-amber-500 mx-auto mb-1" />
-                  <p className="text-xs font-bold text-amber-800 dark:text-amber-300">Debes iniciar sesion con Google para comprar</p>
+                  <p className="text-xs font-bold text-amber-800 dark:text-amber-300">Debes iniciar sesion para comprar</p>
                 </div>
                 <Link
                   href="/iniciar-sesion"
                   className="flex-1 bg-brand-primary hover:bg-brand-primary-hover text-white font-bold text-sm py-2.5 rounded-xl text-center flex items-center justify-center gap-2 w-full"
                 >
                   <LogIn className="h-4 w-4" />
-                  Iniciar Sesion con Google
+                  Iniciar Sesion
                 </Link>
-              </div>
-            ) : !isGoogleUser ? (
-              <div className="w-full">
-                <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-900/20 p-3 text-center">
-                  <ShieldAlert className="h-6 w-6 text-amber-500 mx-auto mb-1" />
-                  <p className="text-xs font-bold text-amber-800 dark:text-amber-300">Se requiere cuenta de Google</p>
-                </div>
               </div>
             ) : (
             <div className="flex gap-2 w-full">

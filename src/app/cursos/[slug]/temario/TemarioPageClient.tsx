@@ -581,23 +581,14 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl, 
                   <div className="rounded-lg border border-amber-300/40 bg-amber-500/20 p-3 text-center">
                     <ShieldAlert className="h-6 w-6 text-amber-300 mx-auto mb-1" />
                     <p className="text-[11px] font-bold text-amber-100 mb-0.5">Debes iniciar sesion para comprar</p>
-                    <p className="text-[10px] text-amber-200/70">Usa tu cuenta de Google</p>
                   </div>
                   <Link
                     href="/iniciar-sesion"
                     className="w-full h-10 text-xs font-bold tracking-wide text-white gap-1.5 rounded-lg flex items-center justify-center transition-all bg-white/25 hover:bg-white/35"
                   >
                     <LogIn className="h-4 w-4 shrink-0" />
-                    Iniciar Sesion con Google
+                    Iniciar Sesion
                   </Link>
-                </div>
-              ) : !isGoogleUser ? (
-                <div className="flex flex-col gap-1.5 mt-3">
-                  <div className="rounded-lg border border-amber-300/40 bg-amber-500/20 p-3 text-center">
-                    <ShieldAlert className="h-6 w-6 text-amber-300 mx-auto mb-1" />
-                    <p className="text-[11px] font-bold text-amber-100 mb-0.5">Se requiere cuenta de Google</p>
-                    <p className="text-[10px] text-amber-200/70">Cierra sesion y entra con Google</p>
-                  </div>
                 </div>
               ) : (
                 <>
