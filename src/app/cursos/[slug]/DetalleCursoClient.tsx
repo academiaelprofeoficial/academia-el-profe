@@ -163,7 +163,13 @@ export function DetalleCursoClient({ course, studentCount }: DetalleCursoClientP
   // Stats
   const freeVideoCount = classVideos.filter(v => v.isFree).length;
 
-  const handleComprar = useCallback(() => openCulqi(title, pricePEN), [openCulqi, title, pricePEN]);
+  const handleComprar = useCallback(() => openCulqi({
+    cursoId: slug,
+    titulo: title,
+    precio: pricePEN,
+    userId: user?.uid,
+    userEmail: user?.email || undefined
+  }), [openCulqi, title, pricePEN, slug, user]);
 
   return (
     <section style={courseColorVars(cardColor)}>
@@ -333,7 +339,13 @@ export function DetalleCursoClient({ course, studentCount }: DetalleCursoClientP
                     'bg-brand-primary-hover hover:bg-brand-primary text-white',
                     'shadow-[0_4px_14px_0_rgba(16,185,129,0.39)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.23)]'
                   )}
-                  onClick={() => openCulqi(title, pricePEN)}
+                  onClick={() => openCulqi({
+                    cursoId: slug,
+                    titulo: title,
+                    precio: pricePEN,
+                    userId: user?.uid,
+                    userEmail: user?.email || undefined
+                  })}
                 >
                   <ShoppingCart className="h-4 w-4" />
                   Pagar con Tarjeta (Culqi)

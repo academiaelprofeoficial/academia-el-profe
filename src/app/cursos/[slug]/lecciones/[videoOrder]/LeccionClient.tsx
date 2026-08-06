@@ -479,7 +479,13 @@ export function LeccionClient({ course, videoOrder, studentCount }: LeccionClien
                 ) : (
                 <div className="flex flex-col sm:flex-row gap-2 w-full">
                   <button
-                    onClick={() => openCulqi(title, pricePEN)}
+                    onClick={() => openCulqi({
+                      cursoId: slug,
+                      titulo: title,
+                      precio: pricePEN,
+                      userId: user?.uid,
+                      userEmail: user?.email || undefined
+                    })}
                     className="flex-1 bg-brand-primary-hover hover:bg-brand-primary text-white font-bold text-sm py-2.5 px-6 rounded-xl transition-colors flex items-center justify-center gap-2"
                   >
                     <ShoppingCart className="h-4 w-4" />
@@ -717,7 +723,13 @@ export function LeccionClient({ course, videoOrder, studentCount }: LeccionClien
             ) : (
             <div className="flex gap-2 w-full">
               <button
-                onClick={() => openCulqi(title, pricePEN)}
+                onClick={() => openCulqi({
+                  cursoId: slug,
+                  titulo: title,
+                  precio: pricePEN,
+                  userId: user?.uid,
+                  userEmail: user?.email || undefined
+                })}
                 className="flex-1 bg-brand-primary-hover hover:bg-brand-primary text-white font-bold text-sm py-2.5 rounded-xl text-center"
               >
                 Pagar con Tarjeta (Culqi)

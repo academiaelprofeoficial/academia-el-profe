@@ -228,7 +228,7 @@ function CourseCard({ course, isPurchased, index, onCulqiClick }: { readonly cou
 
 function CursosUTPContent({ sanityCourses }: { readonly sanityCourses: SanityCourse[] | null }) {
   const [busqueda, setBusqueda] = useState('');
-  const { purchasedCourseIds } = useAuth();
+  const { purchasedCourseIds, user } = useAuth();
   const { openCulqi } = useCulqi();
 
   const courses = mergeCourses(sanityCourses);
@@ -300,9 +300,13 @@ function CursosUTPContent({ sanityCourses }: { readonly sanityCourses: SanityCou
               isPurchased={purchasedCourseIds.includes(course.id)}
               index={idx}
               onCulqiClick={() => {
-                const title = course.title;
-                const price = course.price;
-                openCulqi(title, price);
+                openCulqi({
+                  cursoId: course.slug || course.id,
+                  titulo: course.title,
+                  precio: course.pricePEN || course.price,
+                  userId: user?.uid,
+                  userEmail: user?.email || undefined
+                });
               }}
             />
           ))}

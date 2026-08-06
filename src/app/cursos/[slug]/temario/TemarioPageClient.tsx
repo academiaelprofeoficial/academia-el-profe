@@ -595,7 +595,13 @@ export function TemarioPageClient({ course, whatsapp, whatsappMessage, backUrl, 
                 {/* Botón de pago unificado (Culqi) */}
                 <div className="flex flex-col gap-1.5 mt-3">
                 <button
-                  onClick={() => openCulqi(title, pricePEN)}
+                  onClick={() => openCulqi({
+                    cursoId: slug,
+                    titulo: title,
+                    precio: pricePEN,
+                    userId: user?.uid,
+                    userEmail: user?.email || undefined
+                  })}
                   className="w-full h-10 text-xs font-bold tracking-wide text-white gap-1.5 rounded-lg flex items-center justify-center transition-all disabled:opacity-70 bg-brand-primary-hover hover:bg-brand-primary"
                 >
                   <ShoppingCart className="h-4 w-4 shrink-0" />

@@ -136,11 +136,14 @@ export function CursosPageClient({ sanityCourses }: { sanityCourses: SanityCours
 
   // Compra directa con Culqi (abrir modal) – use full mock data when available
   const handleCulqiDirect = useCallback((cursoLanding: any) => {
-    // 1️⃣ Obtener el título y precio
-    const title = cursoLanding.title || cursoLanding.titulo;
-    const price = cursoLanding.price || cursoLanding.precio;
-    openCulqi(title, price);
-  }, [openCulqi]);
+    openCulqi({
+      cursoId: cursoLanding.id,
+      titulo: cursoLanding.title || cursoLanding.titulo,
+      precio: cursoLanding.price || cursoLanding.precio,
+      userId: user?.uid || undefined,
+      userEmail: user?.email || undefined,
+    });
+  }, [openCulqi, user]);
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950">
       <Script src="https://checkout.culqi.com/js/v4" strategy="lazyOnload" />
