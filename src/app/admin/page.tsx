@@ -647,6 +647,16 @@ export default function PaginaAdmin() {
                         <div className="text-[10px] text-slate-400">{m.paypal.ventas} ventas</div>
                       </div>
                     </div>
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-orange-900/20/60">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600 text-xs font-bold">CQ</div>
+                        <span className="text-sm font-medium text-slate-300">Culqi</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-bold font-mono text-white">{fmtSoles(m.culqi.ingresos)}</div>
+                        <div className="text-[10px] text-slate-400">{m.culqi.ventas} ventas</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -750,8 +760,8 @@ export default function PaginaAdmin() {
                           </div>
                           <div className="flex items-center gap-2 mt-2">
                             <StatusBadge status={p.status} />
-                            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${p.gateway === 'mercadopago' ? 'bg-sky-100 text-sky-700' : 'bg-amber-100 text-amber-400'}`}>
-                              {p.gateway === 'mercadopago' ? 'MercadoPago' : 'PayPal'}
+                            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${p.gateway === 'mercadopago' ? 'bg-sky-100 text-sky-700' : p.gateway === 'culqi' ? 'bg-orange-100 text-orange-700' : 'bg-amber-100 text-amber-400'}`}>
+                              {p.gateway === 'mercadopago' ? 'MercadoPago' : p.gateway === 'culqi' ? 'Culqi' : 'PayPal'}
                             </span>
                           </div>
                         </div>
@@ -777,8 +787,8 @@ export default function PaginaAdmin() {
                               <td className="px-5 py-3 text-slate-300 text-xs max-w-[150px] truncate">{p.userName || p.userEmail || '-'}</td>
                               <td className="px-5 py-3 font-medium text-white text-xs max-w-[180px] truncate">{p.courseTitle || p.courseId}</td>
                               <td className="px-5 py-3">
-                                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${p.gateway === 'mercadopago' ? 'bg-sky-100 text-sky-700' : 'bg-amber-100 text-amber-400'}`}>
-                                  {p.gateway === 'mercadopago' ? 'MP' : 'PayPal'}
+                                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${p.gateway === 'mercadopago' ? 'bg-sky-100 text-sky-700' : p.gateway === 'culqi' ? 'bg-orange-100 text-orange-700' : 'bg-amber-100 text-amber-400'}`}>
+                                  {p.gateway === 'mercadopago' ? 'MP' : p.gateway === 'culqi' ? 'CQ' : 'PayPal'}
                                 </span>
                               </td>
                               <td className="px-5 py-3 text-right font-mono font-medium text-xs text-white">
@@ -1093,8 +1103,8 @@ export default function PaginaAdmin() {
                       </div>
                       <div className="flex items-center justify-between pt-2 border-t border-slate-50">
                         <div className="flex items-center gap-2">
-                          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${p.gateway === 'mercadopago' ? 'bg-sky-100 text-sky-700' : 'bg-amber-100 text-amber-400'}`}>
-                            {p.gateway === 'mercadopago' ? 'MercadoPago' : 'PayPal'}
+                          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${p.gateway === 'mercadopago' ? 'bg-sky-100 text-sky-700' : p.gateway === 'culqi' ? 'bg-orange-100 text-orange-700' : 'bg-amber-100 text-amber-400'}`}>
+                            {p.gateway === 'mercadopago' ? 'MercadoPago' : p.gateway === 'culqi' ? 'Culqi' : 'PayPal'}
                           </span>
                           <span className="text-xs text-slate-400">
                             {p.approvedAt ? fmtFecha(p.approvedAt) : '-'}
@@ -1137,8 +1147,8 @@ export default function PaginaAdmin() {
                           </td>
                           <td className="px-5 py-3 text-xs font-medium text-white max-w-[180px] truncate">{p.courseTitle || p.courseId}</td>
                           <td className="px-5 py-3">
-                            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${p.gateway === 'mercadopago' ? 'bg-sky-100 text-sky-700' : 'bg-amber-100 text-amber-400'}`}>
-                              {p.gateway === 'mercadopago' ? 'MercadoPago' : 'PayPal'}
+                            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${p.gateway === 'mercadopago' ? 'bg-sky-100 text-sky-700' : p.gateway === 'culqi' ? 'bg-orange-100 text-orange-700' : 'bg-amber-100 text-amber-400'}`}>
+                              {p.gateway === 'mercadopago' ? 'MercadoPago' : p.gateway === 'culqi' ? 'Culqi' : 'PayPal'}
                             </span>
                           </td>
                           <td className="px-5 py-3 text-right font-mono font-medium text-xs text-white">

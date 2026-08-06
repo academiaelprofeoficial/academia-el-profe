@@ -53,6 +53,11 @@ export async function GET(request: NextRequest) {
       _sum: { amount: true },
       _count: true,
     });
+    const revenueCulqi = await db.purchase.aggregate({
+      where: { status: 'approved', gateway: 'culqi' },
+      _sum: { amount: true },
+      _count: true,
+    });
 
     // Últimas 20 compras
     const recentPurchases = await db.purchase.findMany({
@@ -95,6 +100,10 @@ export async function GET(request: NextRequest) {
       paypal: {
         ventas: revenuePP._count,
         ingresos: revenuePP._sum.amount || 0,
+      },
+      culqi: {
+        ventas: revenueCulqi._count,
+        ingresos: revenueCulqi._sum.amount || 0,
       },
 
       // Actividad
