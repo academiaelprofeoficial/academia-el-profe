@@ -30,7 +30,6 @@ export default function TerminosPage() {
             </p>
             <ul>
               <li><strong>Razón Social:</strong> Academia El Profe Oficial</li>
-              <li><strong>RUC:</strong> 10766497026</li>
               <li><strong>Dirección:</strong> Santa Rosa, Lima, Perú.</li>
               <li><strong>Teléfono:</strong> +51 922 737 951</li>
               <li><strong>Correo electrónico:</strong> academiaelprofeoficial@gmail.com</li>
