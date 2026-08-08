@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { syncUser, createPendingPurchase, markPurchaseSuccess } from '@/lib/purchase-service';
+import { syncUser, createPendingPurchase, approvePurchase } from '@/lib/purchase-service';
 
 interface CulqiChargeRequest {
   tokenId: string;
@@ -86,7 +86,10 @@ export async function POST(request: NextRequest) {
           });
 
           // Aprobar la compra inmediatamente (cargo exitoso)
-          await markPurchaseSuccess(purchase.id, culqiData.id); // Guardar culqiData.id como external reference
+          await approvePurchase({
+            purchaseId: purchase.id,
+            gatewayPaymentId: culqiData.id
+          }); // Guardar culqiData.id como external reference
         } catch (dbError) {
           console.error('[Culqi] Error al registrar compra en DB:', dbError);
           // OJO: El cargo ya se hizo. No podemos fallar aquí. Devolvemos éxito de todas formas.
