@@ -520,10 +520,7 @@ export interface DeseoCurso {
   readonly fechaAgregado: string;
 }
 
-export const DESEOS_USUARIO: readonly DeseoCurso[] = [
-  { id: 'd-1', cursoId: 'calculo-multivariable', cursoNombre: 'CÁLCULO MULTIVARIABLE', formula: 'F', color: 'bg-purple-600', price: 150, fechaAgregado: '10 de junio de 2026' },
-  { id: 'd-2', cursoId: 'fisica-2', cursoNombre: 'FÍSICA 2', formula: '∿', color: 'bg-red-600', price: 120, fechaAgregado: '12 de junio de 2026' },
-] as const;
+export const DESEOS_USUARIO: readonly DeseoCurso[] = [];
 
 // ============================================================
 // Historial de clases
